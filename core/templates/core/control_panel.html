@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Control Panel — Deploynix</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a1a;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    background: #0d0f14;
+    color: #eaeaea;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+  }
+  .sidebar .brand {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 24px 24px;
+  }
+  .sidebar .brand span { color: #e0322f; }
+  .sidebar .tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #8a8f9e;
+    text-transform: uppercase;
+    padding: 0 24px 16px;
+  }
+  .sidebar nav { flex: 1; }
+  .sidebar nav a {
+    display: block;
+    padding: 12px 24px;
+    color: #c7c9d1;
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover, .sidebar nav a.active {
+    background: #171b26;
+    color: #fff;
+    border-left-color: #d32f2f;
+  }
+  .sidebar .user-box {
+    padding: 16px 24px;
+    border-top: 1px solid #1e2330;
+    font-size: 13px;
+  }
+  .sidebar .user-box .name { font-weight: bold; color: #fff; }
+  .sidebar .user-box .role { color: #d32f2f; font-size: 11px; letter-spacing: .5px; }
+  .sidebar .user-box a.logout {
+    display: inline-block;
+    margin-top: 10px;
+    color: #d32f2f;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  /* Main */
+  .main { flex: 1; padding: 28px 36px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .topbar input {
+    width: 340px;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .topbar .welcome { font-size: 13px; color: #555; }
+
+  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: #444;
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: "";
+    width: 4px;
+    height: 14px;
+    background: #d32f2f;
+    display: inline-block;
+    border-radius: 2px;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1a1a1a;
+  }
+  .stat-card.accent-red .value { color: #d32f2f; }
+  .stat-card.accent-green .value { color: #1e7e34; }
+  .stat-card.accent-orange .value { color: #b8860b; }
+  .stat-card.accent-blue .value { color: #1a56db; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .panel h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+    font-family: Georgia, serif;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table th {
+    text-align: left;
+    color: #888;
+    font-weight: 600;
+    padding: 8px 6px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .badge.active { background: #e6f4ea; color: #1e7e34; }
+  .badge.trial { background: #fff4e0; color: #b8860b; }
+  .badge.expired { background: #fdecea; color: #b3261e; }
+  .empty { color: #999; font-size: 13px; padding: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div>
+      <div class="brand">Deploy<span>nix</span></div>
+      <div class="tag">Provider Portal</div>
+    </div>
+    <nav>
+      <a href="{% url 'control_panel' %}" class="active">Dashboard</a>
+      <a href="{% url 'admin_jobs_list' %}">Jobs</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
+      <a href="{% url 'admin_plans_list' %}">Plans</a>
+    </nav>
+    <div class="user-box">
+      <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="role">SUPER ADMIN</div>
+      <a class="logout" href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <input type="text" placeholder="Search companies, users, jobs...">
+      <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
+    </div>
+
+    <h1>Platform Dashboard</h1>
+    <div class="subtitle">Live overview of Deploynix job portal activity.</div>
+
+    <div class="section-title">Employers</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="label">Total Employers</div>
+        <div class="value">{{ employers_total }}</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="label">Active Subscriptions</div>
+        <div class="value">{{ active_subscriptions }}</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="label">Expiring Soon</div>
+        <div class="value">{{ expiring_soon }}</div>
+      </div>
+      <div class="stat-card accent-red">
+        <div class="label">Expired Plans</div>
+        <div class="value">{{ expired_subscriptions }}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Job Seekers</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="label">Total Job Seekers</div>
+        <div class="value">{{ job_seekers_total }}</div>
+      </div>
+      <div class="stat-card accent-blue">
+        <div class="label">New This Month</div>
+        <div class="value">{{ job_seekers_new_month }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Applications</div>
+        <div class="value">{{ applications_total }}</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="label">Hired</div>
+        <div class="value">{{ applications_hired }}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Jobs &amp; Inquiries</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="label">Total Jobs Posted</div>
+        <div class="value">{{ jobs_total }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Job Views</div>
+        <div class="value">{{ jobs_views_total }}</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="label">Open Inquiries</div>
+        <div class="value">{{ inquiries_open }}</div>
+      </div>
+      <div class="stat-card accent-red">
+        <div class="label">Pending Approval</div>
+        <div class="value">{{ pending_approval }}</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h3>Recent Employers</h3>
+        {% if recent_employers %}
+        <table>
+          <tr><th>Company</th><th>Plan</th><th>Status</th></tr>
+          {% for emp in recent_employers %}
+          <tr>
+            <td>{{ emp.company_name }}</td>
+            <td>{{ emp.plan.name|default:"—" }}</td>
+            <td>
+              {% if emp.is_active %}
+                <span class="badge active">Active</span>
+              {% else %}
+                <span class="badge expired">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
+        <div class="empty">No employers yet.</div>
+        {% endif %}
+      </div>
+
+      <div class="panel">
+        <h3>Recent Job Postings</h3>
+        {% if recent_jobs %}
+        <table>
+          <tr><th>Title</th><th>Type</th><th>Applications</th></tr>
+          {% for job in recent_jobs %}
+          <tr>
+            <td>{{ job.job_title }}</td>
+            <td>{{ job.job_type }}</td>
+            <td>{{ job.applications_count }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
+        <div class="empty">No jobs posted yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

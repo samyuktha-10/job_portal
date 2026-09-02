@@ -19,9 +19,14 @@
     <div class="job-list-card" style="flex-direction: column; align-items: stretch; gap: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-                <div class="job-list-title">{{ app.job.job_title }}</div>
+                <a href="{% url 'job_detail' app.job.id %}" class="job-list-title" style="text-decoration: none; color: inherit;">
+                    {{ app.job.job_title }}
+                </a>
                 <div class="job-list-meta">{{ app.job.location }} · {{ app.job.job_type }}</div>
-                <div class="job-list-meta">Applied on {{ app.applied_at|date:"d M Y" }}</div>
+                <div class="job-list-meta">
+                    Applied on {{ app.applied_at|date:"d M Y" }}
+                    <span style="color: #9ca3af;">({{ app.applied_at|timesince }} ago)</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <span class="candidate-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
@@ -69,7 +74,12 @@
         </div>
     </div>
     {% empty %}
-    <div class="jobs-empty">You haven't applied to any jobs yet.</div>
+    <div class="jobs-empty" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 0;">
+        <p>You haven't applied to any jobs yet.</p>
+        <a href="{% url 'job_list' %}" class="dashboard-btn" style="background: #dc2626; padding: 0.6rem 1.5rem; text-decoration: none; display: inline-block;">
+            Browse Jobs
+        </a>
+    </div>
     {% endfor %}
 </div>
 {% endblock %}

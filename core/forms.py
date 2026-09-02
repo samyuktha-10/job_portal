@@ -61,7 +61,22 @@ class JobSeekerLoginForm(forms.Form):
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
-        fields = ['full_name', 'phone', 'location', 'education', 'certificates', 'skills', 'experience', 'preferred_job_type', 'resume']
+        fields = ['full_name', 'phone', 'location', 'education', 'certificates', 'skills', 'experience', 'preferred_job_type', 'resume', 'whatsapp_opted_in']
+        labels = {
+            'phone': 'Phone / WhatsApp Number',
+            'whatsapp_opted_in': 'Send me job alerts & application updates on WhatsApp',
+        }
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if not phone:
+            return phone
+        digits = ''.join(filter(str.isdigit, phone))
+        if len(digits) == 10:
+            digits = '91' + digits
+        if len(digits) < 11 or len(digits) > 15:
+            raise forms.ValidationError("Enter a valid phone number with country code, e.g. +919876543210")
+        return '+' + digits
 
 class JobPostForm(forms.ModelForm):
     class Meta:

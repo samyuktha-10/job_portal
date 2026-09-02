@@ -67,7 +67,8 @@ class Job(models.Model):
     skills_required = models.CharField(max_length=300, blank=True, help_text="Comma-separated skills")
     posted_at = models.DateTimeField(auto_now_add=True)
     views_count = models.PositiveIntegerField(default=0)
-
+    is_approved = models.BooleanField(default=True)
+    
     def __str__(self):
         return self.job_title
 
@@ -79,6 +80,12 @@ class JobApplication(models.Model):
         ('shortlisted', 'Shortlisted'),
         ('rejected', 'Rejected'),
         ('hired', 'Hired'),
+    ]
+
+    SOURCE_CHOICES = [
+        ('website', 'Company Website'),
+        ('linkedin', 'LinkedIn'),
+        ('other', 'Other'),
     ]
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
@@ -105,9 +112,11 @@ class JobApplication(models.Model):
 
     cover_note = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
+    source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='website', blank=True, help_text="Source where the candidate applied from")
     is_bookmarked = models.BooleanField(default=False)
     applied_at = models.DateTimeField(auto_now_add=True)
     is_viewed = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"{self.display_full_name} - {self.job.job_title}"
 
@@ -190,6 +199,7 @@ class JobSeekerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='jobseeker_profile')
     full_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=15)
+    whatsapp_opted_in = models.BooleanField(default=True)
     location = models.CharField(max_length=150, blank=True)
     education = models.CharField(max_length=200, blank=True)
     certificates = models.TextField(blank=True, help_text="List certificates, one per line or comma-separated")
@@ -207,6 +217,37 @@ class JobSeekerProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_email_verified = models.BooleanField(default=False)
+
+    @property
+    def completion_percentage(self):
+        weights = {
+            'resume': 25,
+            'skills': 20,
+            'experience': 15,
+            'education': 15,
+            'location': 10,
+            'preferred_job_type': 10,
+            'certificates': 5,
+        }
+        score = 0
+        for field, weight in weights.items():
+            value = getattr(self, field)
+            if value:
+                score += weight
+        return score
+
+    @property
+    def missing_fields(self):
+        labels = {
+            'resume': 'Resume',
+            'skills': 'Skills',
+            'experience': 'Experience',
+            'education': 'Education',
+            'location': 'Location',
+            'preferred_job_type': 'Preferred Job Type',
+            'certificates': 'Certificates',
+        }
+        return [label for field, label in labels.items() if not getattr(self, field)]
 
     def __str__(self):
         return self.full_name

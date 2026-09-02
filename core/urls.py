@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import admin_panel_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -71,4 +72,23 @@ urlpatterns = [
     # Email Verification Links
     path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
     path('resend-verification/', views.resend_verification, name='resend_verification'),
+
+    # Custom Admin Control Panel
+    path('control-panel/jobs/', admin_panel_views.admin_jobs_list, name='admin_jobs_list'),
+    path('control-panel/jobs/<int:job_id>/toggle-approval/', admin_panel_views.admin_job_toggle_approval, name='admin_job_toggle_approval'),
+    path('control-panel/jobs/<int:job_id>/delete/', admin_panel_views.admin_job_delete, name='admin_job_delete'),
+    path('control-panel/users/', admin_panel_views.admin_users_list, name='admin_users_list'),
+    path('control-panel/users/<int:user_id>/toggle-active/', admin_panel_views.admin_user_toggle_active, name='admin_user_toggle_active'),
+    path('control-panel/inquiries/', admin_panel_views.admin_inquiries_list, name='admin_inquiries_list'),
+    path('control-panel/inquiries/<int:inquiry_id>/update-status/', admin_panel_views.admin_inquiry_update_status, name='admin_inquiry_update_status'),
+    path('employer-settings/', views.employer_settings, name='employer_settings'),
+    path('employer-reports/', views.employer_reports, name='employer_reports'),
+    path('jobs/', views.job_vacancies, name='job_vacancies'),
+    path('super-admin/login/', views.super_admin_login, name='super_admin_login'),
+    path('super-admin/verify/', views.super_admin_verify, name='super_admin_verify'),
+    path('control-panel/', views.control_panel, name='control_panel'),
+    path('control-panel/employers/', views.admin_employers_list, name='admin_employers_list'),
+    path('control-panel/job-seekers/', views.admin_job_seekers_list, name='admin_job_seekers_list'),
+    path('control-panel/subscriptions/', views.admin_subscriptions_list, name='admin_subscriptions_list'),
+    path('control-panel/plans/', views.admin_plans_list, name='admin_plans_list'),
 ]

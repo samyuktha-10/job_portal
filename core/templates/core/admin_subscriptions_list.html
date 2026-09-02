@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Subscriptions - Deploynix</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a1a;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: #0d0f14;
+    color: #eaeaea;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+  }
+  .sidebar .brand {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 24px 24px;
+  }
+  .sidebar .brand span { color: #e0322f; }
+  .sidebar .tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #8a8f9e;
+    text-transform: uppercase;
+    padding: 0 24px 16px;
+  }
+  .sidebar nav { flex: 1; }
+  .sidebar nav a {
+    display: block;
+    padding: 12px 24px;
+    color: #c7c9d1;
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover, .sidebar nav a.active {
+    background: #171b26;
+    color: #fff;
+    border-left-color: #d32f2f;
+  }
+  .sidebar .user-box {
+    padding: 16px 24px;
+    border-top: 1px solid #1e2330;
+    font-size: 13px;
+  }
+  .sidebar .user-box .name { font-weight: bold; color: #fff; }
+  .sidebar .user-box .role { color: #d32f2f; font-size: 11px; letter-spacing: .5px; }
+  .sidebar .user-box a.logout {
+    display: inline-block;
+    margin-top: 10px;
+    color: #d32f2f;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .main { flex: 1; padding: 28px 36px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .topbar form { display: flex; gap: 8px; }
+  .topbar input[type="text"] {
+    width: 300px;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .topbar select {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .topbar button {
+    padding: 10px 16px;
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .topbar button:hover { background: #b3261e; }
+  .topbar .welcome { font-size: 13px; color: #555; }
+
+  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .panel {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table th {
+    text-align: left;
+    color: #888;
+    font-weight: 600;
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .badge.active { background: #e6f4ea; color: #1e7e34; }
+  .badge.inactive { background: #fdecea; color: #b3261e; }
+  .empty { color: #999; font-size: 13px; padding: 16px 0; }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .pagination a, .pagination span {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+  }
+  .pagination .current {
+    background: #d32f2f;
+    color: #fff;
+    border-color: #d32f2f;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="sidebar">
+    <div>
+      <div class="brand">Deploy<span>nix</span></div>
+      <div class="tag">Provider Portal</div>
+    </div>
+    <nav>
+      <a href="{% url 'control_panel' %}">Dashboard</a>
+      <a href="{% url 'admin_jobs_list' %}">Jobs</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}" class="active">Subscriptions</a>
+      <a href="#">Inquiries</a>
+      <a href="/admin/">Django Admin</a>
+    </nav>
+    <div class="user-box">
+      <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="role">SUPER ADMIN</div>
+      <a class="logout" href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <form method="get" style="display:flex; gap:8px;">
+        <input type="text" name="search" placeholder="Search company or email..." value="{{ search }}">
+        <select name="status">
+          <option value="" {% if not status_filter %}selected{% endif %}>All statuses</option>
+          <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+          <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+        </select>
+        <button type="submit">Filter</button>
+      </form>
+      <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
+    </div>
+
+    <h1>Subscriptions</h1>
+    <div class="subtitle">All employer subscriptions on Deploynix.</div>
+
+    <div class="panel">
+      {% if page_obj %}
+      <table>
+        <tr>
+          <th>Company</th>
+          <th>Email</th>
+          <th>Plan</th>
+          <th>Price</th>
+          <th>Status</th>
+          <th>Expires</th>
+          <th>Jobs Posted</th>
+          <th>Resumes Viewed</th>
+        </tr>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.company_name }}</td>
+          <td>{{ row.email }}</td>
+          <td>{{ row.plan_name }}</td>
+          <td>₹{{ row.price }}</td>
+          <td>
+            {% if row.is_active %}
+              <span class="badge active">Active</span>
+            {% else %}
+              <span class="badge inactive">Expired</span>
+            {% endif %}
+          </td>
+          <td>{{ row.expires_at|date:"d M Y" }}</td>
+          <td>{{ row.jobs_posted_count }}</td>
+          <td>{{ row.resumes_viewed_count }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+        {% endif %}
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+        {% endif %}
+      </div>
+
+      {% else %}
+      <div class="empty">No subscriptions found.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

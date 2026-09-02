@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jobs - Deploynix</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a1a;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: #0d0f14;
+    color: #eaeaea;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+  }
+  .sidebar .brand {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 24px 24px;
+  }
+  .sidebar .brand span { color: #e0322f; }
+  .sidebar .tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #8a8f9e;
+    text-transform: uppercase;
+    padding: 0 24px 16px;
+  }
+  .sidebar nav { flex: 1; }
+  .sidebar nav a {
+    display: block;
+    padding: 12px 24px;
+    color: #c7c9d1;
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover, .sidebar nav a.active {
+    background: #171b26;
+    color: #fff;
+    border-left-color: #d32f2f;
+  }
+  .sidebar .user-box {
+    padding: 16px 24px;
+    border-top: 1px solid #1e2330;
+    font-size: 13px;
+  }
+  .sidebar .user-box .name { font-weight: bold; color: #fff; }
+  .sidebar .user-box .role { color: #d32f2f; font-size: 11px; letter-spacing: .5px; }
+  .sidebar .user-box a.logout {
+    display: inline-block;
+    margin-top: 10px;
+    color: #d32f2f;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .main { flex: 1; padding: 28px 36px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .topbar .filters { display: flex; gap: 8px; }
+  .topbar .filters a {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+    background: #fff;
+  }
+  .topbar .filters a.active {
+    background: #d32f2f;
+    color: #fff;
+    border-color: #d32f2f;
+  }
+  .topbar .welcome { font-size: 13px; color: #555; }
+
+  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .panel {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table th {
+    text-align: left;
+    color: #888;
+    font-weight: 600;
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f2f2f2;
+    vertical-align: middle;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .badge.approved { background: #e6f4ea; color: #1e7e34; }
+  .badge.pending { background: #fff4e0; color: #b8860b; }
+
+  .actions { display: flex; gap: 6px; }
+  .actions form { display: inline; }
+  .actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-approve { background: #1e7e34; color: #fff; }
+  .btn-reject { background: #b8860b; color: #fff; }
+  .btn-delete { background: #b3261e; color: #fff; }
+
+  .empty { color: #999; font-size: 13px; padding: 16px 0; }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .pagination a, .pagination span {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+  }
+  .pagination .current {
+    background: #d32f2f;
+    color: #fff;
+    border-color: #d32f2f;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="sidebar">
+    <div>
+      <div class="brand">Deploy<span>nix</span></div>
+      <div class="tag">Provider Portal</div>
+    </div>
+    <nav>
+      <a href="{% url 'control_panel' %}">Dashboard</a>
+      <a href="{% url 'admin_jobs_list' %}" class="active">Jobs</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_plans_list' %}">Plans</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
+      <a href="/admin/">Django Admin</a>
+    </nav>
+    <div class="user-box">
+      <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="role">SUPER ADMIN</div>
+      <a class="logout" href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="filters">
+        <a href="?" class="{% if not status %}active{% endif %}">All</a>
+        <a href="?status=approved" class="{% if status == 'approved' %}active{% endif %}">Approved</a>
+        <a href="?status=pending" class="{% if status == 'pending' %}active{% endif %}">Pending</a>
+      </div>
+      <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
+    </div>
+
+    <h1>Jobs</h1>
+    <div class="subtitle">All job postings on Deploynix.</div>
+
+    <div class="panel">
+      {% if page_obj %}
+      <table>
+        <tr>
+          <th>Title</th>
+          <th>Company</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Views</th>
+          <th>Status</th>
+          <th>Posted</th>
+          <th>Actions</th>
+        </tr>
+        {% for job in page_obj %}
+        <tr>
+          <td>{{ job.job_title }}</td>
+          <td>{{ job.company_name|default:job.posted_by.username }}</td>
+          <td>{{ job.job_type }}</td>
+          <td>{{ job.location }}</td>
+          <td>{{ job.views_count }}</td>
+          <td>
+            {% if job.is_approved %}
+              <span class="badge approved">Approved</span>
+            {% else %}
+              <span class="badge pending">Pending</span>
+            {% endif %}
+          </td>
+          <td>{{ job.posted_at|date:"d M Y" }}</td>
+          <td class="actions">
+            <form method="post" action="{% url 'admin_job_toggle_approval' job.id %}">
+              {% csrf_token %}
+              <button type="submit" class="{% if job.is_approved %}btn-reject{% else %}btn-approve{% endif %}">
+                {% if job.is_approved %}Unapprove{% else %}Approve{% endif %}
+              </button>
+            </form>
+            <form method="post" action="{% url 'admin_job_delete' job.id %}" onsubmit="return confirm('Delete this job posting?');">
+              {% csrf_token %}
+              <button type="submit" class="btn-delete">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
+        {% endif %}
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
+        {% endif %}
+      </div>
+
+      {% else %}
+      <div class="empty">No jobs found.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Plans - Deploynix</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f5f7;
+    color: #1a1a1a;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: #0d0f14;
+    color: #eaeaea;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+  }
+  .sidebar .brand {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 24px 24px;
+  }
+  .sidebar .brand span { color: #e0322f; }
+  .sidebar .tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #8a8f9e;
+    text-transform: uppercase;
+    padding: 0 24px 16px;
+  }
+  .sidebar nav { flex: 1; }
+  .sidebar nav a {
+    display: block;
+    padding: 12px 24px;
+    color: #c7c9d1;
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover, .sidebar nav a.active {
+    background: #171b26;
+    color: #fff;
+    border-left-color: #d32f2f;
+  }
+  .sidebar .user-box {
+    padding: 16px 24px;
+    border-top: 1px solid #1e2330;
+    font-size: 13px;
+  }
+  .sidebar .user-box .name { font-weight: bold; color: #fff; }
+  .sidebar .user-box .role { color: #d32f2f; font-size: 11px; letter-spacing: .5px; }
+  .sidebar .user-box a.logout {
+    display: inline-block;
+    margin-top: 10px;
+    color: #d32f2f;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .main { flex: 1; padding: 28px 36px; }
+  .topbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .topbar .welcome { font-size: 13px; color: #555; }
+
+  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .plan-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    padding: 22px;
+    position: relative;
+  }
+  .plan-card .plan-name {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .plan-card .plan-price {
+    font-size: 28px;
+    font-weight: bold;
+    color: #d32f2f;
+    margin-bottom: 16px;
+  }
+  .plan-card .plan-price span {
+    font-size: 13px;
+    color: #888;
+    font-weight: normal;
+  }
+  .plan-card .plan-feature {
+    font-size: 13px;
+    color: #444;
+    padding: 6px 0;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .plan-card .plan-feature:last-of-type { border-bottom: none; }
+  .plan-card .active-count {
+    margin-top: 16px;
+    display: inline-block;
+    background: #e6f4ea;
+    color: #1e7e34;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  .empty { color: #999; font-size: 13px; padding: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="sidebar">
+    <div>
+      <div class="brand">Deploy<span>nix</span></div>
+      <div class="tag">Provider Portal</div>
+    </div>
+    <nav>
+      <a href="{% url 'control_panel' %}">Dashboard</a>
+      <a href="{% url 'jobs_list' %}">Jobs</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_plans_list' %}" class="active">Plans</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
+      <a href="/admin/">Django Admin</a>
+    </nav>
+    <div class="user-box">
+      <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="role">SUPER ADMIN</div>
+      <a class="logout" href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
+    </div>
+
+    <h1>Plans</h1>
+    <div class="subtitle">Subscription plans available to employers.</div>
+
+    {% if plans %}
+    <div class="plans-grid">
+      {% for plan in plans %}
+      <div class="plan-card">
+        <div class="plan-name">{{ plan.name }}</div>
+        <div class="plan-price">₹{{ plan.price }} <span>/ {{ plan.duration_days }} days</span></div>
+        <div class="plan-feature">Job Posting Limit: <strong>{{ plan.job_post_limit }}</strong></div>
+        <div class="plan-feature">Resume View Limit: <strong>{{ plan.resume_view_limit }}</strong></div>
+        <span class="active-count">{{ plan.active_subs_count }} active subscriber{{ plan.active_subs_count|pluralize }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">No plans configured yet.</div>
+    {% endif %}
+
+  </div>
+</div>
+
+</body>
+</html>

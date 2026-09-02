@@ -6,7 +6,6 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 import os
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,8 +76,6 @@ WSGI_APPLICATION = 'deploynix.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-
-
 DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
 
 if DATABASE_URL:
@@ -90,8 +87,8 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('DB_NAME', default='job_portal'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='postgres'),
+            'USER': config('DB_USER', default='deploynix_user'),
+            'PASSWORD': config('DB_PASSWORD', default='samyuktha'),
             'HOST': config('DB_HOST', default='localhost'),
             'PORT': config('DB_PORT', default='5432'),
         }
@@ -144,3 +141,8 @@ SERVER_EMAIL = EMAIL_HOST_USER
 
 EMAIL_TIMEOUT = 15
 
+LOGIN_URL = '/admin/login/'
+WHATSAPP_PHONE_NUMBER_ID = "1289910234204628"
+WHATSAPP_ACCESS_TOKEN = "EAASCNoCpalMBSUzTyFwvWEYuw330KYb4bYmjSQfwKkMrwGovhDyxY9ZBJZBAPXhvtD7HoWJpGxRaPllTodn8X5mr4Py6inruPWdTjyhlTEP2Buzs7ICWlxrZC2zPZA9UM1hvAh6A1erWWjDnLijXMVUDErpL7UCPdCNTFbr4B6GQSDQUXHPU5pPzoVnPtPlk1KL8zg0LfwMzitMxzWMs660eetGCXpcJU6pPx3xIqoKcDP64XTmTcn2ZCJ2XJYvpxYQ786WaXdoKCMjvqcj3YZAOVA3QZDZD"
+WHATSAPP_API_VERSION = "v25.0"
+WHATSAPP_VERIFY_TOKEN = "deploynix_verify_123"
