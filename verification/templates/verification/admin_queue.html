@@ -1,0 +1,66 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Assignment Queue | Deploynix{% endblock %}
+
+{% block navbar %}
+<nav style="background:#0a0a0a; padding: 1rem 2rem; display:flex; justify-content:space-between; align-items:center;">
+    <a href="{% url 'verification:verifier_dashboard' %}" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
+        <img src="{% static 'core/assets/logo.png' %}" alt="Deploynix" style="height:36px;">
+    </a>
+    <div style="display:flex; gap:2rem; align-items:center;">
+        <a href="{% url 'verification:verifier_dashboard' %}" style="color:#fff; text-decoration:none; font-weight:600;">My Cases</a>
+        <a href="{% url 'verification:admin_assignment_queue' %}" style="color:#fff; text-decoration:none; font-weight:600;">Assignment Queue</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <span style="color:#ccc;">Hi, {{ request.user.username }}</span>
+        <a href="{% url 'logout' %}" style="color:#fff; border:1px solid #fff; padding:0.4rem 1rem; border-radius:4px; text-decoration:none;">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.25rem;">
+        Assignment Queue
+    </h1>
+    <p style="color: #666; margin-bottom: 1.5rem;">
+        Unassigned BGV requests waiting for a verifier.
+    </p>
+
+    {% if unassigned %}
+    {% for bgv in unassigned %}
+    <div style="background: #fff; padding: 1.25rem 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <div style="font-weight:600; font-size:1.05rem;">{{ bgv.candidate_name }}</div>
+            <div style="color:#666; font-size:0.85rem;">
+                {{ bgv.application.job.job_title }} — {{ bgv.application.job.company_name }}
+            </div>
+            <div style="color:#aaa; font-size:0.75rem; margin-top:0.25rem;">
+                Requested {{ bgv.created_at|date:"d M Y" }}
+            </div>
+        </div>
+        <form method="post" action="{% url 'verification:admin_assign_verifier' bgv.id %}" style="display:flex; gap:0.5rem; align-items:center;">
+            {% csrf_token %}
+            <select name="verifier_id" required style="padding:0.4rem 0.6rem; border-radius:4px; border:1px solid #ccc;">
+                <option value="" disabled selected>Assign to...</option>
+                {% for verifier in verifiers %}
+                <option value="{{ verifier.id }}">{{ verifier.user.username }} ({{ verifier.active_case_count }} active)</option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                style="background:#0a0a0a; color:#fff; border:none; padding:0.45rem 1rem; border-radius:4px; cursor:pointer; font-size:0.85rem;">
+                Assign
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="background: #fff; padding: 2rem; text-align: center; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <p style="color: #888;">No unassigned cases right now.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
