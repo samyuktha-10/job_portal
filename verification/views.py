@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
@@ -20,6 +21,30 @@ def is_verifier_or_admin(user):
 
 def is_admin(user):
     return hasattr(user, "verifier_profile") and user.verifier_profile.role == "admin"
+
+
+# ---------- Verifier / BGV staff login ----------
+
+def verifier_login(request):
+    """Login page for the background-verification team (verifiers + BGV admins)."""
+    if request.user.is_authenticated and is_verifier_or_admin(request.user):
+        return redirect("verification:verifier_dashboard")
+
+    error = None
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+
+        if user is None:
+            error = "Invalid username or password."
+        elif not is_verifier_or_admin(user):
+            error = "This login is for verification staff only."
+        else:
+            login(request, user)
+            return redirect("verification:verifier_dashboard")
+
+    return render(request, "verification/verifier_login.html", {"error": error})
 
 
 # ---------- Company-facing views ----------
@@ -77,24 +102,19 @@ def company_bgv_status(request, application_id):
 def company_bgv_overview(request):
     """Dedicated sidebar page: all BGV requests across all of this company's job postings."""
     status_filter = request.GET.get("status")
-    qs = VerificationRequest.objects.filter(
+    base_qs = VerificationRequest.objects.filter(
         application__job__posted_by=request.user
     ).select_related("application", "application__job")
 
-    if status_filter:
+    qs = base_qs
+    if status_filter in ("not_started", "in_progress", "passed", "failed"):
         qs = qs.filter(overall_status=status_filter)
 
     counts = {
-        "all": VerificationRequest.objects.filter(application__job__posted_by=request.user).count(),
-        "in_progress": qs.model.objects.filter(
-            application__job__posted_by=request.user, overall_status="in_progress"
-        ).count(),
-        "passed": qs.model.objects.filter(
-            application__job__posted_by=request.user, overall_status="passed"
-        ).count(),
-        "failed": qs.model.objects.filter(
-            application__job__posted_by=request.user, overall_status="failed"
-        ).count(),
+        "all": base_qs.count(),
+        "in_progress": base_qs.filter(overall_status="in_progress").count(),
+        "passed": base_qs.filter(overall_status="passed").count(),
+        "failed": base_qs.filter(overall_status="failed").count(),
     }
 
     return render(request, "verification/company_overview.html", {
@@ -103,8 +123,8 @@ def company_bgv_overview(request):
 
 
 # ---------- Verifier dashboard ----------
-@login_required
-@user_passes_test(is_verifier_or_admin)
+@login_required(login_url="verification:verifier_login")
+@user_passes_test(is_verifier_or_admin, login_url="verification:verifier_login")
 def verifier_dashboard(request):
     profile = request.user.verifier_profile
     assigned = VerificationRequest.objects.filter(
@@ -113,8 +133,8 @@ def verifier_dashboard(request):
     return render(request, "verification/verifier_dashboard.html", {"requests": assigned})
 
 
-@login_required
-@user_passes_test(is_verifier_or_admin)
+@login_required(login_url="verification:verifier_login")
+@user_passes_test(is_verifier_or_admin, login_url="verification:verifier_login")
 def verifier_step_detail(request, step_id):
     step = get_object_or_404(
         VerificationStep, id=step_id, request__assigned_verifier=request.user.verifier_profile
@@ -134,8 +154,8 @@ def verifier_step_detail(request, step_id):
 
 # ---------- Admin: assignment ----------
 
-@login_required
-@user_passes_test(is_admin)
+@login_required(login_url="verification:verifier_login")
+@user_passes_test(is_admin, login_url="verification:verifier_login")
 def admin_assignment_queue(request):
     unassigned = VerificationRequest.objects.filter(assigned_verifier__isnull=True)
     verifiers = VerifierProfile.objects.filter(role="verifier", is_active=True)
@@ -144,8 +164,8 @@ def admin_assignment_queue(request):
     })
 
 
-@login_required
-@user_passes_test(is_admin)
+@login_required(login_url="verification:verifier_login")
+@user_passes_test(is_admin, login_url="verification:verifier_login")
 @require_POST
 def admin_assign_verifier(request, bgv_id):
     bgv = get_object_or_404(VerificationRequest, id=bgv_id)

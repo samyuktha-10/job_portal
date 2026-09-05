@@ -11,7 +11,7 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
     NOTE: This auto-creates a BGV the instant status becomes 'shortlisted'.
     If you'd rather the company click a 'Request BGV' button manually (recommended,
     since BGV likely costs money), remove this signal and rely only on the
-    `request_bgv` view instead. Keeping this here as an optional auto-trigger path.
+    `request_bgv` view instead.
     """
     if instance.status != "shortlisted":
         return
@@ -31,6 +31,3 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
             else VerificationStep.Method.MANUAL
         )
         VerificationStep.objects.create(request=request, step_type=step_type, method=method)
-
-    # TODO: send Notification (you already have a Notification model in core!)
-    # to the candidate's user account asking them to give consent + upload docs.

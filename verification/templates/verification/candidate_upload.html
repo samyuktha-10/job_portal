@@ -4,77 +4,82 @@
 {% block title %}Background Verification | Deploynix{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+<div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
 
-    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.25rem;">
-        Background Verification
-    </h1>
-    <p style="color: #666; margin-bottom: 1.5rem;">
-        For your application to <strong>{{ bgv.application.job.job_title }}</strong> at
-        {{ bgv.application.job.company_name }}.
-    </p>
+    <div style="max-width: 800px; margin: 0 auto;">
 
-    {% if not bgv.candidate_consent_given %}
-    <div style="background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Consent Required</h2>
-        <p style="color: #555; margin-bottom: 1.5rem; line-height: 1.6;">
-            Before we begin, we need your consent to run a background verification check.
-            This includes identity, education, employment history, address, and criminal
-            record checks, carried out solely for the purpose of this job application.
-            Your documents will be handled securely and shared only with authorized reviewers.
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color:#ffffff; margin-bottom: 0.25rem;">
+            Background Verification
+        </h1>
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            For your application to <strong style="color:#e2e8f0;">{{ bgv.application.job.job_title }}</strong> at
+            {{ bgv.application.job.company_name }}.
         </p>
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" name="give_consent" value="1"
-                style="background:#0a0a0a; color:#fff; padding:0.75rem 1.5rem; border:none; border-radius:4px; cursor:pointer; font-weight:600;">
-                I Consent to Background Verification
-            </button>
-        </form>
-    </div>
-    {% else %}
 
-    <p style="margin-bottom: 1.5rem; color: #0a0a0a; font-weight: 600;">
-        Consent given on {{ bgv.candidate_consent_at|date:"d M Y, h:i A" }}. Please upload
-        supporting documents for each check below.
-    </p>
-
-    {% for step in steps %}
-    <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
-            <h3 style="font-size: 1.05rem; margin: 0;">{{ step.get_step_type_display }}</h3>
-            <span style="padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem;
-                {% if step.status == 'verified' %}background:#dcfce7; color:#166534;
-                {% elif step.status == 'rejected' %}background:#fee2e2; color:#991b1b;
-                {% elif step.status == 'in_review' %}background:#dbeafe; color:#1e40af;
-                {% else %}background:#f3f4f6; color:#374151;{% endif %}">
-                {{ step.get_status_display }}
-            </span>
+        {% if not bgv.candidate_consent_given %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 2rem; border-radius: 12px;">
+            <h2 style="font-size: 1.2rem; color:#e2e8f0; margin-bottom: 1rem;">Consent Required</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.6;">
+                Before we begin, we need your consent to run a background verification check.
+                This includes identity, education, employment history, address, and criminal
+                record checks, carried out solely for the purpose of this job application.
+                Your documents will be handled securely and shared only with authorized reviewers.
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="give_consent" value="1"
+                    style="background:#dc2626; color:#fff; padding:0.75rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600;"
+                    onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                    I Consent to Background Verification
+                </button>
+            </form>
         </div>
-
-        {% if step.documents.all %}
-        <ul style="margin: 0 0 0.75rem 0; padding-left: 1.2rem; color:#555; font-size: 0.9rem;">
-            {% for doc in step.documents.all %}
-            <li>{{ doc.file.name|slice:"-40:" }} — uploaded {{ doc.uploaded_at|date:"d M Y" }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-
-        {% if step.status == 'pending' or step.status == 'rejected' %}
-        <form method="post" enctype="multipart/form-data" style="display:flex; gap:0.75rem; align-items:center;">
-            {% csrf_token %}
-            <input type="hidden" name="upload_step_id" value="{{ step.id }}">
-            <input type="file" name="document" required style="flex:1;">
-            <button type="submit"
-                style="background:#0a0a0a; color:#fff; padding:0.5rem 1rem; border:none; border-radius:4px; cursor:pointer; font-size: 0.85rem;">
-                Upload
-            </button>
-        </form>
         {% else %}
-        <p style="color:#888; font-size: 0.85rem; margin:0;">No further action needed for this check.</p>
+
+        <p style="margin-bottom: 1.5rem; color: #4ade80; font-weight: 600;">
+            &#10003; Consent given on {{ bgv.candidate_consent_at|date:"d M Y, h:i A" }}. Please upload
+            supporting documents for each check below.
+        </p>
+
+        {% for step in steps %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1.05rem; margin: 0; color:#e2e8f0;">{{ step.get_step_type_display }}</h3>
+                <span style="padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem;
+                    {% if step.status == 'verified' %}background:#052e16; color:#4ade80;
+                    {% elif step.status == 'rejected' %}background:#450a0a; color:#f87171;
+                    {% elif step.status == 'in_review' %}background:#172554; color:#93c5fd;
+                    {% else %}background:#1e293b; color:#cbd5e1;{% endif %}">
+                    {{ step.get_status_display }}
+                </span>
+            </div>
+
+            {% if step.documents.all %}
+            <ul style="margin: 0 0 0.75rem 0; padding-left: 1.2rem; color:#94a3b8; font-size: 0.9rem;">
+                {% for doc in step.documents.all %}
+                <li>{{ doc.file.name|slice:"-40:" }} — uploaded {{ doc.uploaded_at|date:"d M Y" }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if step.status == 'pending' or step.status == 'rejected' %}
+            <form method="post" enctype="multipart/form-data" style="display:flex; gap:0.75rem; align-items:center;">
+                {% csrf_token %}
+                <input type="hidden" name="upload_step_id" value="{{ step.id }}">
+                <input type="file" name="document" required style="flex:1; color:#94a3b8; font-size:0.85rem;">
+                <button type="submit"
+                    style="background:#dc2626; color:#fff; padding:0.5rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size: 0.85rem; font-weight:600;"
+                    onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                    Upload
+                </button>
+            </form>
+            {% else %}
+            <p style="color:#64748b; font-size: 0.85rem; margin:0;">No further action needed for this check.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
         {% endif %}
     </div>
-    {% endfor %}
-
-    {% endif %}
 </div>
 {% endblock %}

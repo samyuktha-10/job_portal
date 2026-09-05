@@ -5,16 +5,16 @@ from .models import Job, JobApplication, JobSeekerProfile, Profile
 
 
 class JobSeekerSignupLoginTests(TestCase):
-    def test_new_username_creates_account_and_logs_in(self):
+    def test_new_username_creates_pending_otp_signup(self):
+        # First-time login with a username + email now goes through email OTP.
         response = self.client.post(reverse('job_seeker_login'), {
             'username': 'newseeker@test.com',
+            'email': 'newseeker@test.com',
             'password': 'TestPass123!',
         })
-        self.assertEqual(User.objects.filter(username='newseeker@test.com').count(), 1)
-        user = User.objects.get(username='newseeker@test.com')
-        self.assertTrue(JobSeekerProfile.objects.filter(user=user).exists())
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('create_profile'))
+        self.assertRedirects(response, reverse('verify_signup_otp'))
+        from .models import JobSeekerSignupOTP
+        self.assertTrue(JobSeekerSignupOTP.objects.filter(username='newseeker@test.com').exists())
         
     def test_existing_username_wrong_password_shows_error(self):
         user = User.objects.create_user(username='existing1', password='CorrectPass123!')
@@ -44,8 +44,9 @@ class EmployerLoginTests(TestCase):
             'password': 'TestPass123!',
             'company_name': 'Test Co',
         })
-        self.assertTrue(User.objects.filter(username='newcompany@test.com').exists())
-        user = User.objects.get(username='newcompany@test.com')
+        # Employer username is a slug generated from the company name.
+        user = User.objects.get(email='newcompany@test.com')
+        self.assertTrue(user.username.startswith('test-co'))
         self.assertTrue(Profile.objects.filter(user=user, is_employer=True).exists())
         self.assertRedirects(response, reverse('employer_dashboard'))
 

@@ -49,6 +49,9 @@
         {% else %}
         <a href="{% url 'company_profile' %}" class="text-sm hover:text-red-400">Hi, {{ user.username }}</a>
         {% endif %}
+        {% if user.is_superuser %}
+        <a href="{% url 'control_panel' %}" class="hover:text-red-400 text-sm mr-2">Admin Panel</a>
+        {% endif %}
         <a href="{% url 'logout' %}" class="border border-white px-4 py-2 rounded text-sm hover:text-red-400">Logout</a>
         {% else %}
         <a href="{% url 'employer_login' %}" class="border border-white px-4 py-2 rounded text-sm">For Employers</a>

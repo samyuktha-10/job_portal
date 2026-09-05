@@ -10,6 +10,7 @@ urlpatterns = [
     path("company/application/<int:application_id>/request/", views.request_bgv, name="request_bgv"),
 
     # Verifier
+    path("staff/login/", views.verifier_login, name="verifier_login"),
     path("staff/verifier/", views.verifier_dashboard, name="verifier_dashboard"),
     path("staff/verifier/step/<int:step_id>/", views.verifier_step_detail, name="verifier_step_detail"),
 

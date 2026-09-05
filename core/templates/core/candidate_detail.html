@@ -22,6 +22,39 @@
             {% if application.display_resume %}
             <div><a href="{{ application.display_resume.url }}" target="_blank" class="dashboard-action-btn" style="display:inline-block; width:auto;">View Resume 📄</a></div>
             {% endif %}
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f3f4f6;">
+                <strong>Background Verification:</strong>
+                {% if application.verification_request %}
+                    <div style="margin-top: 0.5rem;">
+                        {% if application.verification_request.overall_status == 'passed' %}
+                            <span style="color: #16a34a; font-weight: 600;">✓ Verified (Passed)</span>
+                        {% elif application.verification_request.overall_status == 'failed' %}
+                            <span style="color: #dc2626; font-weight: 600;">✕ Failed</span>
+                        {% elif application.verification_request.overall_status == 'in_progress' %}
+                            <span style="color: #7c3aed; font-weight: 600;">In Progress</span>
+                        {% else %}
+                            <span style="color: #d97706; font-weight: 600;">Not Started</span>
+                        {% endif %}
+                        <p style="color: #6b7280; font-size: 0.85rem; margin-top: 0.25rem;">
+                            Requested on {{ application.verification_request.created_at|date:"d M Y" }}
+                        </p>
+                        <a href="{% url 'verification:company_bgv_status' application.id %}" class="dashboard-action-btn" style="display:inline-block; width:auto; margin-top: 0.5rem;">
+                            View BGV Status →
+                        </a>
+                    </div>
+                {% else %}
+                    <form method="post" action="{% url 'verification:request_bgv' application.id %}" style="margin-top: 0.5rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="dashboard-action-btn" style="display:inline-block; width:auto; background: #dc2626; color: white; border: none; cursor: pointer;">
+                            Request Background Verification
+                        </button>
+                    </form>
+                    <p style="color: #9ca3af; font-size: 0.8rem; margin-top: 0.25rem;">
+                        (The candidate must be shortlisted before a BGV can be requested.)
+                    </p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

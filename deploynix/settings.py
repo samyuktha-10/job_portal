@@ -77,6 +77,8 @@ WSGI_APPLICATION = 'deploynix.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+
 DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
 
 if DATABASE_URL:
@@ -88,8 +90,8 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('DB_NAME', default='job_portal'),
-            'USER': config('DB_USER', default='deploynix_user'),
-            'PASSWORD': config('DB_PASSWORD', default='samyuktha'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='postgres'),
             'HOST': config('DB_HOST', default='localhost'),
             'PORT': config('DB_PORT', default='5432'),
         }
@@ -120,11 +122,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+PROTECTED_MEDIA_ROOT = BASE_DIR / 'protected_media'
 
 # Razorpay
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
-SUBSCRIPTION_ENABLED = False
+SUBSCRIPTION_ENABLED = True  # Set to True to enable subscription feature
 
 # Email configuration (Gmail SMTP)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -137,13 +140,22 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') or config('EMAIL_HOST_USER', default='devisanjai2004@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD') or config('EMAIL_HOST_PASSWORD', default='')
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'no-reply@deploynix.in'
+SERVER_EMAIL = EMAIL_HOST_USER or 'no-reply@deploynix.in'
 
 EMAIL_TIMEOUT = 15
-
 LOGIN_URL = '/admin/login/'
-WHATSAPP_PHONE_NUMBER_ID = "1289910234204628"
-WHATSAPP_ACCESS_TOKEN = "EAASCNoCpalMBSUzTyFwvWEYuw330KYb4bYmjSQfwKkMrwGovhDyxY9ZBJZBAPXhvtD7HoWJpGxRaPllTodn8X5mr4Py6inruPWdTjyhlTEP2Buzs7ICWlxrZC2zPZA9UM1hvAh6A1erWWjDnLijXMVUDErpL7UCPdCNTFbr4B6GQSDQUXHPU5pPzoVnPtPlk1KL8zg0LfwMzitMxzWMs660eetGCXpcJU6pPx3xIqoKcDP64XTmTcn2ZCJ2XJYvpxYQ786WaXdoKCMjvqcj3YZAOVA3QZDZD"
-WHATSAPP_API_VERSION = "v25.0"
-WHATSAPP_VERIFY_TOKEN = "deploynix_verify_123"
+
+#cookies timing -------------------------------------------------------------------------------------------------------------
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 28800
+
+# WhatsApp Business API (used by core/whatsapp/client.py)
+# NOTE: never commit real tokens - keep them in environment variables.
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID') or config('WHATSAPP_PHONE_NUMBER_ID', default='')
+WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN') or config('WHATSAPP_ACCESS_TOKEN', default='')
+WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', default='v25.0')
+WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN') or config('WHATSAPP_VERIFY_TOKEN', default='')
+
+# Background verification - DigiLocker / vendor API key (verification app)
+DIGILOCKER_API_KEY = os.environ.get('DIGILOCKER_API_KEY') or config('DIGILOCKER_API_KEY', default='')

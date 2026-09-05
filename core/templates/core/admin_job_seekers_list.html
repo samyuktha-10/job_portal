@@ -123,6 +123,16 @@
   }
   .badge.active { background: #e6f4ea; color: #1e7e34; }
   .badge.inactive { background: #fdecea; color: #b3261e; }
+  .ban-btn {
+    padding: 5px 12px;
+    border: 1px solid #d32f2f;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #fff;
+    color: #d32f2f;
+  }
+  .ban-btn:hover { background: #d32f2f; color: #fff; }
   .empty { color: #999; font-size: 13px; padding: 16px 0; }
 
   .pagination {
@@ -159,8 +169,8 @@
       <a href="{% url 'admin_jobs_list' %}">Jobs</a>
       <a href="{% url 'admin_employers_list' %}">Employers</a>
       <a href="{% url 'admin_job_seekers_list' %}" class="active">Job Seekers</a>
-      <a href="#">Subscriptions</a>
-      <a href="#">Inquiries</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
       <a href="/admin/">Django Admin</a>
     </nav>
     <div class="user-box">
@@ -193,6 +203,7 @@
           <th>Applications</th>
           <th>Status</th>
           <th>Joined</th>
+          <th>Actions</th>
         </tr>
         {% for row in page_obj %}
         <tr>
@@ -209,6 +220,13 @@
             {% endif %}
           </td>
           <td>{{ row.joined|date:"d M Y" }}</td>
+          <td>
+            <form method="post" action="{% url 'admin_user_toggle_active' row.user_id %}" onsubmit="return confirm('{{ row.is_active|yesno:"Ban,Reactivate" }} this account?');">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'admin_job_seekers_list' %}">
+              <button type="submit" class="ban-btn">{{ row.is_active|yesno:"Ban,Reactivate" }}</button>
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </table>

@@ -4,63 +4,67 @@
 {% block title %}Assignment Queue | Deploynix{% endblock %}
 
 {% block navbar %}
-<nav style="background:#0a0a0a; padding: 1rem 2rem; display:flex; justify-content:space-between; align-items:center;">
+<nav style="background:#030619; border-bottom:1px solid #1e293b; padding: 0.9rem 2rem; display:flex; justify-content:space-between; align-items:center;">
     <a href="{% url 'verification:verifier_dashboard' %}" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
         <img src="{% static 'core/assets/logo.png' %}" alt="Deploynix" style="height:36px;">
     </a>
     <div style="display:flex; gap:2rem; align-items:center;">
-        <a href="{% url 'verification:verifier_dashboard' %}" style="color:#fff; text-decoration:none; font-weight:600;">My Cases</a>
-        <a href="{% url 'verification:admin_assignment_queue' %}" style="color:#fff; text-decoration:none; font-weight:600;">Assignment Queue</a>
+        <a href="{% url 'verification:verifier_dashboard' %}" style="color:#94a3b8; text-decoration:none; font-weight:600;">My Cases</a>
+        <a href="{% url 'verification:admin_assignment_queue' %}" style="color:#ffffff; text-decoration:none; font-weight:600; border-bottom:2px solid #dc2626; padding-bottom:2px;">Assignment Queue</a>
     </div>
     <div style="display:flex; align-items:center; gap:1rem;">
-        <span style="color:#ccc;">Hi, {{ request.user.username }}</span>
-        <a href="{% url 'logout' %}" style="color:#fff; border:1px solid #fff; padding:0.4rem 1rem; border-radius:4px; text-decoration:none;">Logout</a>
+        <span style="color:#cbd5e1;">Hi, {{ request.user.username }}</span>
+        <a href="{% url 'logout' %}" style="color:#e2e8f0; border:1px solid #273449; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.85rem;">Logout</a>
     </div>
 </nav>
 {% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+<div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
 
-    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.25rem;">
-        Assignment Queue
-    </h1>
-    <p style="color: #666; margin-bottom: 1.5rem;">
-        Unassigned BGV requests waiting for a verifier.
-    </p>
+    <div style="max-width: 1000px; margin: 0 auto;">
 
-    {% if unassigned %}
-    {% for bgv in unassigned %}
-    <div style="background: #fff; padding: 1.25rem 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1rem; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-            <div style="font-weight:600; font-size:1.05rem;">{{ bgv.candidate_name }}</div>
-            <div style="color:#666; font-size:0.85rem;">
-                {{ bgv.application.job.job_title }} — {{ bgv.application.job.company_name }}
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 1.9rem; color:#ffffff; margin-bottom: 0.25rem;">
+            Assignment Queue
+        </h1>
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            Unassigned BGV requests waiting for a verifier.
+        </p>
+
+        {% if unassigned %}
+        {% for bgv in unassigned %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.25rem 1.5rem; border-radius: 12px; margin-bottom: 1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <div>
+                <div style="font-weight:600; font-size:1.05rem; color:#f1f5f9;">{{ bgv.candidate_name }}</div>
+                <div style="color:#94a3b8; font-size:0.85rem;">
+                    {{ bgv.application.job.job_title }} — {{ bgv.application.job.company_name }}
+                </div>
+                <div style="color:#64748b; font-size:0.75rem; margin-top:0.25rem;">
+                    Requested {{ bgv.created_at|date:"d M Y" }}
+                </div>
             </div>
-            <div style="color:#aaa; font-size:0.75rem; margin-top:0.25rem;">
-                Requested {{ bgv.created_at|date:"d M Y" }}
-            </div>
+            <form method="post" action="{% url 'verification:admin_assign_verifier' bgv.id %}" style="display:flex; gap:0.5rem; align-items:center;">
+                {% csrf_token %}
+                <select name="verifier_id" required style="padding:0.45rem 0.6rem; border-radius:8px; background:#030619; color:#e2e8f0; border:1px solid #273449; font-size:0.85rem;">
+                    <option value="" disabled selected>Assign to...</option>
+                    {% for verifier in verifiers %}
+                    <option value="{{ verifier.id }}">{{ verifier.user.username }} ({{ verifier.active_case_count }} active)</option>
+                    {% endfor %}
+                </select>
+                <button type="submit"
+                    style="background:#dc2626; color:#fff; border:none; padding:0.5rem 1.1rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;"
+                    onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                    Assign
+                </button>
+            </form>
         </div>
-        <form method="post" action="{% url 'verification:admin_assign_verifier' bgv.id %}" style="display:flex; gap:0.5rem; align-items:center;">
-            {% csrf_token %}
-            <select name="verifier_id" required style="padding:0.4rem 0.6rem; border-radius:4px; border:1px solid #ccc;">
-                <option value="" disabled selected>Assign to...</option>
-                {% for verifier in verifiers %}
-                <option value="{{ verifier.id }}">{{ verifier.user.username }} ({{ verifier.active_case_count }} active)</option>
-                {% endfor %}
-            </select>
-            <button type="submit"
-                style="background:#0a0a0a; color:#fff; border:none; padding:0.45rem 1rem; border-radius:4px; cursor:pointer; font-size:0.85rem;">
-                Assign
-            </button>
-        </form>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div style="background: #fff; padding: 2rem; text-align: center; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <p style="color: #888;">No unassigned cases right now.</p>
-    </div>
-    {% endif %}
+        {% endfor %}
+        {% else %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 3rem 2rem; text-align: center; border-radius: 12px;">
+            <p style="color: #94a3b8; font-size: 1.05rem;">No unassigned cases right now.</p>
+        </div>
+        {% endif %}
 
+    </div>
 </div>
 {% endblock %}
