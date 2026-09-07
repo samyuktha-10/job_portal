@@ -181,7 +181,7 @@ def admin_assign_verifier(request, bgv_id):
     return redirect("verification:admin_assignment_queue")
 
 
-@login_required
+@login_required(login_url="/job-seeker-login/")
 def candidate_upload(request, bgv_id):
     bgv = get_object_or_404(VerificationRequest, id=bgv_id)
 
