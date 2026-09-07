@@ -157,3 +157,25 @@ class EmployerBGVUITests(TestCase):
 
     def test_employer_nav_has_verification_link(self):
         self.assertContains(self.client.get(reverse("jobs_list")), "Verification")
+
+
+class ShortlistNotificationTests(TestCase):
+    def test_shortlist_notifies_candidate_with_upload_link(self):
+        from core.models import Notification
+        emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=emp, is_employer=True, company_name="Acme")
+        job = Job.objects.create(
+            posted_by=emp, job_title="UI/UX", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved", company_name="Acme",
+        )
+        seeker = User.objects.create_user("candidate1", "c1@x.com", "pw")
+        prof = JobSeekerProfile.objects.create(user=seeker, full_name="Sam", phone="9")
+        app = JobApplication.objects.create(job=job, job_seeker_profile=prof)
+        self.client.login(username="boss@x.com", password="pw")
+        self.client.post(reverse("update_application_status", args=[app.id]),
+                         {"status": "shortlisted"})
+        n = Notification.objects.filter(user=seeker, notification_type="general").first()
+        self.assertIsNotNone(n)
+        self.assertIn("/bgv/candidate/", n.link)
+        self.assertIn("/upload/", n.link)
