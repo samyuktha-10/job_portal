@@ -31,6 +31,18 @@ STEP_DOC_TYPES = {
         ("diploma", "Diploma certificate"),
         ("bonafide", "Bonafide certificate"),
     ],
+    "identity": [
+        ("aadhaar", "Aadhaar card"),
+        ("passport", "Passport"),
+        ("driving_license", "Driving licence"),
+        ("voter_id", "Voter ID"),
+        ("pan_card", "PAN card"),
+    ],
+    "criminal": [
+        ("police_clearance", "Police clearance certificate"),
+        ("affidavit", "Self-declaration affidavit"),
+        ("character_certificate", "Character certificate"),
+    ],
 }
 GENERIC_DOC_TYPE = ("document", "Supporting document")
 
@@ -103,6 +115,15 @@ class VerificationRequest(models.Model):
     )
     employment_is_fresher = models.BooleanField(
         default=False, help_text="Candidate declared no prior employment (fresher)."
+    )
+    candidate_identity = models.TextField(
+        blank=True, help_text="Declared identity details (name / DOB / ID number) as on the identity document."
+    )
+    candidate_criminal = models.TextField(
+        blank=True, help_text="Disclosed criminal cases, if any. Blank when the candidate declares a clean record."
+    )
+    criminal_declares_clean = models.BooleanField(
+        default=False, help_text="Candidate declares no pending/convicted criminal cases."
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

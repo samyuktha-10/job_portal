@@ -122,6 +122,40 @@
             </form>
             {% endif %}
 
+            {% if step.step_type == 'identity' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared identity details (full name, date of birth, ID number &mdash; exactly as on your ID document)
+                </label>
+                <textarea name="candidate_identity" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_identity }}</textarea>
+                <button type="submit" name="save_identity" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save identity details
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.step_type == 'criminal' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Disclose any pending or convicted criminal cases (leave blank if none)
+                </label>
+                <textarea name="candidate_criminal" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_criminal }}</textarea>
+                <label style="display:flex; gap:0.5rem; align-items:center; margin:0.55rem 0 0 0; font-size:0.85rem; color:#cbd5e1;">
+                    <input type="checkbox" name="declares_clean" {% if bgv.criminal_declares_clean %}checked{% endif %}>
+                    I declare that I have no pending or convicted criminal cases
+                </label>
+                <button type="submit" name="save_criminal" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save declaration
+                </button>
+            </form>
+            {% endif %}
+
             {% if step.status == 'pending' or step.status == 'rejected' %}
             <form method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:0.75rem;">
                 {% csrf_token %}

@@ -77,10 +77,14 @@ class DocTypeUploadTests(TestCase):
         self._post(self._step("address"), "passport", big)
         self.assertEqual(VerificationDocument.objects.count(), 0)
 
-    def test_generic_step_still_accepts_plain_document(self):
-        # steps without a specific list (identity/criminal) keep the generic fallback
-        self._post(self._step("criminal"), "document", small_pdf("cert.pdf"))
-        self.assertEqual(VerificationDocument.objects.get(step=self._step("criminal")).doc_type, "document")
+    def test_all_five_steps_have_specific_doc_types(self):
+        for st in ("identity", "education", "employment", "address", "criminal"):
+            self.assertNotIn("document", dict(self._step(st).allowed_doc_types))
+
+    def test_model_generic_fallback_for_unknown_step_type(self):
+        step = VerificationStep(request=self.bgv, step_type="criminal")
+        step.step_type = "some_future_check"  # not in STEP_DOC_TYPES
+        self.assertIn("document", dict(step.allowed_doc_types))
 
     def test_candidate_saves_declared_address(self):
         r = self.client.post(self.url, {
@@ -305,3 +309,66 @@ class EducationEmploymentTests(TestCase):
     def test_my_applications_shows_bgv_button(self):
         r = self.client.get(reverse("my_applications"))
         self.assertContains(r, "Background verification")
+
+
+class IdentityCriminalTests(TestCase):
+    def setUp(self):
+        self.emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=self.emp, is_employer=True, company_name="Acme")
+        self.job = Job.objects.create(
+            posted_by=self.emp, job_title="UI/UX", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved", company_name="Acme",
+        )
+        self.seeker = User.objects.create_user("candidate1", "c1@x.com", "pw")
+        prof = JobSeekerProfile.objects.create(user=self.seeker, full_name="Sam", phone="9")
+        self.app = JobApplication.objects.create(job=self.job, job_seeker_profile=prof)
+        self.bgv = VerificationRequest.objects.create(
+            application=self.app, requested_by=self.emp, candidate_consent_given=True)
+        for st in ("identity", "education", "employment", "address", "criminal"):
+            VerificationStep.objects.create(request=self.bgv, step_type=st)
+        self.client.login(username="candidate1", password="pw")
+        self.url = reverse("verification:candidate_upload", args=[self.bgv.id])
+
+    def _step(self, t):
+        return VerificationStep.objects.get(request=self.bgv, step_type=t)
+
+    def _verifier_sees(self, step_type, needle):
+        ver = User.objects.create_user("verx", "verx@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.bgv.assigned_verifier = ver.verifier_profile
+        self.bgv.save()
+        self.client.login(username="verx", password="pw")
+        return self.client.get(reverse(
+            "verification:verifier_step_detail", args=[self._step(step_type).id]))
+
+    def test_identity_accepts_aadhaar(self):
+        self.client.post(self.url, {"upload_step_id": self._step("identity").id,
+                                    "doc_type": "aadhaar", "document": small_pdf("aadhaar.pdf")})
+        self.assertEqual(
+            VerificationDocument.objects.get(step=self._step("identity")).doc_type, "aadhaar")
+
+    def test_identity_rejects_payslip(self):
+        self.client.post(self.url, {"upload_step_id": self._step("identity").id,
+                                    "doc_type": "payslip", "document": small_pdf()})
+        self.assertEqual(VerificationDocument.objects.filter(step=self._step("identity")).count(), 0)
+
+    def test_criminal_accepts_police_clearance(self):
+        self.client.post(self.url, {"upload_step_id": self._step("criminal").id,
+                                    "doc_type": "police_clearance", "document": small_pdf("pcc.pdf")})
+        self.assertEqual(
+            VerificationDocument.objects.get(step=self._step("criminal")).doc_type, "police_clearance")
+
+    def test_save_identity_and_verifier_sees_it(self):
+        self.client.post(self.url, {"save_identity": "1",
+                                    "candidate_identity": "Sam K, DOB 01-01-2000, Aadhaar XXXX1234"})
+        self.bgv.refresh_from_db()
+        self.assertIn("Aadhaar XXXX1234", self.bgv.candidate_identity)
+        self.assertContains(self._verifier_sees("identity", "XXXX1234"), "XXXX1234")
+
+    def test_save_criminal_clean_declaration_shows_pill(self):
+        self.client.post(self.url, {"save_criminal": "1", "declares_clean": "on",
+                                    "candidate_criminal": ""})
+        self.bgv.refresh_from_db()
+        self.assertTrue(self.bgv.criminal_declares_clean)
+        self.assertContains(self._verifier_sees("criminal", "clean"), "Declares clean record")

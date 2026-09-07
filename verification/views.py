@@ -233,6 +233,19 @@ def candidate_upload(request, bgv_id):
             messages.info(request, "Declared employment details saved.")
             return redirect("verification:candidate_upload", bgv_id=bgv.id)
 
+        elif "save_identity" in request.POST:
+            bgv.candidate_identity = request.POST.get("candidate_identity", "").strip()
+            bgv.save(update_fields=["candidate_identity", "updated_at"])
+            messages.info(request, "Declared identity details saved.")
+            return redirect("verification:candidate_upload", bgv_id=bgv.id)
+
+        elif "save_criminal" in request.POST:
+            bgv.candidate_criminal = request.POST.get("candidate_criminal", "").strip()
+            bgv.criminal_declares_clean = "declares_clean" in request.POST
+            bgv.save(update_fields=["candidate_criminal", "criminal_declares_clean", "updated_at"])
+            messages.info(request, "Criminal record declaration saved.")
+            return redirect("verification:candidate_upload", bgv_id=bgv.id)
+
         elif "upload_step_id" in request.POST:
             step_id = request.POST.get("upload_step_id")
             step = get_object_or_404(VerificationStep, id=step_id, request=bgv)
