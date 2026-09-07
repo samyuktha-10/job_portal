@@ -22,6 +22,7 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
     request = VerificationRequest.objects.create(
         application=instance,
         requested_by=instance.job.posted_by,
+        candidate_education=(instance.job_seeker_profile.education if instance.job_seeker_profile else ""),
     )
 
     for step_type, _label in VerificationStep.StepType.choices:

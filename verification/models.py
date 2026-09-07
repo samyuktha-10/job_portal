@@ -23,6 +23,14 @@ STEP_DOC_TYPES = {
         ("relieving_letter", "Relieving / experience letter"),
         ("employment_contract", "Current employment contract"),
     ],
+    "education": [
+        ("degree_certificate", "Degree certificate"),
+        ("provisional_certificate", "Provisional certificate"),
+        ("marksheet", "Mark sheets / grade cards"),
+        ("transcript", "Official transcript"),
+        ("diploma", "Diploma certificate"),
+        ("bonafide", "Bonafide certificate"),
+    ],
 }
 GENERIC_DOC_TYPE = ("document", "Supporting document")
 
@@ -86,6 +94,15 @@ class VerificationRequest(models.Model):
     candidate_consent_at = models.DateTimeField(null=True, blank=True)
     candidate_address = models.TextField(
         blank=True, help_text="Declared residential address, matched against the address proof document."
+    )
+    candidate_education = models.TextField(
+        blank=True, help_text="Declared education details, matched against the education documents."
+    )
+    candidate_employment = models.TextField(
+        blank=True, help_text="Declared employment history, matched against the employment documents."
+    )
+    employment_is_fresher = models.BooleanField(
+        default=False, help_text="Candidate declared no prior employment (fresher)."
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

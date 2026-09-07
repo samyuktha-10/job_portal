@@ -35,6 +35,15 @@
             </div>
         </div>
 
+        {% if app.verification_request %}
+        <div>
+            <a href="{% url 'verification:candidate_upload' bgv_id=app.verification_request.id %}"
+               style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
+                &#128203; Background verification: {{ app.verification_request.get_overall_status_display }} &mdash; view / upload documents
+            </a>
+        </div>
+        {% endif %}
+
         <!-- Tracking pipeline -->
         <div style="display: flex; align-items: center; padding: 0.5rem 0;">
             <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">

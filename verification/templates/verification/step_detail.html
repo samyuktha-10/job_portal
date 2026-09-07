@@ -41,13 +41,18 @@
             {% endif %}
         </div>
 
-        {% if step.step_type == 'address' %}
+        {% if step.step_type == 'address' or step.step_type == 'education' or step.step_type == 'employment' %}
         <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
-            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Declared address (candidate-provided)</h2>
-            {% if step.request.candidate_address %}
-            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_address }}</p>
+            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Declared details (candidate-provided)</h2>
+            {% if step.step_type == 'employment' and step.request.employment_is_fresher %}
+            <p style="margin:0 0 0.6rem 0;"><span style="background:#052e16; color:#4ade80; border-radius:999px; padding:0.15rem 0.7rem; font-size:0.75rem;">Fresher &mdash; no prior employment; documents optional</span></p>
+            {% endif %}
+            {% if step.step_type == 'address' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_address|default:"Not provided yet." }}</p>
+            {% elif step.step_type == 'education' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_education|default:"Not provided yet." }}</p>
             {% else %}
-            <p style="margin:0; font-size: 0.9rem; color: #64748b;">Candidate has not provided an address yet.</p>
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_employment|default:"Not provided yet." }}</p>
             {% endif %}
         </div>
         {% endif %}

@@ -42,6 +42,7 @@
         {% if user.jobseeker_profile %}
         <a href="{% url 'my_applications' %}" class="hover:text-red-400 text-sm mr-2">My Applications</a>
         <a href="{% url 'saved_jobs_list' %}" class="hover:text-red-400 text-sm mr-2">Saved Jobs</a>
+        <a href="{% url 'notifications_list' %}" class="hover:text-red-400 text-sm mr-2">Notifications<span id="notif-badge" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:0.05rem 0.45rem; font-size:0.7rem; margin-left:0.3rem;"></span></a>
         <a href="{% url 'ats_checker' %}" class="hover:text-red-400 text-sm mr-2">ATS Checker</a>
 
         

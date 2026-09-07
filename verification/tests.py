@@ -78,9 +78,9 @@ class DocTypeUploadTests(TestCase):
         self.assertEqual(VerificationDocument.objects.count(), 0)
 
     def test_generic_step_still_accepts_plain_document(self):
-        # identity/education/criminal keep the generic fallback
-        self._post(self._step("education"), "document", small_pdf("cert.pdf"))
-        self.assertEqual(VerificationDocument.objects.get(step=self._step("education")).doc_type, "document")
+        # steps without a specific list (identity/criminal) keep the generic fallback
+        self._post(self._step("criminal"), "document", small_pdf("cert.pdf"))
+        self.assertEqual(VerificationDocument.objects.get(step=self._step("criminal")).doc_type, "document")
 
     def test_candidate_saves_declared_address(self):
         r = self.client.post(self.url, {
@@ -228,3 +228,80 @@ class UploadLinkEmailTests(TestCase):
         r = self.client.post(reverse("verification:resend_upload_link", args=[bgv.id]))
         self.assertIn("login", r.url)  # bounced by user_passes_test, no email sent
         self.assertEqual(len(self.mail.outbox), 0)
+
+
+class EducationEmploymentTests(TestCase):
+    def setUp(self):
+        self.emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=self.emp, is_employer=True, company_name="Acme")
+        self.job = Job.objects.create(
+            posted_by=self.emp, job_title="UI/UX", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved", company_name="Acme",
+        )
+        self.seeker = User.objects.create_user("candidate1", "c1@x.com", "pw")
+        self.prof = JobSeekerProfile.objects.create(
+            user=self.seeker, full_name="Sam", phone="9",
+            education="B.E. CSE, Anna University, 2024")
+        self.app = JobApplication.objects.create(job=self.job, job_seeker_profile=self.prof)
+        self.bgv = VerificationRequest.objects.create(
+            application=self.app, requested_by=self.emp, candidate_consent_given=True)
+        for st in ("identity", "education", "employment", "address", "criminal"):
+            VerificationStep.objects.create(request=self.bgv, step_type=st)
+        self.client.login(username="candidate1", password="pw")
+        self.url = reverse("verification:candidate_upload", args=[self.bgv.id])
+
+    def _step(self, t):
+        return VerificationStep.objects.get(request=self.bgv, step_type=t)
+
+    def test_education_accepts_degree_certificate(self):
+        self.client.post(self.url, {"upload_step_id": self._step("education").id,
+                                    "doc_type": "degree_certificate",
+                                    "document": small_pdf("degree.pdf")})
+        doc = VerificationDocument.objects.get(step=self._step("education"))
+        self.assertEqual(doc.doc_type, "degree_certificate")
+
+    def test_education_rejects_employment_doc_type(self):
+        self.client.post(self.url, {"upload_step_id": self._step("education").id,
+                                    "doc_type": "payslip", "document": small_pdf()})
+        self.assertEqual(VerificationDocument.objects.filter(step=self._step("education")).count(), 0)
+
+    def test_save_education_and_verifier_sees_it(self):
+        self.client.post(self.url, {"save_education": "1",
+                                    "candidate_education": "B.E. CSE, Anna University, 2024"})
+        self.bgv.refresh_from_db()
+        self.assertIn("Anna University", self.bgv.candidate_education)
+        ver = User.objects.create_user("ver1", "ver1@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.bgv.assigned_verifier = ver.verifier_profile
+        self.bgv.save()
+        self.client.login(username="ver1", password="pw")
+        r = self.client.get(reverse("verification:verifier_step_detail",
+                                    args=[self._step("education").id]))
+        self.assertContains(r, "Anna University")
+
+    def test_save_employment_fresher_and_verifier_sees_pill(self):
+        self.client.post(self.url, {"save_employment": "1", "is_fresher": "on",
+                                    "candidate_employment": ""})
+        self.bgv.refresh_from_db()
+        self.assertTrue(self.bgv.employment_is_fresher)
+        ver = User.objects.create_user("ver2", "ver2@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.bgv.assigned_verifier = ver.verifier_profile
+        self.bgv.save()
+        self.client.login(username="ver2", password="pw")
+        r = self.client.get(reverse("verification:verifier_step_detail",
+                                    args=[self._step("employment").id]))
+        self.assertContains(r, "Fresher")
+
+    def test_shortlist_prefills_education_from_profile(self):
+        app2 = JobApplication.objects.create(job=self.job, job_seeker_profile=self.prof)
+        self.client.login(username="boss@x.com", password="pw")
+        self.client.post(reverse("update_application_status", args=[app2.id]),
+                         {"status": "shortlisted"})
+        bgv2 = VerificationRequest.objects.get(application=app2)
+        self.assertIn("Anna University", bgv2.candidate_education)
+
+    def test_my_applications_shows_bgv_button(self):
+        r = self.client.get(reverse("my_applications"))
+        self.assertContains(r, "Background verification")
