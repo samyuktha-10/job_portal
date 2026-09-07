@@ -121,6 +121,7 @@
   }
   .badge.approved { background: #e6f4ea; color: #1e7e34; }
   .badge.pending { background: #fff4e0; color: #b8860b; }
+  .badge.rejected { background: #fdecea; color: #b3261e; }
 
   .actions { display: flex; gap: 6px; }
   .actions form { display: inline; }
@@ -132,8 +133,9 @@
     cursor: pointer;
   }
   .btn-approve { background: #1e7e34; color: #fff; }
-  .btn-reject { background: #b8860b; color: #fff; }
-  .btn-delete { background: #b3261e; color: #fff; }
+  .btn-reject { background: #b3261e; color: #fff; }
+  .btn-pending { background: #b8860b; color: #fff; }
+  .btn-delete { background: #555; color: #fff; }
 
   .empty { color: #999; font-size: 13px; padding: 16px 0; }
 
@@ -175,6 +177,7 @@
       <a href="{% url 'admin_plans_list' %}">Plans</a>
       <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
       <a href="/admin/">Django Admin</a>
+          <a href="{% url 'admin_support_settings' %}">Support Contact</a>
     </nav>
     <div class="user-box">
       <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
@@ -189,12 +192,13 @@
         <a href="?" class="{% if not status %}active{% endif %}">All</a>
         <a href="?status=approved" class="{% if status == 'approved' %}active{% endif %}">Approved</a>
         <a href="?status=pending" class="{% if status == 'pending' %}active{% endif %}">Pending</a>
+        <a href="?status=rejected" class="{% if status == 'rejected' %}active{% endif %}">Rejected</a>
       </div>
       <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
     </div>
 
     <h1>Jobs</h1>
-    <div class="subtitle">All job postings on Deploynix.</div>
+    <div class="subtitle">Approve, reject or delete job postings on Deploynix.</div>
 
     <div class="panel">
       {% if page_obj %}
@@ -217,20 +221,34 @@
           <td>{{ job.location }}</td>
           <td>{{ job.views_count }}</td>
           <td>
-            {% if job.is_approved %}
+            {% if job.approval_status == 'approved' %}
               <span class="badge approved">Approved</span>
+            {% elif job.approval_status == 'rejected' %}
+              <span class="badge rejected">Rejected</span>
             {% else %}
               <span class="badge pending">Pending</span>
             {% endif %}
           </td>
           <td>{{ job.posted_at|date:"d M Y" }}</td>
           <td class="actions">
-            <form method="post" action="{% url 'admin_job_toggle_approval' job.id %}">
+            {% if job.approval_status != 'approved' %}
+            <form method="post" action="{% url 'admin_job_set_status' job.id 'approved' %}">
               {% csrf_token %}
-              <button type="submit" class="{% if job.is_approved %}btn-reject{% else %}btn-approve{% endif %}">
-                {% if job.is_approved %}Unapprove{% else %}Approve{% endif %}
-              </button>
+              <button type="submit" class="btn-approve">Approve</button>
             </form>
+            {% endif %}
+            {% if job.approval_status != 'rejected' %}
+            <form method="post" action="{% url 'admin_job_set_status' job.id 'rejected' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-reject">Reject</button>
+            </form>
+            {% endif %}
+            {% if job.approval_status != 'pending' %}
+            <form method="post" action="{% url 'admin_job_set_status' job.id 'pending' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-pending">Mark Pending</button>
+            </form>
+            {% endif %}
             <form method="post" action="{% url 'admin_job_delete' job.id %}" onsubmit="return confirm('Delete this job posting?');">
               {% csrf_token %}
               <button type="submit" class="btn-delete">Delete</button>

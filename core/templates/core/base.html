@@ -1,13 +1,12 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Deploynix{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=100">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap"
         rel="stylesheet">
@@ -17,12 +16,8 @@
         }
     </style>
 </head>
-
 <body>
-
-    {% block navbar %}
     {% include 'core/navbar.html' %}
-    {% endblock %}
 
     {% block content %}
     {% endblock %}
@@ -51,6 +46,7 @@
     </script>
     {% endif %}
 
+{% include "core/chatbot_widget.html" %}
 </body>
 
 </html>

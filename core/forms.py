@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Job, JobApplication, Interview, JobSeekerProfile
-
+#SignUpForm -------------------------------------------------------------------------------------------------
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
@@ -21,7 +21,7 @@ class SignUpForm(forms.ModelForm):
             }),
         }
 
-
+#EmployerLoginForm -------------------------------------------------------------------------------------------------
 class EmployerLoginForm(forms.Form):
     company_name = forms.CharField(
         widget=forms.TextInput(attrs={
@@ -44,6 +44,9 @@ class EmployerLoginForm(forms.Form):
             'autocomplete': 'new-password'
         })
     )
+
+
+#JobSeekerLoginForm -------------------------------------------------------------------------------------------------
 class JobSeekerLoginForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
@@ -58,11 +61,18 @@ class JobSeekerLoginForm(forms.Form):
         })
     )
 
+
+#JobSeekerProfileForm -------------------------------------------------------------------------------------------------
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
-        fields = ['full_name', 'phone', 'location', 'education', 'certificates', 'skills', 'experience', 'preferred_job_type', 'resume', 'whatsapp_opted_in']
+        fields = ['full_name', 'phone', 'location', 'education', 'certificates', 'skills', 'experience', 'preferred_job_type', 'resume', 'is_experienced', 'whatsapp_opted_in']
+        widgets = {
+            'is_experienced': forms.CheckboxInput(attrs={'class': 'w-5 h-5'}),
+            'whatsapp_opted_in': forms.CheckboxInput(attrs={'class': 'w-5 h-5'}),
+        }
         labels = {
+            'is_experienced': 'I have professional work experience (leave unchecked if you are a fresher)',
             'phone': 'Phone / WhatsApp Number',
             'whatsapp_opted_in': 'Send me job alerts & application updates on WhatsApp',
         }
@@ -78,6 +88,8 @@ class JobSeekerProfileForm(forms.ModelForm):
             raise forms.ValidationError("Enter a valid phone number with country code, e.g. +919876543210")
         return '+' + digits
 
+
+#JobSeekerProfileEditForm -------------------------------------------------------------------------------------------------
 class JobPostForm(forms.ModelForm):
     class Meta:
         model = Job
@@ -121,7 +133,7 @@ class JobPostForm(forms.ModelForm):
         }
 
 
-
+#JobApplicationForm -------------------------------------------------------------------------------------------------
 class JobApplicationForm(forms.ModelForm):
     class Meta:
         model = JobApplication
@@ -161,10 +173,11 @@ class JobApplicationForm(forms.ModelForm):
             }),
         }
 
+#EmployerAddCandidateForm -------------------------------------------------------------------------------------------------
 class EmployerAddCandidateForm(forms.ModelForm):
     class Meta:
         model = JobApplication
-        fields = ['job', 'full_name', 'email', 'phone', 'education', 'skills', 'experience', 'resume', 'status']
+        fields = ['job', 'full_name', 'email', 'phone', 'education', 'skills', 'experience', 'resume', 'status', 'source']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -172,6 +185,8 @@ class EmployerAddCandidateForm(forms.ModelForm):
         if user:
             self.fields['job'].queryset = Job.objects.filter(posted_by=user)
 
+
+#InterviewForm -------------------------------------------------------------------------------------------------
 class InterviewForm(forms.ModelForm):
     class Meta:
         model = Interview
@@ -186,6 +201,8 @@ class InterviewForm(forms.ModelForm):
         if user:
             self.fields['application'].queryset = JobApplication.objects.filter(job__posted_by=user)
 
+
+#jobSeekerLoginForm -------------------------------------------------------------------------------------------------
 class JobSeekerLoginForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
@@ -208,6 +225,7 @@ class JobSeekerLoginForm(forms.Form):
     )
 
 
+#OTPVerifyForm -------------------------------------------------------------------------------------------------
 class OTPVerifyForm(forms.Form):
     otp_code = forms.CharField(
         min_length=6,

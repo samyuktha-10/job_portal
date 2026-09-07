@@ -1,0 +1,276 @@
+{% load static %}
+{# ============================================================
+   Deploynix Support Chatbot — floating widget (bottom-right).
+   Included in base.html and dashboard_base.html, so it appears
+   on every public page and every dashboard.
+   ============================================================ #}
+<style>
+  #dnx-chat-btn {
+    position: fixed; right: 22px; bottom: 22px; z-index: 9998;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #e0322f, #b71c1c);
+    color: #fff; border: none; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(224,50,47,.45);
+    font-size: 26px; display: flex; align-items: center; justify-content: center;
+    transition: transform .15s ease;
+  }
+  #dnx-chat-btn:hover { transform: scale(1.08); }
+  #dnx-chat-btn .dnx-pulse {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid #e0322f; animation: dnxpulse 2s infinite;
+  }
+  @keyframes dnxpulse { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  #dnx-chat-panel {
+    position: fixed; right: 22px; bottom: 96px; z-index: 9999;
+    width: 360px; max-width: calc(100vw - 30px); height: 560px; max-height: calc(100vh - 130px);
+    background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0,0,0,.3);
+    display: none; flex-direction: column;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  #dnx-chat-panel.open { display: flex; }
+
+  .dnx-head {
+    background: linear-gradient(135deg, #e0322f, #8e0000);
+    color: #fff; padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dnx-head .avatar {
+    width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center; font-size: 19px;
+  }
+  .dnx-head .titles { flex: 1; min-width: 0; }
+  .dnx-head .titles b { font-size: 14.5px; display: block; }
+  .dnx-head .titles span { font-size: 11px; opacity: .85; }
+  .dnx-head select {
+    background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.35);
+    border-radius: 8px; padding: 4px 6px; font-size: 11.5px; cursor: pointer;
+  }
+  .dnx-head select option { color: #111; }
+  .dnx-head .icon-btn {
+    background: rgba(255,255,255,.15); border: none; color: #fff; border-radius: 8px;
+    width: 30px; height: 30px; cursor: pointer; font-size: 14px;
+  }
+  .dnx-head .icon-btn.off { opacity: .45; }
+
+  #dnx-msgs {
+    flex: 1; overflow-y: auto; padding: 12px;
+    background: #f6f7f9; display: flex; flex-direction: column; gap: 8px;
+  }
+  .dnx-msg { max-width: 85%; padding: 9px 12px; border-radius: 14px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; }
+  .dnx-msg.bot { background: #fff; border: 1px solid #e3e6ea; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .dnx-msg.me { background: #e0322f; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .dnx-typing { align-self: flex-start; color: #8a919b; font-size: 12px; padding: 2px 6px; }
+
+  #dnx-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; background: #f6f7f9; }
+  #dnx-chips button {
+    background: #fff; border: 1px solid #e0322f; color: #e0322f; border-radius: 999px;
+    padding: 4px 10px; font-size: 11.5px; cursor: pointer;
+  }
+  #dnx-chips button:hover { background: #e0322f; color: #fff; }
+
+  #dnx-contact {
+    display: flex; gap: 8px; padding: 8px 12px; background: #fff; border-top: 1px solid #eceef1;
+  }
+  #dnx-contact a {
+    flex: 1; text-align: center; text-decoration: none; font-size: 12.5px; font-weight: 600;
+    padding: 8px 4px; border-radius: 10px;
+  }
+  #dnx-contact .call { background: #e0322f; color: #fff; }
+  #dnx-contact .wa { background: #25d366; color: #fff; }
+  #dnx-contact .mail { background: #eef1f4; color: #333; }
+  #dnx-hours { padding: 2px 12px 6px; background: #fff; color: #8a919b; font-size: 10.5px; text-align: center; }
+
+  .dnx-input-row { display: flex; gap: 8px; padding: 10px 12px; background: #fff; border-top: 1px solid #eceef1; }
+  .dnx-input-row input {
+    flex: 1; border: 1px solid #d6dade; border-radius: 10px; padding: 9px 12px;
+    font-size: 13.5px; outline: none;
+  }
+  .dnx-input-row input:focus { border-color: #e0322f; }
+  .dnx-input-row .mic {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid #d6dade;
+    background: #fff; cursor: pointer; font-size: 16px;
+  }
+  .dnx-input-row .mic.listening { background: #e0322f; color: #fff; border-color: #e0322f; animation: dnxpulse2 1s infinite; }
+  @keyframes dnxpulse2 { 50% { opacity: .6; } }
+  .dnx-input-row .send {
+    width: 38px; height: 38px; border-radius: 10px; border: none;
+    background: #e0322f; color: #fff; cursor: pointer; font-size: 16px;
+  }
+</style>
+
+<button id="dnx-chat-btn" type="button" aria-label="Open support chat">
+  <span class="dnx-pulse"></span>💬
+</button>
+
+<div id="dnx-chat-panel" role="dialog" aria-label="Deploynix support chat">
+  <div class="dnx-head">
+    <div class="avatar">🤖</div>
+    <div class="titles">
+      <b>Deploynix Support</b>
+      <span id="dnx-status">Online — ask or speak</span>
+    </div>
+    <select id="dnx-lang" title="Language">
+      <option value="en-IN">English</option>
+      <option value="ta-IN">தமிழ்</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="te-IN">తెలుగు</option>
+      <option value="kn-IN">ಕನ್ನಡ</option>
+      <option value="ml-IN">മലയാളം</option>
+      <option value="mr-IN">मराठी</option>
+      <option value="bn-IN">বাংলা</option>
+      <option value="gu-IN">ગુજરાતી</option>
+    </select>
+    <button class="icon-btn" id="dnx-speak-toggle" title="Speak replies aloud">🔊</button>
+    <button class="icon-btn" id="dnx-close" title="Close">✕</button>
+  </div>
+
+  <div id="dnx-msgs"></div>
+  <div id="dnx-chips"></div>
+
+  <div id="dnx-contact">
+    {% if support_contact.is_call_enabled and support_contact.phone_number %}
+      <a class="call" href="{{ support_contact.tel_link }}">📞 Call</a>
+    {% endif %}
+    {% if support_contact.is_message_enabled and support_contact.whatsapp_number %}
+      <a class="wa" href="{{ support_contact.wa_link }}" target="_blank" rel="noopener">💬 WhatsApp</a>
+    {% endif %}
+    {% if support_contact.email %}
+      <a class="mail" href="mailto:{{ support_contact.email }}">✉ Email</a>
+    {% endif %}
+  </div>
+  {% if support_contact.support_hours %}<div id="dnx-hours">Support hours: {{ support_contact.support_hours }}</div>{% endif %}
+
+  <div class="dnx-input-row">
+    <button class="mic" id="dnx-mic" type="button" title="Speak your question">🎤</button>
+    <input id="dnx-input" type="text" placeholder="Type your question…" autocomplete="off">
+    <button class="send" id="dnx-send" type="button" title="Send">➤</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('dnx-chat-btn');
+  var panel = document.getElementById('dnx-chat-panel');
+  var msgs = document.getElementById('dnx-msgs');
+  var input = document.getElementById('dnx-input');
+  var langSel = document.getElementById('dnx-lang');
+  var speakBtn = document.getElementById('dnx-speak-toggle');
+  var micBtn = document.getElementById('dnx-mic');
+  var chips = document.getElementById('dnx-chips');
+  var started = false;
+
+  var speakOn = localStorage.getItem('dnx_speak') !== 'off';
+  langSel.value = localStorage.getItem('dnx_lang') || 'en-IN';
+  speakBtn.classList.toggle('off', !speakOn);
+
+  function dnxCookie(name) {
+    var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : '';
+  }
+
+  function addMsg(text, who) {
+    var d = document.createElement('div');
+    d.className = 'dnx-msg ' + who;
+    d.textContent = text;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  function setChips(list) {
+    chips.innerHTML = '';
+    (list || []).forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t;
+      b.onclick = function () { send(t); };
+      chips.appendChild(b);
+    });
+  }
+
+  function speak(text) {
+    if (!speakOn || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = langSel.value;
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+
+  function send(text) {
+    text = (text || input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    addMsg(text, 'me');
+    var typing = addMsg('typing…', 'dnx-typing');
+    fetch('/support/chat/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': dnxCookie('csrftoken')
+      },
+      body: JSON.stringify({ message: text, lang: langSel.value })
+    }).then(function (r) { return r.json(); }).then(function (data) {
+      typing.remove();
+      if (data.error) { addMsg('Sorry, something went wrong. Please try again.', 'bot'); return; }
+      addMsg(data.reply, 'bot');
+      setChips(data.suggestions);
+      speak(data.reply);
+    }).catch(function () {
+      typing.remove();
+      addMsg('Network error — please check your connection.', 'bot');
+    });
+  }
+
+  function greet() {
+    if (started) return;
+    started = true;
+    var hello = langSel.value === 'ta-IN'
+      ? 'வணக்கம்! நான் உங்கள் டிப்ளாய்னிக்ஸ் உதவியாளர். எப்படி உதவட்டும்?'
+      : (langSel.value === 'hi-IN'
+        ? 'नमस्ते! मैं आपका डिप्लॉयनिक्स सहायक हूँ। मैं आपकी क्या मदद करूँ?'
+        : 'Hello! I am your Deploynix support assistant. How can I help you?');
+    addMsg(hello, 'bot');
+    send('hello');
+  }
+
+  btn.onclick = function () { panel.classList.toggle('open'); if (panel.classList.contains('open')) { greet(); input.focus(); } };
+  document.getElementById('dnx-close').onclick = function () { panel.classList.remove('open'); };
+  document.getElementById('dnx-send').onclick = function () { send(); };
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+
+  speakBtn.onclick = function () {
+    speakOn = !speakOn;
+    localStorage.setItem('dnx_speak', speakOn ? 'on' : 'off');
+    speakBtn.classList.toggle('off', !speakOn);
+    if (!speakOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  };
+
+  langSel.onchange = function () {
+    localStorage.setItem('dnx_lang', langSel.value);
+    started = false;
+    msgs.innerHTML = '';
+    greet();
+  };
+
+  // ---- Voice input (Web Speech API) ----
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { micBtn.style.display = 'none'; }
+  var rec = null, listening = false;
+  micBtn.onclick = function () {
+    if (!SR) return;
+    if (listening) { rec.stop(); return; }
+    rec = new SR();
+    rec.lang = langSel.value;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onstart = function () { listening = true; micBtn.classList.add('listening'); };
+    rec.onresult = function (e) { send(e.results[0][0].transcript); };
+    rec.onerror = function () { addMsg('Could not hear you — please type instead.', 'bot'); };
+    rec.onend = function () { listening = false; micBtn.classList.remove('listening'); };
+    rec.start();
+  };
+})();
+</script>

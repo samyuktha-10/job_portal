@@ -4,77 +4,198 @@
 {% block title %}Background Verification | Deploynix{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+<div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
 
-    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.25rem;">
-        Background Verification
-    </h1>
-    <p style="color: #666; margin-bottom: 1.5rem;">
-        For your application to <strong>{{ bgv.application.job.job_title }}</strong> at
-        {{ bgv.application.job.company_name }}.
-    </p>
+    <div style="max-width: 800px; margin: 0 auto;">
 
-    {% if not bgv.candidate_consent_given %}
-    <div style="background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Consent Required</h2>
-        <p style="color: #555; margin-bottom: 1.5rem; line-height: 1.6;">
-            Before we begin, we need your consent to run a background verification check.
-            This includes identity, education, employment history, address, and criminal
-            record checks, carried out solely for the purpose of this job application.
-            Your documents will be handled securely and shared only with authorized reviewers.
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color:#ffffff; margin-bottom: 0.25rem;">
+            Background Verification
+        </h1>
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            For your application to <strong style="color:#e2e8f0;">{{ bgv.application.job.job_title }}</strong> at
+            {{ bgv.application.job.company_name }}.
         </p>
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" name="give_consent" value="1"
-                style="background:#0a0a0a; color:#fff; padding:0.75rem 1.5rem; border:none; border-radius:4px; cursor:pointer; font-weight:600;">
-                I Consent to Background Verification
-            </button>
-        </form>
-    </div>
-    {% else %}
 
-    <p style="margin-bottom: 1.5rem; color: #0a0a0a; font-weight: 600;">
-        Consent given on {{ bgv.candidate_consent_at|date:"d M Y, h:i A" }}. Please upload
-        supporting documents for each check below.
-    </p>
-
-    {% for step in steps %}
-    <div style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 1rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
-            <h3 style="font-size: 1.05rem; margin: 0;">{{ step.get_step_type_display }}</h3>
-            <span style="padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem;
-                {% if step.status == 'verified' %}background:#dcfce7; color:#166534;
-                {% elif step.status == 'rejected' %}background:#fee2e2; color:#991b1b;
-                {% elif step.status == 'in_review' %}background:#dbeafe; color:#1e40af;
-                {% else %}background:#f3f4f6; color:#374151;{% endif %}">
-                {{ step.get_status_display }}
-            </span>
+        <div style="background:#172554; border:1px solid #1e3a8a; border-radius:12px; padding:0.9rem 1.1rem; margin-bottom:1.4rem; display:flex; align-items:center; justify-content:space-between; gap:0.8rem; flex-wrap:wrap;">
+            <div style="font-size:0.88rem; color:#bfdbfe;">
+                🔐 Have Aadhaar, PAN, marksheets or degree in <b>DigiLocker</b>?
+                Skip the scans &mdash; fetch verified documents directly.
+            </div>
+            <a href="{% url 'verification:digilocker_connect' %}"
+               style="background:#1a56b0; color:#fff; text-decoration:none; border-radius:10px; padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:600; white-space:nowrap;">
+                Connect DigiLocker →
+            </a>
         </div>
 
-        {% if step.documents.all %}
-        <ul style="margin: 0 0 0.75rem 0; padding-left: 1.2rem; color:#555; font-size: 0.9rem;">
-            {% for doc in step.documents.all %}
-            <li>{{ doc.file.name|slice:"-40:" }} — uploaded {{ doc.uploaded_at|date:"d M Y" }}</li>
+        {% if messages %}
+        <div style="margin-bottom: 1.25rem;">
+            {% for message in messages %}
+            <div style="background:{% if message.tags == 'error' %}#450a0a{% else %}#052e16{% endif %}; border:1px solid #1e293b; padding:0.7rem 1rem; border-radius:10px; font-size:0.9rem;
+                color:{% if message.tags == 'error' %}#f87171{% else %}#4ade80{% endif %}; margin-bottom:0.5rem;">
+                {{ message }}
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         {% endif %}
 
-        {% if step.status == 'pending' or step.status == 'rejected' %}
-        <form method="post" enctype="multipart/form-data" style="display:flex; gap:0.75rem; align-items:center;">
-            {% csrf_token %}
-            <input type="hidden" name="upload_step_id" value="{{ step.id }}">
-            <input type="file" name="document" required style="flex:1;">
-            <button type="submit"
-                style="background:#0a0a0a; color:#fff; padding:0.5rem 1rem; border:none; border-radius:4px; cursor:pointer; font-size: 0.85rem;">
-                Upload
-            </button>
-        </form>
+        {% if not bgv.candidate_consent_given %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 2rem; border-radius: 12px;">
+            <h2 style="font-size: 1.2rem; color:#e2e8f0; margin-bottom: 1rem;">Consent Required</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.6;">
+                Before we begin, we need your consent to run a background verification check.
+                This includes identity, education, employment history, address, and criminal
+                record checks, carried out solely for the purpose of this job application.
+                Your documents will be handled securely and shared only with authorized reviewers.
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="give_consent" value="1"
+                    style="background:#dc2626; color:#fff; padding:0.75rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600;"
+                    onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                    I Consent to Background Verification
+                </button>
+            </form>
+        </div>
         {% else %}
-        <p style="color:#888; font-size: 0.85rem; margin:0;">No further action needed for this check.</p>
+
+        <p style="margin-bottom: 1.5rem; color: #4ade80; font-weight: 600;">
+            &#10003; Consent given on {{ bgv.candidate_consent_at|date:"d M Y, h:i A" }}. Please upload
+            supporting documents for each check below.
+        </p>
+
+        {% for step in steps %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1.05rem; margin: 0; color:#e2e8f0;">{{ step.get_step_type_display }}</h3>
+                <span style="padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem;
+                    {% if step.status == 'verified' %}background:#052e16; color:#4ade80;
+                    {% elif step.status == 'rejected' %}background:#450a0a; color:#f87171;
+                    {% elif step.status == 'in_review' %}background:#172554; color:#93c5fd;
+                    {% else %}background:#1e293b; color:#cbd5e1;{% endif %}">
+                    {{ step.get_status_display }}
+                </span>
+            </div>
+
+            {% if step.documents.all %}
+            <ul style="margin: 0 0 0.75rem 0; padding-left: 1.2rem; color:#94a3b8; font-size: 0.9rem;">
+                {% for doc in step.documents.all %}
+                <li><strong style="color:#cbd5e1;">{{ doc.get_doc_type_display }}</strong>: {{ doc.file.name|slice:"-40:" }} — uploaded {{ doc.uploaded_at|date:"d M Y" }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if step.step_type == 'address' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared residential address (as it appears on your proof document)
+                </label>
+                <textarea name="candidate_address" rows="3" required
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_address }}</textarea>
+                <button type="submit" name="save_address" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save address
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.step_type == 'education' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared education details (degree, institution, year — as on your certificates)
+                </label>
+                <textarea name="candidate_education" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_education }}</textarea>
+                <button type="submit" name="save_education" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save education details
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.step_type == 'employment' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared employment history (company, role, from&ndash;to)
+                </label>
+                <textarea name="candidate_employment" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_employment }}</textarea>
+                <label style="display:flex; gap:0.5rem; align-items:center; margin:0.55rem 0 0 0; font-size:0.85rem; color:#cbd5e1;">
+                    <input type="checkbox" name="is_fresher" {% if bgv.employment_is_fresher %}checked{% endif %}>
+                    I am a fresher &mdash; no prior employment (documents optional)
+                </label>
+                <button type="submit" name="save_employment" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save employment details
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.step_type == 'identity' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared identity details (full name, date of birth, ID number &mdash; exactly as on your ID document)
+                </label>
+                <textarea name="candidate_identity" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_identity }}</textarea>
+                <button type="submit" name="save_identity" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save identity details
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.step_type == 'criminal' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Disclose any pending or convicted criminal cases (leave blank if none)
+                </label>
+                <textarea name="candidate_criminal" rows="3"
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_criminal }}</textarea>
+                <label style="display:flex; gap:0.5rem; align-items:center; margin:0.55rem 0 0 0; font-size:0.85rem; color:#cbd5e1;">
+                    <input type="checkbox" name="declares_clean" {% if bgv.criminal_declares_clean %}checked{% endif %}>
+                    I declare that I have no pending or convicted criminal cases
+                </label>
+                <button type="submit" name="save_criminal" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save declaration
+                </button>
+            </form>
+            {% endif %}
+
+            {% if step.status == 'pending' or step.status == 'rejected' %}
+            <form method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="upload_step_id" value="{{ step.id }}">
+                {% if step.step_type == 'address' or step.step_type == 'employment' %}
+                <select name="doc_type" required
+                    style="padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem;">
+                    {% for value, label in step.allowed_doc_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <div style="display:flex; gap:0.75rem; align-items:center;">
+                    <input type="file" name="document" required accept=".pdf,.jpg,.jpeg,.png"
+                        style="flex:1; color:#94a3b8; font-size:0.85rem;">
+                    <button type="submit"
+                        style="background:#dc2626; color:#fff; padding:0.5rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size: 0.85rem; font-weight:600;"
+                        onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                        Upload
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <p style="color:#64748b; font-size: 0.85rem; margin:0;">No further action needed for this check.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
         {% endif %}
     </div>
-    {% endfor %}
-
-    {% endif %}
 </div>
 {% endblock %}

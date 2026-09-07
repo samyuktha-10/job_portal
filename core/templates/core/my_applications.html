@@ -19,14 +19,9 @@
     <div class="job-list-card" style="flex-direction: column; align-items: stretch; gap: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-                <a href="{% url 'job_detail' app.job.id %}" class="job-list-title" style="text-decoration: none; color: inherit;">
-                    {{ app.job.job_title }}
-                </a>
+                <div class="job-list-title">{{ app.job.job_title }}</div>
                 <div class="job-list-meta">{{ app.job.location }} · {{ app.job.job_type }}</div>
-                <div class="job-list-meta">
-                    Applied on {{ app.applied_at|date:"d M Y" }}
-                    <span style="color: #9ca3af;">({{ app.applied_at|timesince }} ago)</span>
-                </div>
+                <div class="job-list-meta">Applied on {{ app.applied_at|date:"d M Y" }}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <span class="candidate-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
@@ -39,6 +34,15 @@
                 </form>
             </div>
         </div>
+
+        {% if app.verification_request %}
+        <div>
+            <a href="{% url 'verification:candidate_upload' bgv_id=app.verification_request.id %}"
+               style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
+                &#128203; Background verification: {{ app.verification_request.get_overall_status_display }} &mdash; view / upload documents
+            </a>
+        </div>
+        {% endif %}
 
         <!-- Tracking pipeline -->
         <div style="display: flex; align-items: center; padding: 0.5rem 0;">
@@ -74,12 +78,7 @@
         </div>
     </div>
     {% empty %}
-    <div class="jobs-empty" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 0;">
-        <p>You haven't applied to any jobs yet.</p>
-        <a href="{% url 'job_list' %}" class="dashboard-btn" style="background: #dc2626; padding: 0.6rem 1.5rem; text-decoration: none; display: inline-block;">
-            Browse Jobs
-        </a>
-    </div>
+    <div class="jobs-empty">You haven't applied to any jobs yet.</div>
     {% endfor %}
 </div>
 {% endblock %}

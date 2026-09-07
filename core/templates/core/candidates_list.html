@@ -90,39 +90,44 @@
                 </div>
 
                 <!-- Right Side: Status Badge & Change Status Dropdown -->
-<div style="text-align: right; min-width: 140px;">
-    <span class="candidate-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
-    <form method="post" action="{% url 'update_application_status' app.id %}" style="margin-top: 0.5rem;">
-        {% csrf_token %}
-        <select name="status" onchange="this.form.submit()" class="status-select">
-            <option value="applied" {% if app.status == 'applied' %}selected{% endif %}>New Applicant</option>
-            <option value="shortlisted" {% if app.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
-            <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
-            <option value="hired" {% if app.status == 'hired' %}selected{% endif %}>Hired</option>
-        </select>
-    </form>
+                <div style="text-align: right; min-width: 140px;">
+                    <span class="candidate-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
+                    <form method="post" action="{% url 'update_application_status' app.id %}" style="margin-top: 0.5rem;">
+                        {% csrf_token %}
+                        <select name="status" onchange="this.form.submit()" class="status-select">
+                            <option value="applied" {% if app.status == 'applied' %}selected{% endif %}>New Applicant</option>
+                            <option value="shortlisted" {% if app.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                            <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="hired" {% if app.status == 'hired' %}selected{% endif %}>Hired</option>
+                        </select>
+                    </form>
 
-    {% if app.status == 'shortlisted' %}
-        {% if app.verification_request %}
-        <div style="margin-top: 0.6rem;">
-            <span style="font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 9999px; background:#eef2ff; color:#3730a3;">
-                BGV: {{ app.verification_request.get_overall_status_display }}
-            </span>
-            <div>
-                <a href="{% url 'verification:company_bgv_status' app.id %}" style="font-size: 0.75rem; color:#2563eb; text-decoration:none;">View BGV Status →</a>
+                    {% if app.status == 'shortlisted' or app.status == 'hired' %}
+                    <div style="margin-top: 0.6rem;">
+                        {% if app.verification_request %}
+                        {% with s=app.verification_request.overall_status %}
+                        <a href="{% url 'verification:company_bgv_status' application_id=app.id %}"
+                            style="display:inline-block; font-size:0.75rem; font-weight:600; padding:0.3rem 0.75rem; border-radius:9999px; text-decoration:none;
+                            {% if s == 'passed' %}background:#dcfce7; color:#16a34a;
+                            {% elif s == 'failed' %}background:#fee2e2; color:#dc2626;
+                            {% elif s == 'in_progress' %}background:#dbeafe; color:#2563eb;
+                            {% else %}background:#e2e8f0; color:#475569;{% endif %}">
+                            BGV: {{ app.verification_request.get_overall_status_display }}
+                        </a>
+                        {% endwith %}
+                        {% else %}
+                        <form method="post" action="{% url 'verification:request_bgv' application_id=app.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit"
+                                style="font-size:0.75rem; font-weight:600; padding:0.3rem 0.75rem; border-radius:9999px; border:1px solid #dc2626; background:#ffffff; color:#dc2626; cursor:pointer;">
+                                Request BGV
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        {% else %}
-        <form method="post" action="{% url 'verification:request_bgv' app.id %}" style="margin-top: 0.6rem;">
-            {% csrf_token %}
-            <button type="submit"
-                style="background:#0a0a0a; color:#fff; border:none; padding:0.35rem 0.9rem; border-radius:4px; font-size:0.75rem; font-weight:600; cursor:pointer;">
-                Request BGV
-            </button>
-        </form>
-        {% endif %}
-    {% endif %}
-</div>
             {% endfor %}
             {% else %}
             <div class="jobs-empty">

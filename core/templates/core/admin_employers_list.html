@@ -125,6 +125,16 @@
   }
   .badge.active { background: #e6f4ea; color: #1e7e34; }
   .badge.inactive { background: #fdecea; color: #b3261e; }
+  .ban-btn {
+    padding: 5px 12px;
+    border: 1px solid #d32f2f;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #fff;
+    color: #d32f2f;
+  }
+  .ban-btn:hover { background: #d32f2f; color: #fff; }
   .empty { color: #999; font-size: 13px; padding: 16px 0; }
 
   .pagination {
@@ -161,10 +171,11 @@
       <a href="{% url 'control_panel' %}">Dashboard</a>
       <a href="{% url 'admin_jobs_list' %}">Jobs</a>
       <a href="{% url 'admin_employers_list' %}" class="active">Employers</a>
-      <a href="#">Job Seekers</a>
-      <a href="#">Subscriptions</a>
-      <a href="#">Inquiries</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
       <a href="/admin/">Django Admin</a>
+          <a href="{% url 'admin_support_settings' %}">Support Contact</a>
     </nav>
     <div class="user-box">
       <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
@@ -196,6 +207,7 @@
           <th>Status</th>
           <th>Jobs Posted</th>
           <th>Joined</th>
+          <th>Actions</th>
         </tr>
         {% for row in page_obj %}
         <tr>
@@ -211,6 +223,13 @@
           </td>
           <td>{{ row.jobs_count }}</td>
           <td>{{ row.joined|date:"d M Y" }}</td>
+          <td>
+            <form method="post" action="{% url 'admin_user_toggle_active' row.user_id %}" onsubmit="return confirm('Ban/unban this employer?');">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'admin_employers_list' %}">
+              <button type="submit" class="ban-btn">Ban / Unban</button>
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </table>

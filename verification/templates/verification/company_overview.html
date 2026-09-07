@@ -1,0 +1,85 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Background Verification | Deploynix{% endblock %}
+
+{% block content %}
+<div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
+
+    <div style="max-width: 1000px; margin: 0 auto;">
+
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 1.9rem; color:#ffffff; margin-bottom: 0.25rem;">
+            Background Verification
+        </h1>
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            Track background checks for candidates across all your job postings.
+        </p>
+
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="?status=all" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'all' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                All ({{ counts.all }})
+            </a>
+            <a href="?status=in_progress" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'in_progress' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                In Progress ({{ counts.in_progress }})
+            </a>
+            <a href="?status=passed" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'passed' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                Passed ({{ counts.passed }})
+            </a>
+            <a href="?status=failed" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'failed' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                Failed ({{ counts.failed }})
+            </a>
+        </div>
+
+        {% if bgv_requests %}
+        <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b;">
+            <table style="width: 100%; border-collapse: collapse; background: #0f172a;">
+                <thead>
+                    <tr style="background: #1e293b; text-align: left;">
+                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Candidate</th>
+                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Job</th>
+                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
+                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Requested</th>
+                        <th style="padding: 0.85rem 1rem;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bgv in bgv_requests %}
+                    <tr style="border-top: 1px solid #1e293b;">
+                        <td style="padding: 0.85rem 1rem; color:#f1f5f9;">{{ bgv.candidate_name }}</td>
+                        <td style="padding: 0.85rem 1rem; color:#f1f5f9;">
+                            {{ bgv.application.job.job_title }}
+                            <div style="font-size: 0.8rem; color: #64748b;">{{ bgv.application.job.company_name }}</div>
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <span style="padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.78rem;
+                                {% if bgv.overall_status == 'passed' %}background:#052e16; color:#4ade80;
+                                {% elif bgv.overall_status == 'failed' %}background:#450a0a; color:#f87171;
+                                {% elif bgv.overall_status == 'in_progress' %}background:#172554; color:#93c5fd;
+                                {% else %}background:#1e293b; color:#cbd5e1;{% endif %}">
+                                {{ bgv.get_overall_status_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: #94a3b8;">{{ bgv.created_at|date:"d M Y" }}</td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <a href="{% url 'verification:company_bgv_status' bgv.application.id %}"
+                               style="text-decoration: none; color: #ef4444; font-weight: 600; font-size: 0.85rem;">View status &rarr;</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 3rem 2rem; text-align: center; border-radius: 12px;">
+            <p style="color: #94a3b8; font-size: 1.05rem;">No background verification requests yet.</p>
+            <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.4rem;">Shortlist a candidate, then request verification from their application page.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

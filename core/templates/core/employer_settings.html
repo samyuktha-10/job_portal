@@ -1,121 +1,83 @@
 {% extends 'core/dashboard_base.html' %}
-{% load static %}
-
 {% block title %}Settings - Deploynix{% endblock %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-2 gap-6">
 
-    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-700 mb-3">Settings</h2>
+    <div class="border-2 border-gray-800 rounded-lg p-6">
+        <h3 class="font-bold mb-3">Account</h3>
+        <hr class="mb-4">
+        <form method="post">
+            {% csrf_token %}
+            <label class="block text-sm font-medium mb-1">Username</label>
+            <input type="text" value="{{ request.user.username }}" disabled
+                   class="w-full border rounded px-3 py-2 mb-4 bg-gray-100 text-gray-500">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="rounded-lg px-4 py-3 mb-4 text-sm font-medium
-                {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-900
-                {% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-900
-                {% else %}bg-blue-50 border border-blue-200 text-blue-900{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input type="email" name="email" value="{{ request.user.email }}"
+                   class="w-full border rounded px-3 py-2 mb-4">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <!-- Account -->
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Account</h3>
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="account">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-900 mb-1">Username</label>
-                    <input type="text" value="{{ request.user.username }}" disabled
-                        class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-900 mb-1">Email</label>
-                    <input type="email" name="email" value="{{ request.user.email }}"
-                        class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-red-500 focus:outline-none">
-                </div>
-                <button type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">
-                    Save Account Details
-                </button>
-            </form>
-        </div>
-
-        <!-- Company Profile -->
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Company Profile</h3>
-            <div class="mb-4">
-                <p class="font-bold text-gray-900">{{ profile.company_name|default:"Not set" }}</p>
-                <p class="text-sm text-gray-700">{{ profile.industry|default:"Industry not set" }} · {{ profile.city|default:"City not set" }}</p>
-            </div>
-            <a href="{% url 'company_profile' %}"
-                class="inline-block bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">
-                Edit Company Profile
-            </a>
-        </div>
-
-        <!-- Subscription -->
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Subscription</h3>
-            {% if subscription %}
-                <div class="space-y-1 text-sm text-gray-800 mb-4">
-                    <p><span class="font-semibold text-gray-900">Plan:</span> {{ subscription.plan.name }}</p>
-                    <p><span class="font-semibold text-gray-900">Expires:</span> {{ subscription.expires_at|date:"d M Y" }}</p>
-                    <p><span class="font-semibold text-gray-900">Jobs posted:</span> {{ jobs_posted_count }} / {{ subscription.plan.job_post_limit }}</p>
-                    <p><span class="font-semibold text-gray-900">Resumes unlocked:</span> {{ resumes_unlocked_count }} / {{ subscription.plan.resume_view_limit }}</p>
-                </div>
-            {% else %}
-                <p class="text-gray-700 text-sm font-medium mb-4">No active subscription.</p>
-            {% endif %}
-            <a href="{% url 'subscription_plans' %}"
-                class="inline-block bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">
-                Manage Subscription
-            </a>
-        </div>
-
-        <!-- Change Password -->
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Change Password</h3>
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="password">
-                {% for field in password_form %}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-1">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <p class="text-xs text-gray-500 mt-1">{{ field.help_text|safe }}</p>
-                        {% endif %}
-                        {% for error in field.errors %}
-                            <p class="text-xs text-red-600 mt-1">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-                <button type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">
-                    Change Password
-                </button>
-            </form>
-        </div>
-
+            <button type="submit" name="save_account"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold">
+                Save Account Details
+            </button>
+        </form>
     </div>
-</div>
 
-<style>
-    /* Style the Django-rendered password_form inputs to match the rest of the form */
-    #content input[type="password"] {
-        width: 100%;
-        border: 2px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-    }
-    #content input[type="password"]:focus {
-        border-color: #ef4444;
-        outline: none;
-    }
-</style>
+    <div class="border-2 border-gray-800 rounded-lg p-6">
+        <h3 class="font-bold mb-3">Company Profile</h3>
+        <hr class="mb-4">
+        <p class="font-semibold">{{ profile.company_name|default:"Company name not set" }}</p>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ profile.industry|default:"Industry not set" }} · {{ profile.city|default:"City not set" }}
+        </p>
+        <a href="{% url 'company_profile' %}"
+           class="inline-block bg-black text-white px-4 py-2 rounded font-semibold text-sm">
+            Edit Company Profile
+        </a>
+    </div>
+
+    <div class="border-2 border-gray-800 rounded-lg p-6">
+        <h3 class="font-bold mb-3">Subscription</h3>
+        <hr class="mb-4">
+        {% if subscription %}
+            <p class="text-sm">Plan: <strong>{{ subscription.plan.name }}</strong></p>
+            <p class="text-sm text-gray-700 mb-4">Expires: {{ subscription.expires_at|date:"d M Y" }}</p>
+        {% else %}
+            <p class="text-gray-700 mb-4">No active subscription.</p>
+        {% endif %}
+        <a href="{% url 'subscription_plans' %}"
+           class="inline-block bg-black text-white px-4 py-2 rounded font-semibold text-sm">
+            Manage Subscription
+        </a>
+    </div>
+
+    <div class="border-2 border-gray-800 rounded-lg p-6">
+        <h3 class="font-bold mb-3">Change Password</h3>
+        <hr class="mb-4">
+        <form method="post">
+            {% csrf_token %}
+            <label class="block text-sm font-medium mb-1">Old password</label>
+            <input type="password" name="old_password" class="w-full border rounded px-3 py-2 mb-4">
+
+            <label class="block text-sm font-medium mb-1">New password</label>
+            <input type="password" name="new_password1" class="w-full border rounded px-3 py-2 mb-2">
+            <p class="text-xs text-gray-500 mb-4">
+                Your password can't be too similar to your other personal information.<br>
+                Your password must contain at least 8 characters.<br>
+                Your password can't be a commonly used password.<br>
+                Your password can't be entirely numeric.
+            </p>
+
+            <label class="block text-sm font-medium mb-1">New password confirmation</label>
+            <input type="password" name="new_password2" class="w-full border rounded px-3 py-2 mb-1">
+            <p class="text-xs text-gray-700 mb-4">Enter the same password as before, for verification.</p>
+
+            <button type="submit" name="change_password"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold">
+                Change Password
+            </button>
+        </form>
+    </div>
+
+</div>
 {% endblock %}

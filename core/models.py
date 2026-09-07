@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
-from django.utils import timezone 
+from django.utils import timezone
+
 
 def validate_file_size(value):
     max_size_mb = 5
@@ -10,6 +11,7 @@ def validate_file_size(value):
         raise ValidationError(f'File size must be under {max_size_mb}MB.')
 
 
+# Profile model for both employers and job seekers -----------------------------------------------------------------------
 class Profile(models.Model):
     COMPANY_SIZE_CHOICES = [
         ('1-10', '1-10 employees'),
@@ -38,6 +40,8 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+
+# Job model ---------------------------------------------------------------------------------------------------------------
 class Job(models.Model):
     EXPERIENCE_CHOICES = [
         ('fresher', 'Fresher'),
@@ -55,6 +59,12 @@ class Job(models.Model):
         ('Walk-in', 'Walk-in'),
     ]
 
+    APPROVAL_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
     posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_jobs')
     job_title = models.CharField(max_length=200)
     company_name = models.CharField(max_length=200, blank=True, default='')
@@ -67,13 +77,13 @@ class Job(models.Model):
     skills_required = models.CharField(max_length=300, blank=True, help_text="Comma-separated skills")
     posted_at = models.DateTimeField(auto_now_add=True)
     views_count = models.PositiveIntegerField(default=0)
-    is_approved = models.BooleanField(default=True)
-    
+    approval_status = models.CharField(max_length=10, choices=APPROVAL_CHOICES, default='pending')
+
     def __str__(self):
         return self.job_title
 
 
-
+# JobApplication model ---------------------------------------------------------------------------------------------------------------
 class JobApplication(models.Model):
     STATUS_CHOICES = [
         ('applied', 'New Applicant'),
@@ -112,11 +122,14 @@ class JobApplication(models.Model):
 
     cover_note = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
-    source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='website', blank=True, help_text="Source where the candidate applied from")
+    source = models.CharField(
+        max_length=50, choices=SOURCE_CHOICES, default='website', blank=True,
+        help_text="Source where the candidate applied from"
+    )
     is_bookmarked = models.BooleanField(default=False)
     applied_at = models.DateTimeField(auto_now_add=True)
     is_viewed = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return f"{self.display_full_name} - {self.job.job_title}"
 
@@ -149,6 +162,8 @@ class JobApplication(models.Model):
     def display_resume(self):
         return self.job_seeker_profile.resume if self.job_seeker_profile else self.resume
 
+
+# Inquiry model ---------------------------------------------------------------------------------------------------------------
 class Inquiry(models.Model):
     STATUS_CHOICES = [
         ('Unread', 'Unread'),
@@ -169,6 +184,7 @@ class Inquiry(models.Model):
         return f"{self.name} - {self.subject}"
 
 
+# Interview model ---------------------------------------------------------------------------------------------------------------
 class Interview(models.Model):
     STATUS_CHOICES = [
         ('scheduled', 'Scheduled'),
@@ -188,6 +204,7 @@ class Interview(models.Model):
         return f"Interview: {self.application.full_name} - {self.scheduled_at.strftime('%d/%m/%Y')}"
 
 
+# JobSeekerProfile model ---------------------------------------------------------------------------------------------------------------
 class JobSeekerProfile(models.Model):
     JOB_TYPE_CHOICES = [
         ('full-time', 'Full-time'),
@@ -206,6 +223,7 @@ class JobSeekerProfile(models.Model):
     skills = models.CharField(max_length=300, blank=True, help_text="Comma-separated skills")
     experience = models.CharField(max_length=100, blank=True)
     preferred_job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES, blank=True)
+    is_experienced = models.BooleanField(default=False, help_text="False = Fresher, True = Experienced")
     resume = models.FileField(
         upload_to='profile_resumes/',
         blank=True,
@@ -217,6 +235,9 @@ class JobSeekerProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_email_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.full_name
 
     @property
     def completion_percentage(self):
@@ -231,8 +252,7 @@ class JobSeekerProfile(models.Model):
         }
         score = 0
         for field, weight in weights.items():
-            value = getattr(self, field)
-            if value:
+            if getattr(self, field):
                 score += weight
         return score
 
@@ -249,20 +269,24 @@ class JobSeekerProfile(models.Model):
         }
         return [label for field, label in labels.items() if not getattr(self, field)]
 
-    def __str__(self):
-        return self.full_name
 
+# SubscriptionPlan model ---------------------------------------------------------------------------------------------------------------
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=50)
     price = models.PositiveIntegerField(help_text="Price in INR")
     duration_days = models.PositiveIntegerField(default=30)
     job_post_limit = models.PositiveIntegerField()
     resume_view_limit = models.PositiveIntegerField(default=0)
+    includes_bgv_access = models.BooleanField(
+        default=False,
+        help_text="Whether this plan lets employers view background verification status",
+    )
 
     def __str__(self):
         return self.name
 
 
+# EmployerSubscription model ---------------------------------------------------------------------------------------------------------------
 class EmployerSubscription(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
@@ -272,7 +296,6 @@ class EmployerSubscription(models.Model):
     resumes_viewed_count = models.PositiveIntegerField(default=0)
 
     def is_active(self):
-        from django.utils import timezone
         return timezone.now() < self.expires_at
 
     def can_post_job(self):
@@ -285,6 +308,8 @@ class EmployerSubscription(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.plan.name}"
 
+
+# ResumeUnlock model ---------------------------------------------------------------------------------------------------------------
 class ResumeUnlock(models.Model):
     employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resume_unlocks')
     application = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='unlocked_by')
@@ -297,6 +322,7 @@ class ResumeUnlock(models.Model):
         return f"{self.employer.username} unlocked {self.application_id}"
 
 
+# Notification model ---------------------------------------------------------------------------------------------------------------
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('application_status', 'Application Status Update'),
@@ -318,6 +344,8 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.user.username}: {self.message[:40]}"
 
+
+# SavedJob model ---------------------------------------------------------------------------------------------------------------
 class SavedJob(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by')
@@ -330,6 +358,8 @@ class SavedJob(models.Model):
     def __str__(self):
         return f"{self.user.username} saved {self.job.job_title}"
 
+
+# JobSeekerSignupOTP model ---------------------------------------------------------------------------------------------------------------
 class JobSeekerSignupOTP(models.Model):
     """
     Holds a job seeker signup in a 'pending' state until the email OTP is
@@ -348,3 +378,37 @@ class JobSeekerSignupOTP(models.Model):
 
     def __str__(self):
         return f"Pending signup: {self.username} ({self.email})"
+
+
+# SupportContact model ---------------------------------------------------------------------------------------------------------------
+class SupportContact(models.Model):
+    """
+    Customer-support contact details shown in the chatbot widget on every
+    dashboard. There is only ever one row (pk=1), edited by the super admin
+    from Control Panel -> Support Contact.
+    """
+    phone_number = models.CharField(max_length=20, blank=True, help_text="Support helpline number for calling")
+    whatsapp_number = models.CharField(max_length=20, blank=True, help_text="WhatsApp number for messaging (digits with country code)")
+    email = models.EmailField(blank=True)
+    support_hours = models.CharField(max_length=100, blank=True, default="Mon - Sat, 9:00 AM - 7:00 PM")
+    is_call_enabled = models.BooleanField(default=True)
+    is_message_enabled = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def current(cls):
+        obj, _created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def tel_link(self):
+        digits = "".join(ch for ch in self.phone_number if ch.isdigit() or ch == "+")
+        return f"tel:{digits}" if digits else ""
+
+    @property
+    def wa_link(self):
+        digits = "".join(ch for ch in self.whatsapp_number if ch.isdigit())
+        return f"https://wa.me/{digits}" if digits else ""
+
+    def __str__(self):
+        return f"Support: {self.phone_number or 'no phone'} / {self.whatsapp_number or 'no WhatsApp'}"

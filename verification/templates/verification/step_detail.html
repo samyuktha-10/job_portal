@@ -1,0 +1,114 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ step.get_step_type_display }} | Deploynix{% endblock %}
+
+{% block content %}
+<div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
+
+    <div style="max-width: 800px; margin: 0 auto;">
+
+        <a href="{% url 'verification:verifier_dashboard' %}" style="color: #ef4444; text-decoration: none; font-size: 0.9rem;">&larr; Back to dashboard</a>
+
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 1.6rem; color:#ffffff; margin: 0.9rem 0 0.25rem;">
+            {{ step.get_step_type_display }}
+        </h1>
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            Candidate: <span style="color:#e2e8f0;">{{ step.request.candidate_name }}</span> ·
+            Job: <span style="color:#e2e8f0;">{{ step.request.application.job.job_title }}</span>
+        </p>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                <span style="font-weight:600; color:#e2e8f0;">Current status</span>
+                <span style="padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem;
+                    {% if step.status == 'verified' %}background:#052e16; color:#4ade80;
+                    {% elif step.status == 'rejected' %}background:#450a0a; color:#f87171;
+                    {% elif step.status == 'in_review' %}background:#172554; color:#93c5fd;
+                    {% else %}background:#1e293b; color:#cbd5e1;{% endif %}">
+                    {{ step.get_status_display }}
+                </span>
+            </div>
+
+            <div style="font-size: 0.85rem; color: #94a3b8;">
+                Method: <strong style="color:#e2e8f0;">{{ step.get_method_display }}</strong>
+                {% if step.verified_by %} · Reviewed by <strong style="color:#e2e8f0;">{{ step.verified_by.user.username }}</strong>{% endif %}
+                {% if step.verified_at %} · {{ step.verified_at|date:"d M Y, h:i A" }}{% endif %}
+            </div>
+
+            {% if step.remarks %}
+            <p style="margin-top: 0.75rem; font-size: 0.9rem; color: #cbd5e1;">Remarks: {{ step.remarks }}</p>
+            {% endif %}
+        </div>
+
+        {% if step.step_type == 'address' or step.step_type == 'education' or step.step_type == 'employment' or step.step_type == 'identity' or step.step_type == 'criminal' %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
+            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Declared details (candidate-provided)</h2>
+            {% if step.step_type == 'employment' and step.request.employment_is_fresher %}
+            <p style="margin:0 0 0.6rem 0;"><span style="background:#052e16; color:#4ade80; border-radius:999px; padding:0.15rem 0.7rem; font-size:0.75rem;">Fresher &mdash; no prior employment; documents optional</span></p>
+            {% endif %}
+            {% if step.step_type == 'criminal' and step.request.criminal_declares_clean %}
+            <p style="margin:0 0 0.6rem 0;"><span style="background:#052e16; color:#4ade80; border-radius:999px; padding:0.15rem 0.7rem; font-size:0.75rem;">Declares clean record &mdash; no pending/convicted cases</span></p>
+            {% endif %}
+            {% if step.step_type == 'address' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_address|default:"Not provided yet." }}</p>
+            {% elif step.step_type == 'education' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_education|default:"Not provided yet." }}</p>
+            {% elif step.step_type == 'employment' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_employment|default:"Not provided yet." }}</p>
+            {% elif step.step_type == 'identity' %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_identity|default:"Not provided yet." }}</p>
+            {% else %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_criminal|default:"No disclosures." }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
+            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Uploaded documents</h2>
+            {% if step.documents.all %}
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for doc in step.documents.all %}
+                <li style="padding: 0.55rem 0; border-bottom: 1px solid #1e293b; font-size: 0.9rem; color:#cbd5e1;">
+                    {% if doc.file %}
+                    &#128196; <a href="{{ doc.file.url }}" target="_blank" style="color: #ef4444; text-decoration:none;">{{ doc.file.name|slice:"20:" }}</a>
+                    {% else %}
+                    &#128196; {{ doc.digilocker_document.name|default:"DigiLocker reference" }}
+                    {% endif %}
+                    <span style="background:#172554; color:#93c5fd; border-radius:999px; padding:0.1rem 0.55rem; font-size:0.7rem; margin-left:0.4rem;">{{ doc.get_doc_type_display }}</span>
+                    {% if doc.source == "digilocker" %}
+                    <span style="background:#052e16; color:#4ade80; border-radius:999px; padding:0.1rem 0.55rem; font-size:0.7rem; margin-left:0.3rem;">🔐 Via DigiLocker</span>
+                    {% endif %}
+                    <span style="color: #64748b; font-size: 0.75rem;"> · {{ doc.uploaded_at|date:"d M Y, h:i A" }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color: #64748b; font-size: 0.9rem;">No documents uploaded yet.</p>
+            {% endif %}
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px;">
+            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Update this check</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div style="margin-bottom: 0.75rem;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color:#e2e8f0;">Status</label>
+                    <select name="status" style="width: 100%; padding: 0.55rem; background:#030619; color:#e2e8f0; border: 1px solid #273449; border-radius: 8px; margin-top: 0.3rem; font-size:0.95rem;">
+                        <option value="in_review" {% if step.status == 'in_review' %}selected{% endif %}>In Review</option>
+                        <option value="verified" {% if step.status == 'verified' %}selected{% endif %}>Verified</option>
+                        <option value="rejected" {% if step.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color:#e2e8f0;">Remarks</label>
+                    <textarea name="remarks" rows="3" style="width: 100%; padding: 0.55rem; background:#030619; color:#e2e8f0; border: 1px solid #273449; border-radius: 8px; margin-top: 0.3rem; font-size:0.95rem;">{{ step.remarks }}</textarea>
+                </div>
+                <button type="submit" style="background: #dc2626; color: #fff; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600;"
+                        onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">Save</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

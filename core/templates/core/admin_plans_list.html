@@ -142,6 +142,7 @@
       <a href="{% url 'admin_plans_list' %}" class="active">Plans</a>
       <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
       <a href="/admin/">Django Admin</a>
+          <a href="{% url 'admin_support_settings' %}">Support Contact</a>
     </nav>
     <div class="user-box">
       <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>

@@ -1,162 +1,91 @@
 {% extends 'core/dashboard_base.html' %}
-{% load static %}
-
 {% block title %}Reports - Deploynix{% endblock %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-6 py-10">
+    <h2 class="text-sm font-semibold tracking-widest text-gray-500 mb-4">REPORTS</h2>
 
-    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-700 mb-3">Reports</h2>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div class="bg-pink-50 border-2 border-gray-400 rounded-2xl p-6">
-            <div class="text-3xl font-bold text-gray-900 mb-1">{{ total_jobs }}</div>
-            <p class="text-gray-900 text-sm font-semibold">Jobs Posted</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="border-2 border-gray-800 rounded-lg p-5" style="background:#fbe9ee;">
+            <p class="text-3xl font-bold">{{ jobs_posted }}</p>
+            <p class="text-sm text-gray-800">Jobs Posted</p>
         </div>
-        <div class="bg-blue-50 border-2 border-gray-400 rounded-2xl p-6">
-            <div class="text-3xl font-bold text-gray-900 mb-1">{{ total_applications }}</div>
-            <p class="text-gray-900 text-sm font-semibold">Total Applications</p>
+        <div class="border-2 border-gray-800 rounded-lg p-5" style="background:#e8f0fb;">
+            <p class="text-3xl font-bold">{{ total_applications }}</p>
+            <p class="text-sm text-gray-800">Total Applications</p>
         </div>
-        <div class="bg-yellow-50 border-2 border-gray-400 rounded-2xl p-6">
-            <div class="text-3xl font-bold text-gray-900 mb-1">{{ total_views }}</div>
-            <p class="text-gray-900 text-sm font-semibold">Total Job Views</p>
+        <div class="border-2 border-gray-800 rounded-lg p-5" style="background:#fbf6e3;">
+            <p class="text-3xl font-bold">{{ total_job_views }}</p>
+            <p class="text-sm text-gray-800">Total Job Views</p>
         </div>
-        <div class="bg-green-50 border-2 border-gray-400 rounded-2xl p-6">
-            <div class="text-3xl font-bold text-gray-900 mb-1">
-                {{ resumes_unlocked_count }}{% if subscription %} / {{ subscription.plan.resume_view_limit }}{% endif %}
-            </div>
-            <p class="text-gray-900 text-sm font-semibold">Resumes Unlocked</p>
+        <div class="border-2 border-gray-800 rounded-lg p-5" style="background:#e7f7ec;">
+            <p class="text-3xl font-bold">{{ resumes_unlocked }}</p>
+            <p class="text-sm text-gray-800">Resumes Unlocked</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Candidate Funnel</h3>
-            {% if total_applications > 0 %}
-                <div style="position: relative; height: 260px;">
-                    <canvas id="funnelChart"></canvas>
-                </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="border-2 border-gray-800 rounded-lg p-5">
+            <h3 class="font-bold mb-2">Candidate Funnel</h3>
+            <hr class="mb-3">
+            {% if total_applications == 0 %}
+                <p class="text-gray-500 text-sm">No applications yet.</p>
             {% else %}
-                <p class="text-gray-700 text-sm font-medium">No applications yet.</p>
+                <ul class="text-sm space-y-1">
+                    {% for stage in candidate_funnel %}
+                    <li class="flex justify-between">
+                        <span>{{ stage.label }}</span>
+                        <span class="font-semibold">{{ stage.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
             {% endif %}
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-            <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Jobs Posted Over Time</h3>
-            {% if jobs_timeline %}
-                <div style="position: relative; height: 260px;">
-                    <canvas id="timelineChart"></canvas>
-                </div>
+        <div class="border-2 border-gray-800 rounded-lg p-5">
+            <h3 class="font-bold mb-2">Jobs Posted Over Time</h3>
+            <hr class="mb-3">
+            {% if not jobs_over_time %}
+                <p class="text-gray-500 text-sm">No jobs posted yet.</p>
             {% else %}
-                <p class="text-gray-700 text-sm font-medium">No jobs posted yet.</p>
+                <ul class="text-sm space-y-1">
+                    {% for row in jobs_over_time %}
+                    <li class="flex justify-between">
+                        <span>{{ row.month|date:"M Y" }}</span>
+                        <span class="font-semibold">{{ row.count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
             {% endif %}
         </div>
     </div>
 
-    {% if job_stats %}
-    <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6 mb-10">
-        <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Applications per Job</h3>
-        <div style="position: relative; height: 300px;">
-            <canvas id="jobPerformanceChart"></canvas>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-400 p-6">
-        <h3 class="font-bold text-gray-900 mb-4 pb-4 border-b-2 border-gray-300">Job Performance</h3>
-        {% if job_stats %}
-        <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="text-left text-gray-700 border-b-2 border-gray-300">
-                    <th class="py-2 pr-4 font-semibold">Job Title</th>
-                    <th class="py-2 pr-4 font-semibold">Posted</th>
-                    <th class="py-2 pr-4 font-semibold">Views</th>
-                    <th class="py-2 pr-4 font-semibold">Applications</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for job in job_stats %}
-                <tr class="border-b border-gray-200 last:border-0 hover:bg-gray-50">
-                    <td class="py-2 pr-4 font-semibold text-gray-900">{{ job.job_title }}</td>
-                    <td class="py-2 pr-4 text-gray-700">{{ job.posted_at|date:"d M Y" }}</td>
-                    <td class="py-2 pr-4 text-gray-700">{{ job.views_count }}</td>
-                    <td class="py-2 pr-4 text-gray-700">{{ job.applications_count }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
+    <div class="border-2 border-gray-800 rounded-lg p-5">
+        <h3 class="font-bold mb-2">Job Performance</h3>
+        <hr class="mb-3">
+        {% if not job_performance %}
+            <p class="text-gray-500 text-sm">No jobs posted yet.</p>
         {% else %}
-            <p class="text-gray-700 text-sm font-medium">No jobs posted yet.</p>
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="border-b text-left">
+                        <th class="py-2">Job Title</th>
+                        <th>Views</th>
+                        <th>Applications</th>
+                        <th>Posted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in job_performance %}
+                    <tr class="border-b">
+                        <td class="py-2">{{ job.job_title }}</td>
+                        <td>{{ job.views_count }}</td>
+                        <td>{{ job.application_count }}</td>
+                        <td>{{ job.posted_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     </div>
-
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-    {% if total_applications > 0 %}
-    new Chart(document.getElementById('funnelChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Applied', 'Shortlisted', 'Hired', 'Rejected'],
-            datasets: [{
-                data: [{{ funnel.applied }}, {{ funnel.shortlisted }}, {{ funnel.hired }}, {{ funnel.rejected }}],
-                backgroundColor: ['#9ca3af', '#3b82f6', '#22c55e', '#ef4444'],
-                borderWidth: 0,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
-        }
-    });
-    {% endif %}
-
-    {% if jobs_timeline %}
-    new Chart(document.getElementById('timelineChart'), {
-        type: 'bar',
-        data: {
-            labels: [{% for month, count in jobs_timeline %}'{{ month|escapejs }}',{% endfor %}],
-            datasets: [{
-                label: 'Jobs Posted',
-                data: [{% for month, count in jobs_timeline %}{{ count }},{% endfor %}],
-                backgroundColor: '#dc2626',
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
-    });
-    {% endif %}
-
-    {% if job_stats %}
-    new Chart(document.getElementById('jobPerformanceChart'), {
-        type: 'bar',
-        data: {
-            labels: [{% for job in job_stats %}'{{ job.job_title|escapejs }}',{% endfor %}],
-            datasets: [{
-                label: 'Applications',
-                data: [{% for job in job_stats %}{{ job.applications_count }},{% endfor %}],
-                backgroundColor: '#3b82f6',
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
-    });
-    {% endif %}
-</script>
 {% endblock %}

@@ -4,6 +4,57 @@ from django.db import models
 from django.utils import timezone
 
 
+# ---------- Accepted evidence types per check ----------
+# Address: passport or any utility bill (plus common alternatives).
+# Employment: document-based verification (my chosen design) - no external vendor,
+# so it is fully testable offline and can later be swapped for an API if desired.
+STEP_DOC_TYPES = {
+    "address": [
+        ("passport", "Passport"),
+        ("utility_bill", "Utility bill (electricity / water / gas)"),
+        ("bank_statement", "Bank statement (last 3 months)"),
+        ("rental_agreement", "Rental agreement"),
+        ("aadhaar", "Aadhaar card"),
+    ],
+    "employment": [
+        ("offer_letter", "Offer / appointment letter"),
+        ("payslip", "Payslips (last 3 months)"),
+        ("pf_statement", "PF / EPF statement"),
+        ("relieving_letter", "Relieving / experience letter"),
+        ("employment_contract", "Current employment contract"),
+    ],
+    "education": [
+        ("degree_certificate", "Degree certificate"),
+        ("provisional_certificate", "Provisional certificate"),
+        ("marksheet", "Mark sheets / grade cards"),
+        ("transcript", "Official transcript"),
+        ("diploma", "Diploma certificate"),
+        ("bonafide", "Bonafide certificate"),
+    ],
+    "identity": [
+        ("aadhaar", "Aadhaar card"),
+        ("passport", "Passport"),
+        ("driving_license", "Driving licence"),
+        ("voter_id", "Voter ID"),
+        ("pan_card", "PAN card"),
+    ],
+    "criminal": [
+        ("police_clearance", "Police clearance certificate"),
+        ("affidavit", "Self-declaration affidavit"),
+        ("character_certificate", "Character certificate"),
+    ],
+}
+GENERIC_DOC_TYPE = ("document", "Supporting document")
+
+ALL_DOC_TYPES = sorted(
+    {GENERIC_DOC_TYPE} | {t for lst in STEP_DOC_TYPES.values() for t in lst},
+    key=lambda t: t[0],
+)
+
+ALLOWED_FILE_EXTENSIONS = ("pdf", "jpg", "jpeg", "png")
+MAX_DOCUMENT_BYTES = 5 * 1024 * 1024  # 5MB, consistent with the resume rule
+
+
 class VerifierProfile(models.Model):
     """Extends a Django User to be part of the internal BGV team."""
     ROLE_CHOICES = [
@@ -37,9 +88,6 @@ class VerificationRequest(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    # One BGV per job application - this is the real anchor point in your schema.
-    # Gives us the candidate (via display_* properties, whether linked profile or walk-in)
-    # and the company (via application.job.posted_by) automatically.
     application = models.OneToOneField(
         "core.JobApplication", on_delete=models.CASCADE, related_name="verification_request"
     )
@@ -56,6 +104,27 @@ class VerificationRequest(models.Model):
     overall_status = models.CharField(max_length=20, choices=Status.choices, default=Status.NOT_STARTED)
     candidate_consent_given = models.BooleanField(default=False)
     candidate_consent_at = models.DateTimeField(null=True, blank=True)
+    candidate_address = models.TextField(
+        blank=True, help_text="Declared residential address, matched against the address proof document."
+    )
+    candidate_education = models.TextField(
+        blank=True, help_text="Declared education details, matched against the education documents."
+    )
+    candidate_employment = models.TextField(
+        blank=True, help_text="Declared employment history, matched against the employment documents."
+    )
+    employment_is_fresher = models.BooleanField(
+        default=False, help_text="Candidate declared no prior employment (fresher)."
+    )
+    candidate_identity = models.TextField(
+        blank=True, help_text="Declared identity details (name / DOB / ID number) as on the identity document."
+    )
+    candidate_criminal = models.TextField(
+        blank=True, help_text="Disclosed criminal cases, if any. Blank when the candidate declares a clean record."
+    )
+    criminal_declares_clean = models.BooleanField(
+        default=False, help_text="Candidate declares no pending/convicted criminal cases."
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -124,7 +193,7 @@ class VerificationStep(models.Model):
     method = models.CharField(max_length=10, choices=Method.choices, default=Method.MANUAL)
 
     remarks = models.TextField(blank=True)
-    external_reference_id = models.CharField(max_length=100, blank=True)  # vendor's request/report ID
+    external_reference_id = models.CharField(max_length=100, blank=True)
     raw_api_response = models.JSONField(null=True, blank=True)
 
     verified_by = models.ForeignKey(
@@ -143,10 +212,16 @@ class VerificationStep(models.Model):
     def __str__(self):
         return f"{self.get_step_type_display()} - {self.status}"
 
+    @property
+    def allowed_doc_types(self):
+        """Accepted evidence types for this check; generic fallback otherwise."""
+        return STEP_DOC_TYPES.get(self.step_type, [GENERIC_DOC_TYPE])
+
     def mark(self, status, actor: VerifierProfile, remarks=""):
         """Segregation-of-duties enforced: actor cannot verify their own request."""
         if actor and self.request.requested_by_id == actor.user_id:
             raise PermissionError("A requester cannot verify their own BGV request.")
+        old_status = self.status
         self.status = status
         self.remarks = remarks
         self.verified_by = actor
@@ -157,7 +232,7 @@ class VerificationStep(models.Model):
             request=self.request,
             actor=actor.user if actor else None,
             action=f"step_{self.step_type}_marked_{status}",
-            old_status=self.status,
+            old_status=old_status,
             new_status=status,
         )
 
@@ -170,10 +245,32 @@ class VerificationDocument(models.Model):
     """Uploaded evidence file per step. Store in a private bucket, never public media."""
 
     step = models.ForeignKey(VerificationStep, on_delete=models.CASCADE, related_name="documents")
-    file = models.FileField(upload_to=document_upload_path)
-    file_hash = models.CharField(max_length=64, blank=True)  # sha256 for integrity check
+    file = models.FileField(upload_to=document_upload_path, blank=True)
+    doc_type = models.CharField(max_length=30, choices=ALL_DOC_TYPES, default="document", blank=True)
+    file_hash = models.CharField(max_length=64, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(
+        max_length=20,
+        choices=[("upload", "Manual upload"), ("digilocker", "DigiLocker")],
+        default="upload",
+    )
+    digilocker_document = models.ForeignKey(
+        "DigiLockerDocument", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="attachments",
+    )
+
+    def save(self, *args, **kwargs):
+        import hashlib
+        if self.file and hasattr(self.file, "read"):
+            try:
+                hasher = hashlib.sha256()
+                for chunk in self.file.chunks():
+                    hasher.update(chunk)
+                self.file_hash = hasher.hexdigest()
+            except (ValueError, OSError):
+                pass
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Doc for {self.step}"
@@ -200,3 +297,40 @@ class VerificationAuditLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValueError("Audit log entries cannot be deleted.")
+
+# DigiLocker models ---------------------------------------------------------------------------
+class DigiLockerAccount(models.Model):
+    """A candidate's linked DigiLocker account (OAuth tokens from api.digilocker.gov.in)."""
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name="digilocker_account")
+    digilocker_username = models.CharField(max_length=100, blank=True)
+    access_token = models.TextField(blank=True)
+    refresh_token = models.TextField(blank=True)
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    is_demo = models.BooleanField(default=False,
+                                  help_text="True when connected via the built-in demo simulator")
+    connected_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"DigiLocker: {self.user} ({'demo' if self.is_demo else 'live'})"
+
+
+class DigiLockerDocument(models.Model):
+    """An issued document available in the candidate's DigiLocker."""
+
+    account = models.ForeignKey(DigiLockerAccount, on_delete=models.CASCADE, related_name="documents")
+    doc_key = models.CharField(max_length=40, help_text="DigiLocker doc type e.g. ADHCRD, PANCARD")
+    name = models.CharField(max_length=120)
+    issued_date = models.CharField(max_length=40, blank=True)
+    uri = models.CharField(max_length=500, blank=True, help_text="DigiLocker document URI reference")
+    step_type = models.CharField(max_length=30, blank=True, help_text="Mapped BGV step type")
+    doc_type = models.CharField(max_length=30, blank=True, help_text="Mapped BGV doc_type")
+    fetched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("account", "doc_key")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.doc_key})"

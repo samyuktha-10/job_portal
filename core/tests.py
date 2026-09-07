@@ -5,16 +5,16 @@ from .models import Job, JobApplication, JobSeekerProfile, Profile
 
 
 class JobSeekerSignupLoginTests(TestCase):
-    def test_new_username_creates_account_and_logs_in(self):
+    def test_new_username_creates_pending_otp_signup(self):
+        # First-time login with a username + email now goes through email OTP.
         response = self.client.post(reverse('job_seeker_login'), {
             'username': 'newseeker@test.com',
+            'email': 'newseeker@test.com',
             'password': 'TestPass123!',
         })
-        self.assertEqual(User.objects.filter(username='newseeker@test.com').count(), 1)
-        user = User.objects.get(username='newseeker@test.com')
-        self.assertTrue(JobSeekerProfile.objects.filter(user=user).exists())
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('create_profile'))
+        self.assertRedirects(response, reverse('verify_signup_otp'))
+        from .models import JobSeekerSignupOTP
+        self.assertTrue(JobSeekerSignupOTP.objects.filter(username='newseeker@test.com').exists())
         
     def test_existing_username_wrong_password_shows_error(self):
         user = User.objects.create_user(username='existing1', password='CorrectPass123!')
@@ -44,8 +44,9 @@ class EmployerLoginTests(TestCase):
             'password': 'TestPass123!',
             'company_name': 'Test Co',
         })
-        self.assertTrue(User.objects.filter(username='newcompany@test.com').exists())
-        user = User.objects.get(username='newcompany@test.com')
+        # Employer username is a slug generated from the company name.
+        user = User.objects.get(email='newcompany@test.com')
+        self.assertTrue(user.username.startswith('test-co'))
         self.assertTrue(Profile.objects.filter(user=user, is_employer=True).exists())
         self.assertRedirects(response, reverse('employer_dashboard'))
 
@@ -129,3 +130,28 @@ class ApplicationStatusChangeTests(TestCase):
         })
         self.application.refresh_from_db()
         self.assertEqual(self.application.status, 'applied')
+
+class RoleSeparationTests(TestCase):
+    def setUp(self):
+        self.seeker = User.objects.create_user('seeker@x.com', 'seeker@x.com', 'Pass123!')
+        JobSeekerProfile.objects.create(user=self.seeker, full_name='Seeker', phone='999')
+
+    def test_jobseeker_cannot_open_employer_pages(self):
+        self.client.login(username='seeker@x.com', password='Pass123!')
+        for url in ('/employer-dashboard/', '/company-profile/'):
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 302, url)
+            self.assertEqual(r.url, reverse('home'), url)
+
+    def test_employer_login_does_not_hijack_jobseeker_email(self):
+        r = self.client.post(reverse('employer_login'), {
+            'email': 'seeker@x.com', 'password': 'Pass123!', 'company_name': 'Evil Co'},
+            follow=True)
+        self.assertContains(r, 'registered as a job seeker')
+        self.assertFalse(hasattr(self.seeker, 'profile'))
+
+    def test_employer_can_still_access_dashboard(self):
+        emp = User.objects.create_user('emp@x.com', 'emp@x.com', 'Pass123!')
+        Profile.objects.create(user=emp, is_employer=True, company_name='Acme')
+        self.client.login(username='emp@x.com', password='Pass123!')
+        self.assertEqual(self.client.get(reverse('employer_dashboard')).status_code, 200)

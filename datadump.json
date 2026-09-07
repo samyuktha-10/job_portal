@@ -1,1274 +1,1335 @@
 [
-{
-  "model": "auth.user",
-  "pk": 1,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$0S7w7mxenRIUxg1F1i3kqd$rnjWtAtCl+sXg07NxN7mZzALGeRIXOvtFkm5XFWZCzM=",
-    "last_login": "2026-08-13T09:15:20.492Z",
-    "is_superuser": false,
-    "username": "devi",
-    "first_name": "",
-    "last_name": "",
-    "email": "devisanjai2@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-07-20T05:19:24.815Z",
-    "groups": [],
-    "user_permissions": []
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$0S7w7mxenRIUxg1F1i3kqd$rnjWtAtCl+sXg07NxN7mZzALGeRIXOvtFkm5XFWZCzM=",
+      "last_login": "2026-08-13T09:15:20.492Z",
+      "is_superuser": false,
+      "username": "devi",
+      "first_name": "",
+      "last_name": "",
+      "email": "devisanjai2@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-07-20T05:19:24.815Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$bsZaKZAyeaNK6SEuG1SLr0$vRgDQAVnwFZJvwkQHiX6AUjDvgapJ0rKzqWAPJzKCkA=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "admin@gmail.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-07-20T05:21:47.601Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$NzFfAValkzUrpYxGF3nFZj$Y8btz+3pMJHpeY6apBgFE6jYhj4855zh75xkz1tJZFc=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "devisanjai",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-07-20T05:24:22.239Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$qagMX6Gvj9WxVKKXsYy0t1$psPI0T8+zzPUUaLAP2efjdHEoin37LZQ/sqg4VeYBqI=",
+      "last_login": "2026-07-30T05:28:36.455Z",
+      "is_superuser": false,
+      "username": "seeker1",
+      "first_name": "",
+      "last_name": "",
+      "email": "seeker1@test.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-07-28T09:26:07.004Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$sSbZANzwX1qoHyLg8G8SgG$qur3cCrXQxC2COEN6IkTAYi4tduO0/jA2fEoqkAdYYs=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "nila",
+      "first_name": "",
+      "last_name": "",
+      "email": "nila@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-07-29T07:03:54.799Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$6yA6f4m7QGvrHxUBFgw45H$6JahtAErWNQxSseXzfLCHIyJMc5lOl9QtLnz1FQ4DkY=",
+      "last_login": "2026-08-01T04:53:53.217Z",
+      "is_superuser": false,
+      "username": "hexally@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "email": "hexally@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T04:53:17.147Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 7,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$fC0IbQILnOu8kD1KXRhwWX$HttU6kJ6vU4lwTtcwuaAcN6gcDSSRUcgQyc2PwvX1GU=",
+      "last_login": "2026-08-01T04:54:27.580Z",
+      "is_superuser": false,
+      "username": "samyuktha123@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "email": "samyuktha123@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T04:54:24.928Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 8,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$19Rr042gycTEF4TukMLMAH$Lgzsq4EGkR6jMbLl5wHBaDiqcKd5aHgEUK0Jzc3PN9k=",
+      "last_login": "2026-08-01T05:30:11.562Z",
+      "is_superuser": false,
+      "username": "seeker1@test.com",
+      "first_name": "",
+      "last_name": "",
+      "email": "seeker1@test.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T05:03:46.755Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 9,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$OFiJRdyusutDajedz1ijUv$MRCqP4RfPs98gf8G431C4SCz6z/AN4EHt4d9jevPA2I=",
+      "last_login": "2026-08-01T05:05:43.477Z",
+      "is_superuser": false,
+      "username": "jesina",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T05:05:40.732Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 10,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$NP6gBp5ju1J8GSnQg4TDbD$r5t38pJvhmTAICrsrocwIMgBWX266FRpac1IXPYB2Ew=",
+      "last_login": "2026-08-01T05:42:42.669Z",
+      "is_superuser": false,
+      "username": "Devi Sanjai",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T05:42:40.091Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 11,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$7tmLVPu6kk6zzL0456ZYbX$yLwa/NzSmQWY1L763LWXYtDzViQHm719cDDFj8wI0Z4=",
+      "last_login": "2026-08-07T05:24:58.071Z",
+      "is_superuser": false,
+      "username": "Angel",
+      "first_name": "",
+      "last_name": "",
+      "email": "devisanjai2004@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-01T05:52:18.688Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 12,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$cb9XvTUT8zvdh8F0Q12T6l$AJmyYk+fKnbFClJYm6JCsyDHrgDU0c+EMqV6r1zx53Q=",
+      "last_login": "2026-08-04T06:11:18.485Z",
+      "is_superuser": false,
+      "username": "Anisha",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-04T05:19:49.098Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 13,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$hrKbaazYdSnFvEaKDVUk3y$1EFae9dDn5whE8tyKL0DLAJ5snZW8qPz9DxRsMCEsxA=",
+      "last_login": "2026-08-04T08:35:19.470Z",
+      "is_superuser": false,
+      "username": "samyuktha",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-04T08:35:16.916Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 14,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$bYZcCjJujh6ldVIqfzRFid$spzT33gBCwV69RCrKsce9HLt9p5WFJD6ZMngxX6dlME=",
+      "last_login": "2026-08-04T11:46:34.654Z",
+      "is_superuser": false,
+      "username": "Akchaya",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-04T11:46:31.871Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 15,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$hXkxSdCIEoARcmtktbkGKj$IfsgDKd/R1nL3KJdNp+k9hsAulcggCHHaRMzKe60aeI=",
+      "last_login": "2026-08-06T09:11:22.644Z",
+      "is_superuser": false,
+      "username": "kavin",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-06T09:11:20.038Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 16,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$OO97rST6uC2BD17XdHa9sb$aQU95+5nBYZmNFlAw3hRjlruRJtGqt50y5PcbS9z1Ao=",
+      "last_login": "2026-08-06T09:36:06.617Z",
+      "is_superuser": false,
+      "username": "Lakshmi",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-06T09:36:03.739Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 17,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Yh4HePTbGY7Hmd8JlDrCJM$uxku4qp8dMjC08PxDF8gPlZFDLL5D5727pO8iwI+L9Q=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "Kavin",
+      "first_name": "",
+      "last_name": "",
+      "email": "devisanjai2004@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-07T04:53:31.108Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 18,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$OHbgWeueWyTM1YxXRzsYJP$HXOfTT1/D3TAS/Bez7SHpXlo2AVsbVzvQTkUkw1nJ+A=",
+      "last_login": "2026-08-13T09:04:23.646Z",
+      "is_superuser": false,
+      "username": "Demo@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "email": "Demo@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-13T09:04:21.876Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 19,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$KiwEPXl17TaNfxuaAskYgO$RTCS0TuJ3hrO40OplK3va5cVTsOvOkM4dlHrtZXhiTE=",
+      "last_login": "2026-08-13T09:06:02.813Z",
+      "is_superuser": false,
+      "username": "Seeker",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-13T09:05:23.446Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 20,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$bP4IUNOz47IaTmaofiUytQ$kzq/9yqadlNFQ/HwBSSnuhdyF4b2tYZPwVb/zfKW+RE=",
+      "last_login": "2026-08-13T09:12:02.463Z",
+      "is_superuser": true,
+      "username": "admin2",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-08-13T09:09:52.153Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 21,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$AsnC7F1kDG5Rl4z7dVq1ff$XSBVYtFQILYGbFcagf7NNmxkCVnFqj+JWf9KOtumNBs=",
+      "last_login": "2026-08-14T04:23:36.479Z",
+      "is_superuser": false,
+      "username": "Seeker2",
+      "first_name": "",
+      "last_name": "",
+      "email": "Seeker2@abc.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-13T09:13:41.710Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 22,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$CupyHru9H51UhygxZyvfwz$CsEzz3bIZZcpQsIslhEYLmjphZJe9VxNsl2/CWwtzS4=",
+      "last_login": "2026-08-17T04:37:50.352Z",
+      "is_superuser": false,
+      "username": "Demo@abc.com",
+      "first_name": "",
+      "last_name": "",
+      "email": "Demo@abc.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-13T09:16:59.078Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 23,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$VcAKoxHo8dbfMXd4kZJLn2$6YOXyWKagy1EHwH2dRdDa7lO5saCaqZlyrWQfCfhxJ8=",
+      "last_login": "2026-08-14T04:23:15.375Z",
+      "is_superuser": false,
+      "username": "Demo",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-08-14T04:23:13.678Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "2y7wjeesz613c2r9wmth0ky7w5s3c6ah",
+    "fields": {
+      "session_data": ".eJxVjDsOwjAQBe_iGln-xOs1JT1nsHazDg6gRIqTCnF3iJQC2jcz76UybWvNWytLHkWdlXPq9Dsy9Y8y7UTuNN1m3c_Tuoysd0UftOnrLOV5Ody_g0qtfutkOHCKzDKEgkk8CgzWAJjOWfHgEHy0ISEFT2gAfUgcBVKH5KhE9f4A7u83BQ:1wvp6c:0v8zfcX0vHvU-deHikrnNSUpIbdmCv-mnsEzTMNJlqA",
+      "expire_date": "2026-08-31T04:37:50.370Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "39i28ezgsg1txbw7625s6ncjoohwwil5",
+    "fields": {
+      "session_data": ".eJxVjEsOwjAMBe-SNYqcDyVmyZ4zRE5s0wJqpaZdIe4OlbqA7ZuZ9zKZ1qXPa5M5D2zOxpnD71aoPmTcAN9pvE22TuMyD8Vuit1ps9eJ5XnZ3b-Dnlr_rWM6IYDHDiVUR8SiKh6INYp3KWFB0A7AqUA9hhRZkNiFGHyHScW8P-DtN90:1wruYS:yVFaJ6d7eMscbjxDdg7_URXb4NDzqMyfPpIM2mjncUE",
+      "expire_date": "2026-08-20T09:38:24.490Z"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "c2ghu5h8d7u9mr7uziubyoxqi9ttsa4n",
+    "fields": {
+      "session_data": "eyJfcGFzc3dvcmRfcmVzZXRfdG9rZW4iOiJkY3h0MDUtODM3MzYyNGY5OWJmZTM3ZWM1ZDgzMGVjZjA3MWQ3MWEifQ:1wsD5J:dH8a14mtujw5LHuybmwE5lTB7e8r2N0QKtsDcm9uDtE",
+      "expire_date": "2026-08-21T05:25:33.427Z"
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 1,
+    "fields": {
+      "user": 4,
+      "phone": "",
+      "is_employer": true,
+      "company_name": "Infolexus Solutions",
+      "logo": "",
+      "about": "",
+      "industry": "",
+      "website": "",
+      "company_size": "",
+      "founded_year": null,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-07-30T04:48:12.180Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 2,
+    "fields": {
+      "user": 1,
+      "phone": "1234567891",
+      "is_employer": true,
+      "company_name": "Infolexus Solutions",
+      "logo": "",
+      "about": "",
+      "industry": "IT Services",
+      "website": "https://www.infolexus.com/",
+      "company_size": "11-50",
+      "founded_year": 2020,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-07-30T05:32:26.813Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 3,
+    "fields": {
+      "user": 6,
+      "phone": "",
+      "is_employer": true,
+      "company_name": "hexally Solutions",
+      "logo": "",
+      "about": "",
+      "industry": "",
+      "website": "",
+      "company_size": "",
+      "founded_year": null,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-08-01T04:53:18.967Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 4,
+    "fields": {
+      "user": 7,
+      "phone": "",
+      "is_employer": true,
+      "company_name": "devi solutions",
+      "logo": "",
+      "about": "",
+      "industry": "",
+      "website": "",
+      "company_size": "",
+      "founded_year": null,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-08-01T04:54:26.181Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 5,
+    "fields": {
+      "user": 18,
+      "phone": "",
+      "is_employer": true,
+      "company_name": "Demo",
+      "logo": "",
+      "about": "",
+      "industry": "",
+      "website": "",
+      "company_size": "",
+      "founded_year": null,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-08-13T09:04:22.700Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.profile",
+    "pk": 6,
+    "fields": {
+      "user": 22,
+      "phone": "",
+      "is_employer": true,
+      "company_name": "Demo",
+      "logo": "",
+      "about": "",
+      "industry": "",
+      "website": "",
+      "company_size": "",
+      "founded_year": null,
+      "address": "",
+      "city": "",
+      "state": "",
+      "created_at": "2026-08-13T09:16:59.954Z",
+      "is_email_verified": false
+    }
+  },
+  {
+    "model": "core.job",
+    "pk": 2,
+    "fields": {
+      "posted_by": 1,
+      "job_title": "aws",
+      "company_name": "",
+      "job_description": "cloud, azure",
+      "experience_required": "0-1",
+      "job_type": "full-time",
+      "location": "Coimbatore",
+      "number_of_openings": 3,
+      "salary_range": "3LPA",
+      "skills_required": "aws , cloud, azure",
+      "posted_at": "2026-07-28T05:24:01.839Z",
+      "approval_status": "approved",
+      "views_count": 0
+    }
+  },
+  {
+    "model": "core.job",
+    "pk": 3,
+    "fields": {
+      "posted_by": 1,
+      "job_title": "full stack developer",
+      "company_name": "",
+      "job_description": "Full Stack Developer with hands-on experience in building responsive and scalable web applications.",
+      "experience_required": "1-3",
+      "job_type": "full-time",
+      "location": "Bangalore, Karnataka, India",
+      "number_of_openings": 1,
+      "salary_range": "5lpa",
+      "skills_required": "html, css, java, javascript, react sql ,backend",
+      "posted_at": "2026-07-29T06:01:14.237Z",
+      "approval_status": "approved",
+      "views_count": 0
+    }
+  },
+  {
+    "model": "core.job",
+    "pk": 4,
+    "fields": {
+      "posted_by": 1,
+      "job_title": "UI/UX Intern",
+      "company_name": "Infolexus",
+      "job_description": "To create beautiful templates and designs",
+      "experience_required": "0-1",
+      "job_type": "internship",
+      "location": "Bangalore, Karnataka, India",
+      "number_of_openings": 1,
+      "salary_range": "3LPA",
+      "skills_required": "UI/UX, Figma, Canva",
+      "posted_at": "2026-07-30T09:11:44.499Z",
+      "approval_status": "approved",
+      "views_count": 0
+    }
+  },
+  {
+    "model": "core.job",
+    "pk": 5,
+    "fields": {
+      "posted_by": 22,
+      "job_title": "Software Developer",
+      "company_name": "Demo",
+      "job_description": "Responsibilities:\r\n\r\nDevelop and maintain web applications.\r\nWrite clean and efficient code using Python, JavaScript, or similar technologies.\r\nWork with frameworks such as Django/React.\r\nDevelop and integrate APIs and databases.\r\nDebug and fix software issues.\r\nCollaborate with senior developers and team members.\r\nLearn and implement new technologies as required.\r\n\r\nRequirements:\r\n\r\nBasic knowledge of Python/JavaScript.\r\nUnderstanding of HTML, CSS, SQL, and Git/GitHub.\r\nBasic knowledge of Django or any web framework.\r\nGood problem-solving and communication skills.\r\nFreshers or candidates with internship experience can apply.",
+      "experience_required": "0-1",
+      "job_type": "full-time",
+      "location": "kochi",
+      "number_of_openings": 1,
+      "salary_range": "",
+      "skills_required": "",
+      "posted_at": "2026-08-13T09:18:22.459Z",
+      "approval_status": "approved",
+      "views_count": 0
+    }
+  },
+  {
+    "model": "core.job",
+    "pk": 6,
+    "fields": {
+      "posted_by": 22,
+      "job_title": "Python developer",
+      "company_name": "Demo",
+      "job_description": "Responsibilities:\r\n\r\nDevelop and maintain applications using Python.\r\nWork with Django/Flask and build REST APIs.\r\nWrite clean, reusable, and efficient Python code.\r\nWork with SQL databases such as MySQL/PostgreSQL.\r\nDebug, test, and fix application issues.\r\nCollaborate with senior developers and team members.\r\nUse Git/GitHub for version control.\r\n\r\nRequirements:\r\n\r\nGood understanding of Python fundamentals.\r\nBasic knowledge of Django/Flask and REST APIs.\r\nKnowledge of SQL and databases.\r\nUnderstanding of HTML, CSS, and JavaScript.\r\nFamiliarity with Git/GitHub.\r\nGood problem-solving and communication skills.\r\nFreshers and candidates with internship experience are welcome.",
+      "experience_required": "1-3",
+      "job_type": "full-time",
+      "location": "Coimbatore, Tamil Nadu",
+      "number_of_openings": 1,
+      "salary_range": "",
+      "skills_required": "Python, Java, JavaScript, OOPs, Sql",
+      "posted_at": "2026-08-13T09:20:17.239Z",
+      "approval_status": "approved",
+      "views_count": 0
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 7,
+    "fields": {
+      "job": 2,
+      "job_seeker_profile": 1,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-07-28T09:12:48.728Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 8,
+    "fields": {
+      "job": 2,
+      "job_seeker_profile": 2,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-07-28T09:28:52.507Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 11,
+    "fields": {
+      "job": 2,
+      "job_seeker_profile": 6,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "shortlisted",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-01T09:37:54.122Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 14,
+    "fields": {
+      "job": 3,
+      "job_seeker_profile": 7,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-04T05:20:37.077Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 15,
+    "fields": {
+      "job": 4,
+      "job_seeker_profile": 7,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-04T05:31:55.575Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 18,
+    "fields": {
+      "job": 2,
+      "job_seeker_profile": 10,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-06T09:12:45.433Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 20,
+    "fields": {
+      "job": 2,
+      "job_seeker_profile": 11,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-06T09:36:59.899Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 23,
+    "fields": {
+      "job": 3,
+      "job_seeker_profile": 6,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-07T05:12:17.633Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 24,
+    "fields": {
+      "job": 6,
+      "job_seeker_profile": 13,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-13T09:21:46.985Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobapplication",
+    "pk": 25,
+    "fields": {
+      "job": 5,
+      "job_seeker_profile": 13,
+      "full_name": "",
+      "email": "",
+      "phone": "",
+      "education": "",
+      "skills": "",
+      "experience": "",
+      "resume": "",
+      "cover_note": "",
+      "status": "applied",
+      "is_bookmarked": false,
+      "applied_at": "2026-08-13T09:22:10.123Z",
+      "source": "website",
+      "is_viewed": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "full_name": "Devi Sanjai",
+      "phone": "9940770515",
+      "location": "Coimbatore",
+      "education": "bsc it",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi.s_23.7.26.pdf",
+      "ats_score": null,
+      "created_at": "2026-07-27T06:34:04.438Z",
+      "updated_at": "2026-07-27T06:34:04.438Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 2,
+    "fields": {
+      "user": 4,
+      "full_name": "jesi",
+      "phone": "123456790",
+      "location": "Coimbatore",
+      "education": "bsc cs",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
+      "experience": "2",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi_JfngTTI.s_23.7.26.pdf",
+      "ats_score": null,
+      "created_at": "2026-07-28T09:28:39.295Z",
+      "updated_at": "2026-07-28T09:28:39.295Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 3,
+    "fields": {
+      "user": 8,
+      "full_name": "Devi Sanjai",
+      "phone": "9940770515",
+      "location": "Coimbatore",
+      "education": "bsc it",
+      "certificates": "\u2022\tEuron \u2014 an AI mental health chatbot built with FastAPI, LangChain, and the Groq API\r\n\u2022\tRIYA FASHION \u2014 a Vue.js e-commerce frontend project\r\n\u2022\tCar Rental System \u2014 an OOP-based project in Java\r\n\u2022\tFreeCodeCamp Responsive Web Design certification",
+      "skills": "java, java script, vue js, html , css",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi_UHUaIC9.s_23.7.26.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-01T05:03:48.499Z",
+      "updated_at": "2026-08-01T05:40:58.735Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 4,
+    "fields": {
+      "user": 9,
+      "full_name": "jesina",
+      "phone": "",
+      "location": "",
+      "education": "",
+      "certificates": "",
+      "skills": "",
+      "experience": "",
+      "preferred_job_type": "",
+      "resume": "",
+      "ats_score": null,
+      "created_at": "2026-08-01T05:05:42.103Z",
+      "updated_at": "2026-08-01T05:05:42.103Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 5,
+    "fields": {
+      "user": 10,
+      "full_name": "Devi Sanjai",
+      "phone": "9940770515",
+      "location": "Coimbatore",
+      "education": "bsc it",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi_EL6KJDw.s_23.7.26.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-01T05:42:41.343Z",
+      "updated_at": "2026-08-01T05:43:04.587Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 6,
+    "fields": {
+      "user": 11,
+      "full_name": "Angel",
+      "phone": "1234567891",
+      "location": "Coimbatore",
+      "education": "be ece",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Intern_1_1.docx",
+      "ats_score": null,
+      "created_at": "2026-08-01T05:52:19.974Z",
+      "updated_at": "2026-08-07T05:11:50.863Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 7,
+    "fields": {
+      "user": 12,
+      "full_name": "Anisha",
+      "phone": "9940770515",
+      "location": "Coimbatore",
+      "education": "bsc cs",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi.s_23.7.26_1.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-04T05:19:50.002Z",
+      "updated_at": "2026-08-04T05:20:30.724Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 8,
+    "fields": {
+      "user": 13,
+      "full_name": "samyuktha",
+      "phone": "",
+      "location": "",
+      "education": "",
+      "certificates": "",
+      "skills": "",
+      "experience": "",
+      "preferred_job_type": "",
+      "resume": "",
+      "ats_score": null,
+      "created_at": "2026-08-04T08:35:18.186Z",
+      "updated_at": "2026-08-04T08:35:18.186Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 9,
+    "fields": {
+      "user": 14,
+      "full_name": "Akchaya",
+      "phone": "",
+      "location": "",
+      "education": "",
+      "certificates": "",
+      "skills": "",
+      "experience": "",
+      "preferred_job_type": "",
+      "resume": "",
+      "ats_score": null,
+      "created_at": "2026-08-04T11:46:33.163Z",
+      "updated_at": "2026-08-04T11:46:33.163Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 10,
+    "fields": {
+      "user": 15,
+      "full_name": "kavin",
+      "phone": "1234567891",
+      "location": "Coimbatore",
+      "education": "be ece",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
+      "experience": "FRESHER",
+      "preferred_job_type": "part-time",
+      "resume": "profile_resumes/Devi_sanjai_.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-06T09:11:21.385Z",
+      "updated_at": "2026-08-06T09:11:48.697Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 11,
+    "fields": {
+      "user": 16,
+      "full_name": "Lakshmi",
+      "phone": "9940770515",
+      "location": "Coimbatore",
+      "education": "be ece",
+      "certificates": "",
+      "skills": "javascript, java, python, react, spring boot, aws",
+      "experience": "2",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi_sanjai__mdwF2iS.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-06T09:36:05.078Z",
+      "updated_at": "2026-08-06T09:36:44.584Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 12,
+    "fields": {
+      "user": 19,
+      "full_name": "Seeker",
+      "phone": "",
+      "location": "",
+      "education": "",
+      "certificates": "",
+      "skills": "",
+      "experience": "",
+      "preferred_job_type": "",
+      "resume": "",
+      "ats_score": null,
+      "created_at": "2026-08-13T09:05:24.330Z",
+      "updated_at": "2026-08-13T09:05:24.330Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 13,
+    "fields": {
+      "user": 21,
+      "full_name": "Seeker2",
+      "phone": "1234567891",
+      "location": "Coimbatore",
+      "education": "bsc it",
+      "certificates": "",
+      "skills": "java, java script, vue js, html , css",
+      "experience": "FRESHER",
+      "preferred_job_type": "full-time",
+      "resume": "profile_resumes/Devi_sanjai__1_iwDLxQ5.pdf",
+      "ats_score": null,
+      "created_at": "2026-08-13T09:13:42.549Z",
+      "updated_at": "2026-08-13T09:14:43.171Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.jobseekerprofile",
+    "pk": 14,
+    "fields": {
+      "user": 23,
+      "full_name": "Demo",
+      "phone": "",
+      "location": "",
+      "education": "",
+      "certificates": "",
+      "skills": "",
+      "experience": "",
+      "preferred_job_type": "",
+      "resume": "",
+      "ats_score": null,
+      "created_at": "2026-08-14T04:23:14.487Z",
+      "updated_at": "2026-08-14T04:23:14.487Z",
+      "is_email_verified": false,
+      "whatsapp_opted_in": true,
+      "is_experienced": false
+    }
+  },
+  {
+    "model": "core.subscriptionplan",
+    "pk": 1,
+    "fields": {
+      "name": "Free",
+      "price": 0,
+      "duration_days": 30,
+      "job_post_limit": 2,
+      "resume_view_limit": 5,
+      "includes_bgv_access": true
+    }
+  },
+  {
+    "model": "core.subscriptionplan",
+    "pk": 2,
+    "fields": {
+      "name": "Basic",
+      "price": 499,
+      "duration_days": 30,
+      "job_post_limit": 10,
+      "resume_view_limit": 50,
+      "includes_bgv_access": true
+    }
+  },
+  {
+    "model": "core.subscriptionplan",
+    "pk": 3,
+    "fields": {
+      "name": "Premium",
+      "price": 1499,
+      "duration_days": 30,
+      "job_post_limit": 50,
+      "resume_view_limit": 500,
+      "includes_bgv_access": true
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "plan": 1,
+      "started_at": "2026-07-28T05:04:24.997Z",
+      "expires_at": "2026-08-27T05:04:24.973Z",
+      "jobs_posted_count": 1,
+      "resumes_viewed_count": 5
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 2,
+    "fields": {
+      "user": 4,
+      "plan": 1,
+      "started_at": "2026-07-28T09:26:08.537Z",
+      "expires_at": "2026-08-27T09:26:08.534Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 3,
+    "fields": {
+      "user": 5,
+      "plan": 1,
+      "started_at": "2026-07-29T07:03:56.076Z",
+      "expires_at": "2026-08-28T07:03:56.074Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 4,
+    "fields": {
+      "user": 6,
+      "plan": 1,
+      "started_at": "2026-08-01T04:53:18.987Z",
+      "expires_at": "2026-08-31T04:53:18.987Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 5,
+    "fields": {
+      "user": 7,
+      "plan": 1,
+      "started_at": "2026-08-01T04:54:26.193Z",
+      "expires_at": "2026-08-31T04:54:26.193Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 6,
+    "fields": {
+      "user": 17,
+      "plan": 1,
+      "started_at": "2026-08-07T04:53:32.463Z",
+      "expires_at": "2026-09-06T04:53:32.462Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 7,
+    "fields": {
+      "user": 18,
+      "plan": 1,
+      "started_at": "2026-08-13T09:04:22.721Z",
+      "expires_at": "2026-09-12T09:04:22.720Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.employersubscription",
+    "pk": 8,
+    "fields": {
+      "user": 22,
+      "plan": 1,
+      "started_at": "2026-08-13T09:16:59.963Z",
+      "expires_at": "2026-09-12T09:16:59.963Z",
+      "jobs_posted_count": 0,
+      "resumes_viewed_count": 0
+    }
+  },
+  {
+    "model": "core.notification",
+    "pk": 1,
+    "fields": {
+      "user": 22,
+      "notification_type": "new_applicant",
+      "message": "Seeker2 applied for Python developer",
+      "link": "/candidates/manage/",
+      "is_read": false,
+      "created_at": "2026-08-13T09:21:46.991Z"
+    }
+  },
+  {
+    "model": "core.notification",
+    "pk": 2,
+    "fields": {
+      "user": 22,
+      "notification_type": "new_applicant",
+      "message": "Seeker2 applied for Software Developer",
+      "link": "/candidates/manage/",
+      "is_read": false,
+      "created_at": "2026-08-13T09:22:10.130Z"
+    }
   }
-},
-{
-  "model": "auth.user",
-  "pk": 2,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$bsZaKZAyeaNK6SEuG1SLr0$vRgDQAVnwFZJvwkQHiX6AUjDvgapJ0rKzqWAPJzKCkA=",
-    "last_login": null,
-    "is_superuser": true,
-    "username": "admin",
-    "first_name": "",
-    "last_name": "",
-    "email": "admin@gmail.com",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2026-07-20T05:21:47.601Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 3,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$NzFfAValkzUrpYxGF3nFZj$Y8btz+3pMJHpeY6apBgFE6jYhj4855zh75xkz1tJZFc=",
-    "last_login": null,
-    "is_superuser": true,
-    "username": "devisanjai",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2026-07-20T05:24:22.239Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 4,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$qagMX6Gvj9WxVKKXsYy0t1$psPI0T8+zzPUUaLAP2efjdHEoin37LZQ/sqg4VeYBqI=",
-    "last_login": "2026-07-30T05:28:36.455Z",
-    "is_superuser": false,
-    "username": "seeker1",
-    "first_name": "",
-    "last_name": "",
-    "email": "seeker1@test.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-07-28T09:26:07.004Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 5,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$sSbZANzwX1qoHyLg8G8SgG$qur3cCrXQxC2COEN6IkTAYi4tduO0/jA2fEoqkAdYYs=",
-    "last_login": null,
-    "is_superuser": false,
-    "username": "nila",
-    "first_name": "",
-    "last_name": "",
-    "email": "nila@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-07-29T07:03:54.799Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 6,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$6yA6f4m7QGvrHxUBFgw45H$6JahtAErWNQxSseXzfLCHIyJMc5lOl9QtLnz1FQ4DkY=",
-    "last_login": "2026-08-01T04:53:53.217Z",
-    "is_superuser": false,
-    "username": "hexally@gmail.com",
-    "first_name": "",
-    "last_name": "",
-    "email": "hexally@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T04:53:17.147Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 7,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$fC0IbQILnOu8kD1KXRhwWX$HttU6kJ6vU4lwTtcwuaAcN6gcDSSRUcgQyc2PwvX1GU=",
-    "last_login": "2026-08-01T04:54:27.580Z",
-    "is_superuser": false,
-    "username": "samyuktha123@gmail.com",
-    "first_name": "",
-    "last_name": "",
-    "email": "samyuktha123@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T04:54:24.928Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 8,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$19Rr042gycTEF4TukMLMAH$Lgzsq4EGkR6jMbLl5wHBaDiqcKd5aHgEUK0Jzc3PN9k=",
-    "last_login": "2026-08-01T05:30:11.562Z",
-    "is_superuser": false,
-    "username": "seeker1@test.com",
-    "first_name": "",
-    "last_name": "",
-    "email": "seeker1@test.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T05:03:46.755Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 9,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$OFiJRdyusutDajedz1ijUv$MRCqP4RfPs98gf8G431C4SCz6z/AN4EHt4d9jevPA2I=",
-    "last_login": "2026-08-01T05:05:43.477Z",
-    "is_superuser": false,
-    "username": "jesina",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T05:05:40.732Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 10,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$NP6gBp5ju1J8GSnQg4TDbD$r5t38pJvhmTAICrsrocwIMgBWX266FRpac1IXPYB2Ew=",
-    "last_login": "2026-08-01T05:42:42.669Z",
-    "is_superuser": false,
-    "username": "Devi Sanjai",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T05:42:40.091Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 11,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$7tmLVPu6kk6zzL0456ZYbX$yLwa/NzSmQWY1L763LWXYtDzViQHm719cDDFj8wI0Z4=",
-    "last_login": "2026-08-07T05:24:58.071Z",
-    "is_superuser": false,
-    "username": "Angel",
-    "first_name": "",
-    "last_name": "",
-    "email": "devisanjai2004@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-01T05:52:18.688Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 12,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$cb9XvTUT8zvdh8F0Q12T6l$AJmyYk+fKnbFClJYm6JCsyDHrgDU0c+EMqV6r1zx53Q=",
-    "last_login": "2026-08-04T06:11:18.485Z",
-    "is_superuser": false,
-    "username": "Anisha",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-04T05:19:49.098Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 13,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$hrKbaazYdSnFvEaKDVUk3y$1EFae9dDn5whE8tyKL0DLAJ5snZW8qPz9DxRsMCEsxA=",
-    "last_login": "2026-08-04T08:35:19.470Z",
-    "is_superuser": false,
-    "username": "samyuktha",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-04T08:35:16.916Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 14,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$bYZcCjJujh6ldVIqfzRFid$spzT33gBCwV69RCrKsce9HLt9p5WFJD6ZMngxX6dlME=",
-    "last_login": "2026-08-04T11:46:34.654Z",
-    "is_superuser": false,
-    "username": "Akchaya",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-04T11:46:31.871Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 15,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$hXkxSdCIEoARcmtktbkGKj$IfsgDKd/R1nL3KJdNp+k9hsAulcggCHHaRMzKe60aeI=",
-    "last_login": "2026-08-06T09:11:22.644Z",
-    "is_superuser": false,
-    "username": "kavin",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-06T09:11:20.038Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 16,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$OO97rST6uC2BD17XdHa9sb$aQU95+5nBYZmNFlAw3hRjlruRJtGqt50y5PcbS9z1Ao=",
-    "last_login": "2026-08-06T09:36:06.617Z",
-    "is_superuser": false,
-    "username": "Lakshmi",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-06T09:36:03.739Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 17,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$Yh4HePTbGY7Hmd8JlDrCJM$uxku4qp8dMjC08PxDF8gPlZFDLL5D5727pO8iwI+L9Q=",
-    "last_login": null,
-    "is_superuser": false,
-    "username": "Kavin",
-    "first_name": "",
-    "last_name": "",
-    "email": "devisanjai2004@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-07T04:53:31.108Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 18,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$OHbgWeueWyTM1YxXRzsYJP$HXOfTT1/D3TAS/Bez7SHpXlo2AVsbVzvQTkUkw1nJ+A=",
-    "last_login": "2026-08-13T09:04:23.646Z",
-    "is_superuser": false,
-    "username": "Demo@gmail.com",
-    "first_name": "",
-    "last_name": "",
-    "email": "Demo@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-13T09:04:21.876Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 19,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$KiwEPXl17TaNfxuaAskYgO$RTCS0TuJ3hrO40OplK3va5cVTsOvOkM4dlHrtZXhiTE=",
-    "last_login": "2026-08-13T09:06:02.813Z",
-    "is_superuser": false,
-    "username": "Seeker",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-13T09:05:23.446Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 20,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$bP4IUNOz47IaTmaofiUytQ$kzq/9yqadlNFQ/HwBSSnuhdyF4b2tYZPwVb/zfKW+RE=",
-    "last_login": "2026-08-13T09:12:02.463Z",
-    "is_superuser": true,
-    "username": "admin2",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2026-08-13T09:09:52.153Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 21,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$AsnC7F1kDG5Rl4z7dVq1ff$XSBVYtFQILYGbFcagf7NNmxkCVnFqj+JWf9KOtumNBs=",
-    "last_login": "2026-08-14T04:23:36.479Z",
-    "is_superuser": false,
-    "username": "Seeker2",
-    "first_name": "",
-    "last_name": "",
-    "email": "Seeker2@abc.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-13T09:13:41.710Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 22,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$CupyHru9H51UhygxZyvfwz$CsEzz3bIZZcpQsIslhEYLmjphZJe9VxNsl2/CWwtzS4=",
-    "last_login": "2026-08-17T04:37:50.352Z",
-    "is_superuser": false,
-    "username": "Demo@abc.com",
-    "first_name": "",
-    "last_name": "",
-    "email": "Demo@abc.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-13T09:16:59.078Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 23,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$VcAKoxHo8dbfMXd4kZJLn2$6YOXyWKagy1EHwH2dRdDa7lO5saCaqZlyrWQfCfhxJ8=",
-    "last_login": "2026-08-14T04:23:15.375Z",
-    "is_superuser": false,
-    "username": "Demo",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-08-14T04:23:13.678Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "2y7wjeesz613c2r9wmth0ky7w5s3c6ah",
-  "fields": {
-    "session_data": ".eJxVjDsOwjAQBe_iGln-xOs1JT1nsHazDg6gRIqTCnF3iJQC2jcz76UybWvNWytLHkWdlXPq9Dsy9Y8y7UTuNN1m3c_Tuoysd0UftOnrLOV5Ody_g0qtfutkOHCKzDKEgkk8CgzWAJjOWfHgEHy0ISEFT2gAfUgcBVKH5KhE9f4A7u83BQ:1wvp6c:0v8zfcX0vHvU-deHikrnNSUpIbdmCv-mnsEzTMNJlqA",
-    "expire_date": "2026-08-31T04:37:50.370Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "39i28ezgsg1txbw7625s6ncjoohwwil5",
-  "fields": {
-    "session_data": ".eJxVjEsOwjAMBe-SNYqcDyVmyZ4zRE5s0wJqpaZdIe4OlbqA7ZuZ9zKZ1qXPa5M5D2zOxpnD71aoPmTcAN9pvE22TuMyD8Vuit1ps9eJ5XnZ3b-Dnlr_rWM6IYDHDiVUR8SiKh6INYp3KWFB0A7AqUA9hhRZkNiFGHyHScW8P-DtN90:1wruYS:yVFaJ6d7eMscbjxDdg7_URXb4NDzqMyfPpIM2mjncUE",
-    "expire_date": "2026-08-20T09:38:24.490Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "c2ghu5h8d7u9mr7uziubyoxqi9ttsa4n",
-  "fields": {
-    "session_data": "eyJfcGFzc3dvcmRfcmVzZXRfdG9rZW4iOiJkY3h0MDUtODM3MzYyNGY5OWJmZTM3ZWM1ZDgzMGVjZjA3MWQ3MWEifQ:1wsD5J:dH8a14mtujw5LHuybmwE5lTB7e8r2N0QKtsDcm9uDtE",
-    "expire_date": "2026-08-21T05:25:33.427Z"
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 1,
-  "fields": {
-    "user": 4,
-    "phone": "",
-    "is_employer": true,
-    "company_name": "Infolexus Solutions",
-    "logo": "",
-    "about": "",
-    "industry": "",
-    "website": "",
-    "company_size": "",
-    "founded_year": null,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-07-30T04:48:12.180Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 2,
-  "fields": {
-    "user": 1,
-    "phone": "1234567891",
-    "is_employer": true,
-    "company_name": "Infolexus Solutions",
-    "logo": "",
-    "about": "",
-    "industry": "IT Services",
-    "website": "https://www.infolexus.com/",
-    "company_size": "11-50",
-    "founded_year": 2020,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-07-30T05:32:26.813Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 3,
-  "fields": {
-    "user": 6,
-    "phone": "",
-    "is_employer": true,
-    "company_name": "hexally Solutions",
-    "logo": "",
-    "about": "",
-    "industry": "",
-    "website": "",
-    "company_size": "",
-    "founded_year": null,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-08-01T04:53:18.967Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 4,
-  "fields": {
-    "user": 7,
-    "phone": "",
-    "is_employer": true,
-    "company_name": "devi solutions",
-    "logo": "",
-    "about": "",
-    "industry": "",
-    "website": "",
-    "company_size": "",
-    "founded_year": null,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-08-01T04:54:26.181Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 5,
-  "fields": {
-    "user": 18,
-    "phone": "",
-    "is_employer": true,
-    "company_name": "Demo",
-    "logo": "",
-    "about": "",
-    "industry": "",
-    "website": "",
-    "company_size": "",
-    "founded_year": null,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-08-13T09:04:22.700Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.profile",
-  "pk": 6,
-  "fields": {
-    "user": 22,
-    "phone": "",
-    "is_employer": true,
-    "company_name": "Demo",
-    "logo": "",
-    "about": "",
-    "industry": "",
-    "website": "",
-    "company_size": "",
-    "founded_year": null,
-    "address": "",
-    "city": "",
-    "state": "",
-    "created_at": "2026-08-13T09:16:59.954Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.job",
-  "pk": 2,
-  "fields": {
-    "posted_by": 1,
-    "job_title": "aws",
-    "company_name": "",
-    "job_description": "cloud, azure",
-    "experience_required": "0-1",
-    "job_type": "full-time",
-    "location": "Coimbatore",
-    "number_of_openings": 3,
-    "salary_range": "3LPA",
-    "skills_required": "aws , cloud, azure",
-    "posted_at": "2026-07-28T05:24:01.839Z"
-  }
-},
-{
-  "model": "core.job",
-  "pk": 3,
-  "fields": {
-    "posted_by": 1,
-    "job_title": "full stack developer",
-    "company_name": "",
-    "job_description": "Full Stack Developer with hands-on experience in building responsive and scalable web applications.",
-    "experience_required": "1-3",
-    "job_type": "full-time",
-    "location": "Bangalore, Karnataka, India",
-    "number_of_openings": 1,
-    "salary_range": "5lpa",
-    "skills_required": "html, css, java, javascript, react sql ,backend",
-    "posted_at": "2026-07-29T06:01:14.237Z"
-  }
-},
-{
-  "model": "core.job",
-  "pk": 4,
-  "fields": {
-    "posted_by": 1,
-    "job_title": "UI/UX Intern",
-    "company_name": "Infolexus",
-    "job_description": "To create beautiful templates and designs",
-    "experience_required": "0-1",
-    "job_type": "internship",
-    "location": "Bangalore, Karnataka, India",
-    "number_of_openings": 1,
-    "salary_range": "3LPA",
-    "skills_required": "UI/UX, Figma, Canva",
-    "posted_at": "2026-07-30T09:11:44.499Z"
-  }
-},
-{
-  "model": "core.job",
-  "pk": 5,
-  "fields": {
-    "posted_by": 22,
-    "job_title": "Software Developer",
-    "company_name": "Demo",
-    "job_description": "Responsibilities:\r\n\r\nDevelop and maintain web applications.\r\nWrite clean and efficient code using Python, JavaScript, or similar technologies.\r\nWork with frameworks such as Django/React.\r\nDevelop and integrate APIs and databases.\r\nDebug and fix software issues.\r\nCollaborate with senior developers and team members.\r\nLearn and implement new technologies as required.\r\n\r\nRequirements:\r\n\r\nBasic knowledge of Python/JavaScript.\r\nUnderstanding of HTML, CSS, SQL, and Git/GitHub.\r\nBasic knowledge of Django or any web framework.\r\nGood problem-solving and communication skills.\r\nFreshers or candidates with internship experience can apply.",
-    "experience_required": "0-1",
-    "job_type": "full-time",
-    "location": "kochi",
-    "number_of_openings": 1,
-    "salary_range": "",
-    "skills_required": "",
-    "posted_at": "2026-08-13T09:18:22.459Z"
-  }
-},
-{
-  "model": "core.job",
-  "pk": 6,
-  "fields": {
-    "posted_by": 22,
-    "job_title": "Python developer",
-    "company_name": "Demo",
-    "job_description": "Responsibilities:\r\n\r\nDevelop and maintain applications using Python.\r\nWork with Django/Flask and build REST APIs.\r\nWrite clean, reusable, and efficient Python code.\r\nWork with SQL databases such as MySQL/PostgreSQL.\r\nDebug, test, and fix application issues.\r\nCollaborate with senior developers and team members.\r\nUse Git/GitHub for version control.\r\n\r\nRequirements:\r\n\r\nGood understanding of Python fundamentals.\r\nBasic knowledge of Django/Flask and REST APIs.\r\nKnowledge of SQL and databases.\r\nUnderstanding of HTML, CSS, and JavaScript.\r\nFamiliarity with Git/GitHub.\r\nGood problem-solving and communication skills.\r\nFreshers and candidates with internship experience are welcome.",
-    "experience_required": "1-3",
-    "job_type": "full-time",
-    "location": "Coimbatore, Tamil Nadu",
-    "number_of_openings": 1,
-    "salary_range": "",
-    "skills_required": "Python, Java, JavaScript, OOPs, Sql",
-    "posted_at": "2026-08-13T09:20:17.239Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 7,
-  "fields": {
-    "job": 2,
-    "job_seeker_profile": 1,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-07-28T09:12:48.728Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 8,
-  "fields": {
-    "job": 2,
-    "job_seeker_profile": 2,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-07-28T09:28:52.507Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 11,
-  "fields": {
-    "job": 2,
-    "job_seeker_profile": 6,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "shortlisted",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-01T09:37:54.122Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 14,
-  "fields": {
-    "job": 3,
-    "job_seeker_profile": 7,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-04T05:20:37.077Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 15,
-  "fields": {
-    "job": 4,
-    "job_seeker_profile": 7,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-04T05:31:55.575Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 18,
-  "fields": {
-    "job": 2,
-    "job_seeker_profile": 10,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-06T09:12:45.433Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 20,
-  "fields": {
-    "job": 2,
-    "job_seeker_profile": 11,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-06T09:36:59.899Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 23,
-  "fields": {
-    "job": 3,
-    "job_seeker_profile": 6,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-07T05:12:17.633Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 24,
-  "fields": {
-    "job": 6,
-    "job_seeker_profile": 13,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-13T09:21:46.985Z"
-  }
-},
-{
-  "model": "core.jobapplication",
-  "pk": 25,
-  "fields": {
-    "job": 5,
-    "job_seeker_profile": 13,
-    "full_name": "",
-    "email": "",
-    "phone": "",
-    "education": "",
-    "skills": "",
-    "experience": "",
-    "resume": "",
-    "cover_note": "",
-    "status": "applied",
-    "is_bookmarked": false,
-    "applied_at": "2026-08-13T09:22:10.123Z"
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 1,
-  "fields": {
-    "user": 1,
-    "full_name": "Devi Sanjai",
-    "phone": "9940770515",
-    "location": "Coimbatore",
-    "education": "bsc it",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi.s_23.7.26.pdf",
-    "ats_score": null,
-    "created_at": "2026-07-27T06:34:04.438Z",
-    "updated_at": "2026-07-27T06:34:04.438Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 2,
-  "fields": {
-    "user": 4,
-    "full_name": "jesi",
-    "phone": "123456790",
-    "location": "Coimbatore",
-    "education": "bsc cs",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
-    "experience": "2",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi_JfngTTI.s_23.7.26.pdf",
-    "ats_score": null,
-    "created_at": "2026-07-28T09:28:39.295Z",
-    "updated_at": "2026-07-28T09:28:39.295Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 3,
-  "fields": {
-    "user": 8,
-    "full_name": "Devi Sanjai",
-    "phone": "9940770515",
-    "location": "Coimbatore",
-    "education": "bsc it",
-    "certificates": "•\tEuron — an AI mental health chatbot built with FastAPI, LangChain, and the Groq API\r\n•\tRIYA FASHION — a Vue.js e-commerce frontend project\r\n•\tCar Rental System — an OOP-based project in Java\r\n•\tFreeCodeCamp Responsive Web Design certification",
-    "skills": "java, java script, vue js, html , css",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi_UHUaIC9.s_23.7.26.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-01T05:03:48.499Z",
-    "updated_at": "2026-08-01T05:40:58.735Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 4,
-  "fields": {
-    "user": 9,
-    "full_name": "jesina",
-    "phone": "",
-    "location": "",
-    "education": "",
-    "certificates": "",
-    "skills": "",
-    "experience": "",
-    "preferred_job_type": "",
-    "resume": "",
-    "ats_score": null,
-    "created_at": "2026-08-01T05:05:42.103Z",
-    "updated_at": "2026-08-01T05:05:42.103Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 5,
-  "fields": {
-    "user": 10,
-    "full_name": "Devi Sanjai",
-    "phone": "9940770515",
-    "location": "Coimbatore",
-    "education": "bsc it",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi_EL6KJDw.s_23.7.26.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-01T05:42:41.343Z",
-    "updated_at": "2026-08-01T05:43:04.587Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 6,
-  "fields": {
-    "user": 11,
-    "full_name": "Angel",
-    "phone": "1234567891",
-    "location": "Coimbatore",
-    "education": "be ece",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Intern_1_1.docx",
-    "ats_score": null,
-    "created_at": "2026-08-01T05:52:19.974Z",
-    "updated_at": "2026-08-07T05:11:50.863Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 7,
-  "fields": {
-    "user": 12,
-    "full_name": "Anisha",
-    "phone": "9940770515",
-    "location": "Coimbatore",
-    "education": "bsc cs",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi.s_23.7.26_1.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-04T05:19:50.002Z",
-    "updated_at": "2026-08-04T05:20:30.724Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 8,
-  "fields": {
-    "user": 13,
-    "full_name": "samyuktha",
-    "phone": "",
-    "location": "",
-    "education": "",
-    "certificates": "",
-    "skills": "",
-    "experience": "",
-    "preferred_job_type": "",
-    "resume": "",
-    "ats_score": null,
-    "created_at": "2026-08-04T08:35:18.186Z",
-    "updated_at": "2026-08-04T08:35:18.186Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 9,
-  "fields": {
-    "user": 14,
-    "full_name": "Akchaya",
-    "phone": "",
-    "location": "",
-    "education": "",
-    "certificates": "",
-    "skills": "",
-    "experience": "",
-    "preferred_job_type": "",
-    "resume": "",
-    "ats_score": null,
-    "created_at": "2026-08-04T11:46:33.163Z",
-    "updated_at": "2026-08-04T11:46:33.163Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 10,
-  "fields": {
-    "user": 15,
-    "full_name": "kavin",
-    "phone": "1234567891",
-    "location": "Coimbatore",
-    "education": "be ece",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css , springboot, aws, mysql, mangodb",
-    "experience": "FRESHER",
-    "preferred_job_type": "part-time",
-    "resume": "profile_resumes/Devi_sanjai_.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-06T09:11:21.385Z",
-    "updated_at": "2026-08-06T09:11:48.697Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 11,
-  "fields": {
-    "user": 16,
-    "full_name": "Lakshmi",
-    "phone": "9940770515",
-    "location": "Coimbatore",
-    "education": "be ece",
-    "certificates": "",
-    "skills": "javascript, java, python, react, spring boot, aws",
-    "experience": "2",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi_sanjai__mdwF2iS.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-06T09:36:05.078Z",
-    "updated_at": "2026-08-06T09:36:44.584Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 12,
-  "fields": {
-    "user": 19,
-    "full_name": "Seeker",
-    "phone": "",
-    "location": "",
-    "education": "",
-    "certificates": "",
-    "skills": "",
-    "experience": "",
-    "preferred_job_type": "",
-    "resume": "",
-    "ats_score": null,
-    "created_at": "2026-08-13T09:05:24.330Z",
-    "updated_at": "2026-08-13T09:05:24.330Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 13,
-  "fields": {
-    "user": 21,
-    "full_name": "Seeker2",
-    "phone": "1234567891",
-    "location": "Coimbatore",
-    "education": "bsc it",
-    "certificates": "",
-    "skills": "java, java script, vue js, html , css",
-    "experience": "FRESHER",
-    "preferred_job_type": "full-time",
-    "resume": "profile_resumes/Devi_sanjai__1_iwDLxQ5.pdf",
-    "ats_score": null,
-    "created_at": "2026-08-13T09:13:42.549Z",
-    "updated_at": "2026-08-13T09:14:43.171Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.jobseekerprofile",
-  "pk": 14,
-  "fields": {
-    "user": 23,
-    "full_name": "Demo",
-    "phone": "",
-    "location": "",
-    "education": "",
-    "certificates": "",
-    "skills": "",
-    "experience": "",
-    "preferred_job_type": "",
-    "resume": "",
-    "ats_score": null,
-    "created_at": "2026-08-14T04:23:14.487Z",
-    "updated_at": "2026-08-14T04:23:14.487Z",
-    "is_email_verified": false
-  }
-},
-{
-  "model": "core.subscriptionplan",
-  "pk": 1,
-  "fields": {
-    "name": "Free",
-    "price": 0,
-    "duration_days": 30,
-    "job_post_limit": 2,
-    "resume_view_limit": 5
-  }
-},
-{
-  "model": "core.subscriptionplan",
-  "pk": 2,
-  "fields": {
-    "name": "Basic",
-    "price": 499,
-    "duration_days": 30,
-    "job_post_limit": 10,
-    "resume_view_limit": 50
-  }
-},
-{
-  "model": "core.subscriptionplan",
-  "pk": 3,
-  "fields": {
-    "name": "Premium",
-    "price": 1499,
-    "duration_days": 30,
-    "job_post_limit": 50,
-    "resume_view_limit": 500
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 1,
-  "fields": {
-    "user": 1,
-    "plan": 1,
-    "started_at": "2026-07-28T05:04:24.997Z",
-    "expires_at": "2026-08-27T05:04:24.973Z",
-    "jobs_posted_count": 1,
-    "resumes_viewed_count": 5
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 2,
-  "fields": {
-    "user": 4,
-    "plan": 1,
-    "started_at": "2026-07-28T09:26:08.537Z",
-    "expires_at": "2026-08-27T09:26:08.534Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 3,
-  "fields": {
-    "user": 5,
-    "plan": 1,
-    "started_at": "2026-07-29T07:03:56.076Z",
-    "expires_at": "2026-08-28T07:03:56.074Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 4,
-  "fields": {
-    "user": 6,
-    "plan": 1,
-    "started_at": "2026-08-01T04:53:18.987Z",
-    "expires_at": "2026-08-31T04:53:18.987Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 5,
-  "fields": {
-    "user": 7,
-    "plan": 1,
-    "started_at": "2026-08-01T04:54:26.193Z",
-    "expires_at": "2026-08-31T04:54:26.193Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 6,
-  "fields": {
-    "user": 17,
-    "plan": 1,
-    "started_at": "2026-08-07T04:53:32.463Z",
-    "expires_at": "2026-09-06T04:53:32.462Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 7,
-  "fields": {
-    "user": 18,
-    "plan": 1,
-    "started_at": "2026-08-13T09:04:22.721Z",
-    "expires_at": "2026-09-12T09:04:22.720Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.employersubscription",
-  "pk": 8,
-  "fields": {
-    "user": 22,
-    "plan": 1,
-    "started_at": "2026-08-13T09:16:59.963Z",
-    "expires_at": "2026-09-12T09:16:59.963Z",
-    "jobs_posted_count": 0,
-    "resumes_viewed_count": 0
-  }
-},
-{
-  "model": "core.notification",
-  "pk": 1,
-  "fields": {
-    "user": 22,
-    "notification_type": "new_applicant",
-    "message": "Seeker2 applied for Python developer",
-    "link": "/candidates/manage/",
-    "is_read": false,
-    "created_at": "2026-08-13T09:21:46.991Z"
-  }
-},
-{
-  "model": "core.notification",
-  "pk": 2,
-  "fields": {
-    "user": 22,
-    "notification_type": "new_applicant",
-    "message": "Seeker2 applied for Software Developer",
-    "link": "/candidates/manage/",
-    "is_read": false,
-    "created_at": "2026-08-13T09:22:10.130Z"
-  }
-}
 ]

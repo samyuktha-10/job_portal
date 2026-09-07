@@ -46,6 +46,7 @@
             </div>
         </div>
         <a href="{% url 'inquiries' %}">Inquiries</a>
+        <a href="{% url 'verification:company_bgv_overview' %}">Verification</a>
         <a href="{% url 'employer_settings' %}">Settings</a>
         <a href="{% url 'employer_reports' %}">Reports</a>
     </div>
@@ -63,27 +64,29 @@
     {% endif %}
     {% block content %}
     {% endblock %}
-<script>
-    function updateNotifBadge() {
-        fetch("{% url 'unread_notification_count' %}")
-            .then(res => res.json())
-            .then(data => {
-                const badge = document.getElementById('notif-badge');
-                if (badge) {
-                    if (data.unread_count > 0) {
-                        badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
+
+    <script>
+        function updateNotifBadge() {
+            fetch("{% url 'unread_notification_count' %}")
+                .then(res => res.json())
+                .then(data => {
+                    const badge = document.getElementById('notif-badge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count > 9 ? '9+' : data.count;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
                     }
-                }
-            })
-            .catch(() => { });
-    }
-    updateNotifBadge();
-    setInterval(updateNotifBadge, 30000);
-</script>
-    
+                })
+                .catch(() => { });
+        }
+        updateNotifBadge();
+        setInterval(updateNotifBadge, 30000);
+    </script>
+
+{% include "core/chatbot_widget.html" %}
 </body>
 
 </html>

@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from core.models import JobApplication
+from core.models import JobApplication, Notification
 from .models import VerificationRequest, VerificationStep
 
 
@@ -11,7 +11,7 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
     NOTE: This auto-creates a BGV the instant status becomes 'shortlisted'.
     If you'd rather the company click a 'Request BGV' button manually (recommended,
     since BGV likely costs money), remove this signal and rely only on the
-    `request_bgv` view instead. Keeping this here as an optional auto-trigger path.
+    `request_bgv` view instead.
     """
     if instance.status != "shortlisted":
         return
@@ -22,6 +22,7 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
     request = VerificationRequest.objects.create(
         application=instance,
         requested_by=instance.job.posted_by,
+        candidate_education=(instance.job_seeker_profile.education if instance.job_seeker_profile else ""),
     )
 
     for step_type, _label in VerificationStep.StepType.choices:
@@ -32,5 +33,17 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
         )
         VerificationStep.objects.create(request=request, step_type=step_type, method=method)
 
-    # TODO: send Notification (you already have a Notification model in core!)
-    # to the candidate's user account asking them to give consent + upload docs.
+    # Tell the candidate to give consent and upload documents.
+    if instance.job_seeker_profile:
+        Notification.objects.create(
+            user=instance.job_seeker_profile.user,
+            notification_type="general",
+            message=(
+                f"{instance.job.company_name or instance.job.posted_by.username} has requested "
+                f"background verification. Please upload your documents."
+            ),
+            link=f"/bgv/candidate/{request.id}/upload/",
+        )
+        # Best-effort email with the same link (never breaks the flow).
+        from .emails import send_upload_link_email
+        send_upload_link_email(request)

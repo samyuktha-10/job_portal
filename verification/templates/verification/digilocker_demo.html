@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div style="max-width: 440px; margin: 3rem auto; padding: 2rem; background: #ffffff; border: 1px solid #dbe4f0; border-radius: 16px; box-shadow: 0 12px 40px rgba(15, 42, 84, .12); font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 1.2rem;">
+    <div style="width:52px; height:52px; border-radius:12px; background:#1a56b0; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px;">🔐</div>
+    <div>
+      <div style="font-size:1.25rem; font-weight:700; color:#123a75;">DigiLocker</div>
+      <div style="font-size:.8rem; color:#5b7089;">Government of India · Document Vault</div>
+    </div>
+  </div>
+
+  <div style="background:#fff7ed; border:1px solid #fdba74; color:#9a3412; border-radius:10px; padding:.6rem .9rem; font-size:.8rem; margin-bottom:1.2rem;">
+    ⚠️ <b>DEMO MODE</b> — no real DigiLocker login happens. A simulated locker with sample
+    documents will be connected so you can test the full flow. In production, set
+    <code>DIGILOCKER_CLIENT_ID</code> / <code>DIGILOCKER_CLIENT_SECRET</code> and
+    <code>DIGILOCKER_DEMO_MODE=False</code> to use the real service.
+  </div>
+
+  <p style="font-size:.9rem; color:#33475f; margin-bottom:1rem;">
+    <b>Deploynix</b> is requesting access to your DigiLocker issued documents
+    (Aadhaar, PAN, Driving Licence, marksheets, degree certificate) for
+    background verification.
+  </p>
+
+  <form method="post" action="{% url 'verification:digilocker_demo_confirm' %}">
+    {% csrf_token %}
+    <label style="font-size:.8rem; font-weight:600; color:#33475f; display:block; margin-bottom:.35rem;">
+      DigiLocker username (demo)
+    </label>
+    <input name="username" value="{{ request.user.username }}-demo"
+           style="width:100%; padding:.6rem .8rem; border:1px solid #c4d0e0; border-radius:10px; font-size:.9rem; margin-bottom:1rem;">
+    <button type="submit" style="width:100%; background:#1a56b0; color:#fff; border:none; border-radius:10px; padding:.75rem; font-size:.95rem; font-weight:700; cursor:pointer;">
+      ✔ Authorize &amp; Connect
+    </button>
+  </form>
+  <a href="{% url 'my_applications' %}" style="display:block; text-align:center; margin-top:.9rem; font-size:.85rem; color:#5b7089; text-decoration:none;">Cancel</a>
+</div>
+{% endblock %}
