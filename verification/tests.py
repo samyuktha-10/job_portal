@@ -82,6 +82,26 @@ class DocTypeUploadTests(TestCase):
         self._post(self._step("education"), "document", small_pdf("cert.pdf"))
         self.assertEqual(VerificationDocument.objects.get(step=self._step("education")).doc_type, "document")
 
+    def test_candidate_saves_declared_address(self):
+        r = self.client.post(self.url, {
+            "save_address": "1", "candidate_address": "12, Anna Street, Chennai 600002"})
+        self.assertEqual(r.status_code, 302)
+        self.bgv.refresh_from_db()
+        self.assertIn("Anna Street", self.bgv.candidate_address)
+        self.assertContains(self.client.get(self.url), "Anna Street")
+
+    def test_verifier_sees_declared_address(self):
+        self.bgv.candidate_address = "12, Anna Street, Chennai"
+        self.bgv.save()
+        ver = User.objects.create_user("demo_verifier2", "v2@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.bgv.assigned_verifier = ver.verifier_profile
+        self.bgv.save()
+        self.client.login(username="demo_verifier2", password="pw")
+        r = self.client.get(reverse(
+            "verification:verifier_step_detail", args=[self._step("address").id]))
+        self.assertContains(r, "Anna Street")
+
     def test_candidate_page_shows_doc_type_options(self):
         r = self.client.get(self.url)
         html = r.content.decode()

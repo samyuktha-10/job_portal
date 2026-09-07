@@ -197,6 +197,12 @@ def candidate_upload(request, bgv_id):
             bgv.save(update_fields=["candidate_consent_given", "candidate_consent_at"])
             return redirect("verification:candidate_upload", bgv_id=bgv.id)
 
+        elif "save_address" in request.POST:
+            bgv.candidate_address = request.POST.get("candidate_address", "").strip()
+            bgv.save(update_fields=["candidate_address", "updated_at"])
+            messages.info(request, "Declared address saved.")
+            return redirect("verification:candidate_upload", bgv_id=bgv.id)
+
         elif "upload_step_id" in request.POST:
             step_id = request.POST.get("upload_step_id")
             step = get_object_or_404(VerificationStep, id=step_id, request=bgv)

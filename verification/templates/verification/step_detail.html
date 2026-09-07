@@ -41,6 +41,17 @@
             {% endif %}
         </div>
 
+        {% if step.step_type == 'address' %}
+        <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
+            <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Declared address (candidate-provided)</h2>
+            {% if step.request.candidate_address %}
+            <p style="margin:0; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line;">{{ step.request.candidate_address }}</p>
+            {% else %}
+            <p style="margin:0; font-size: 0.9rem; color: #64748b;">Candidate has not provided an address yet.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div style="background: #0f172a; border: 1px solid #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem;">
             <h2 style="font-size: 1rem; color:#e2e8f0; margin-bottom: 0.75rem;">Uploaded documents</h2>
             {% if step.documents.all %}

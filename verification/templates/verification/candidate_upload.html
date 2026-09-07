@@ -19,7 +19,8 @@
         {% if messages %}
         <div style="margin-bottom: 1.25rem;">
             {% for message in messages %}
-            <div style="background:#450a0a; border:1px solid #1e293b; padding:0.7rem 1rem; border-radius:10px; font-size:0.9rem; color:#f87171; margin-bottom:0.5rem;">
+            <div style="background:{% if message.tags == 'error' %}#450a0a{% else %}#052e16{% endif %}; border:1px solid #1e293b; padding:0.7rem 1rem; border-radius:10px; font-size:0.9rem;
+                color:{% if message.tags == 'error' %}#f87171{% else %}#4ade80{% endif %}; margin-bottom:0.5rem;">
                 {{ message }}
             </div>
             {% endfor %}
@@ -70,6 +71,21 @@
                 <li><strong style="color:#cbd5e1;">{{ doc.get_doc_type_display }}</strong>: {{ doc.file.name|slice:"-40:" }} — uploaded {{ doc.uploaded_at|date:"d M Y" }}</li>
                 {% endfor %}
             </ul>
+            {% endif %}
+
+            {% if step.step_type == 'address' %}
+            <form method="post" style="margin-bottom: 0.9rem;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#e2e8f0; margin-bottom:0.4rem;">
+                    Declared residential address (as it appears on your proof document)
+                </label>
+                <textarea name="candidate_address" rows="3" required
+                    style="width:100%; padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem; resize:vertical;">{{ bgv.candidate_address }}</textarea>
+                <button type="submit" name="save_address" value="1"
+                    style="margin-top:0.5rem; background:#172554; color:#93c5fd; padding:0.45rem 1rem; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                    Save address
+                </button>
+            </form>
             {% endif %}
 
             {% if step.status == 'pending' or step.status == 'rejected' %}
