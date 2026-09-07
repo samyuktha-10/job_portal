@@ -25,6 +25,14 @@ def is_verifier_or_admin(user):
     return hasattr(user, "verifier_profile") and user.verifier_profile.is_active
 
 
+def _employer_has_bgv_access(user):
+    """BGV company views are plan-gated via SubscriptionPlan.includes_bgv_access."""
+    sub = getattr(user, "subscription", None)
+    if sub is None:
+        return True  # legacy accounts without a subscription keep access
+    return bool(sub.plan.includes_bgv_access)
+
+
 def is_admin(user):
     return hasattr(user, "verifier_profile") and user.verifier_profile.role == "admin"
 
@@ -62,6 +70,10 @@ def request_bgv(request, application_id):
     Manual trigger: company clicks 'Request BGV' next to a shortlisted candidate.
     Only the employer who posted the job can request this.
     """
+    if not _employer_has_bgv_access(request.user):
+        messages.warning(request, "Your plan does not include background verification. Upgrade to unlock BGV.")
+        return redirect("subscription_plans")
+
     application = get_object_or_404(
         JobApplication, id=application_id, job__posted_by=request.user
     )
@@ -97,6 +109,10 @@ def request_bgv(request, application_id):
 @login_required
 def company_bgv_status(request, application_id):
     """Company sees a SUMMARY only - not raw documents - of a candidate's BGV."""
+    if not _employer_has_bgv_access(request.user):
+        messages.warning(request, "Your plan does not include background verification. Upgrade to unlock BGV.")
+        return redirect("subscription_plans")
+
     bgv = get_object_or_404(
         VerificationRequest, application_id=application_id, application__job__posted_by=request.user
     )
@@ -107,6 +123,10 @@ def company_bgv_status(request, application_id):
 @login_required
 def company_bgv_overview(request):
     """Dedicated sidebar page: all BGV requests across all of this company's job postings."""
+    if not _employer_has_bgv_access(request.user):
+        messages.warning(request, "Your plan does not include background verification. Upgrade to unlock BGV.")
+        return redirect("subscription_plans")
+
     status_filter = request.GET.get("status")
     base_qs = VerificationRequest.objects.filter(
         application__job__posted_by=request.user

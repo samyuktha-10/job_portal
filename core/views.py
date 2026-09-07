@@ -1439,10 +1439,27 @@ def super_admin_login(request):
                 break
 
         if user is not None and user.is_superuser:
-            # LOCAL DEV: log straight in — no OTP email needed.
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
-            return redirect("control_panel")
+            if settings.DEBUG:
+                # Local development convenience: skip the email OTP.
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                return redirect("control_panel")
+
+            otp = str(random.randint(100000, 999999))
+            request.session["sa_pending_user_id"] = user.id
+            request.session["sa_otp"] = otp
+            send_mail(
+                subject="Your Deploynix admin verification code",
+                message=f"Your verification code is: {otp}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+            print(f"[DEV] Super admin OTP for {user.email}: {otp}")
+            return render(request, "core/super_admin_login.html", {
+                "step": "verify",
+                "info": "Enter the verification code sent to your email.",
+            })
 
         return render(request, "core/super_admin_login.html", {
             "error": "Invalid credentials or not authorized as a platform admin.",
