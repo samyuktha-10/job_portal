@@ -1,39 +1,40 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Verifier Dashboard | Deploynix{% endblock %}
-
-{% block navbar %}
-<nav style="background:#030619; border-bottom:1px solid #1e293b; padding: 0.9rem 2rem; display:flex; justify-content:space-between; align-items:center;">
-    <a href="{% url 'verification:verifier_dashboard' %}" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
-        <img src="{% static 'core/assets/logo.png' %}" alt="Deploynix" style="height:36px;">
-    </a>
-    <div style="display:flex; gap:2rem; align-items:center;">
-        <a href="{% url 'verification:verifier_dashboard' %}" style="color:#ffffff; text-decoration:none; font-weight:600; border-bottom:2px solid #dc2626; padding-bottom:2px;">My Cases</a>
-        {% if request.user.verifier_profile.role == 'admin' %}
-        <a href="{% url 'verification:admin_assignment_queue' %}" style="color:#94a3b8; text-decoration:none; font-weight:600;">Assignment Queue</a>
-        {% endif %}
-    </div>
-    <div style="display:flex; align-items:center; gap:1rem;">
-        <span style="color:#cbd5e1;">Hi, {{ request.user.username }}</span>
-        <a href="{% url 'logout' %}" style="color:#e2e8f0; border:1px solid #273449; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.85rem;">Logout</a>
-    </div>
-</nav>
-{% endblock %}
+{% block title %}Background Verification | Deploynix{% endblock %}
 
 {% block content %}
 <div style="background:#030619; min-height:78vh; padding:2.5rem 1rem 4rem; color:#cbd5e1;">
 
-    <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="max-width: 1000px; margin: 0 auto;">
 
         <h1 style="font-family: 'Playfair Display', serif; font-size: 1.9rem; color:#ffffff; margin-bottom: 0.25rem;">
-            Verifier Dashboard
+            Background Verification
         </h1>
-        <p style="color: #94a3b8; margin-bottom: 1.75rem;">
-            Welcome, {{ request.user.get_full_name|default:request.user.username }} — here are your active BGV cases.
+        <p style="color: #94a3b8; margin-bottom: 1.6rem;">
+            Track background checks for candidates across all your job postings.
         </p>
 
-        {% if requests %}
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a href="?status=all" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'all' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                All ({{ counts.all }})
+            </a>
+            <a href="?status=in_progress" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'in_progress' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                In Progress ({{ counts.in_progress }})
+            </a>
+            <a href="?status=passed" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'passed' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                Passed ({{ counts.passed }})
+            </a>
+            <a href="?status=failed" style="padding: 0.4rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.85rem;
+                {% if active_filter == 'failed' %}background:#dc2626; color:#fff;{% else %}background:#0f172a; color:#cbd5e1; border:1px solid #1e293b;{% endif %}">
+                Failed ({{ counts.failed }})
+            </a>
+        </div>
+
+        {% if bgv_requests %}
         <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b;">
             <table style="width: 100%; border-collapse: collapse; background: #0f172a;">
                 <thead>
@@ -41,12 +42,12 @@
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Candidate</th>
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Job</th>
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
-                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Steps</th>
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Requested</th>
+                        <th style="padding: 0.85rem 1rem;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for bgv in requests %}
+                    {% for bgv in bgv_requests %}
                     <tr style="border-top: 1px solid #1e293b;">
                         <td style="padding: 0.85rem 1rem; color:#f1f5f9;">{{ bgv.candidate_name }}</td>
                         <td style="padding: 0.85rem 1rem; color:#f1f5f9;">
@@ -62,16 +63,10 @@
                                 {{ bgv.get_overall_status_display }}
                             </span>
                         </td>
+                        <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: #94a3b8;">{{ bgv.created_at|date:"d M Y" }}</td>
                         <td style="padding: 0.85rem 1rem;">
-                            {% for step in bgv.steps.all %}
-                            <a href="{% url 'verification:verifier_step_detail' step.id %}"
-                               style="display: inline-block; margin: 0.15rem; padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.75rem; text-decoration: none; background: #1e293b; color: #93c5fd; border: 1px solid #273449;">
-                                {{ step.get_step_type_display }}
-                            </a>
-                            {% endfor %}
-                        </td>
-                        <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: #94a3b8;">
-                            {{ bgv.created_at|date:"d M Y" }}
+                            <a href="{% url 'verification:company_bgv_status' bgv.application.id %}"
+                               style="text-decoration: none; color: #ef4444; font-weight: 600; font-size: 0.85rem;">View status &rarr;</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -80,8 +75,8 @@
         </div>
         {% else %}
         <div style="background: #0f172a; border: 1px solid #1e293b; padding: 3rem 2rem; text-align: center; border-radius: 12px;">
-            <p style="color: #94a3b8; font-size: 1.05rem;">No active cases assigned to you right now.</p>
-            <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.4rem;">New assignments will appear here automatically.</p>
+            <p style="color: #94a3b8; font-size: 1.05rem;">No background verification requests yet.</p>
+            <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.4rem;">Shortlist a candidate, then request verification from their application page.</p>
         </div>
         {% endif %}
 

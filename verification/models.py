@@ -37,9 +37,6 @@ class VerificationRequest(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    # One BGV per job application - this is the real anchor point in your schema.
-    # Gives us the candidate (via display_* properties, whether linked profile or walk-in)
-    # and the company (via application.job.posted_by) automatically.
     application = models.OneToOneField(
         "core.JobApplication", on_delete=models.CASCADE, related_name="verification_request"
     )
@@ -124,7 +121,7 @@ class VerificationStep(models.Model):
     method = models.CharField(max_length=10, choices=Method.choices, default=Method.MANUAL)
 
     remarks = models.TextField(blank=True)
-    external_reference_id = models.CharField(max_length=100, blank=True)  # vendor's request/report ID
+    external_reference_id = models.CharField(max_length=100, blank=True)
     raw_api_response = models.JSONField(null=True, blank=True)
 
     verified_by = models.ForeignKey(
@@ -147,6 +144,7 @@ class VerificationStep(models.Model):
         """Segregation-of-duties enforced: actor cannot verify their own request."""
         if actor and self.request.requested_by_id == actor.user_id:
             raise PermissionError("A requester cannot verify their own BGV request.")
+        old_status = self.status
         self.status = status
         self.remarks = remarks
         self.verified_by = actor
@@ -157,7 +155,7 @@ class VerificationStep(models.Model):
             request=self.request,
             actor=actor.user if actor else None,
             action=f"step_{self.step_type}_marked_{status}",
-            old_status=self.status,
+            old_status=old_status,
             new_status=status,
         )
 
@@ -171,9 +169,21 @@ class VerificationDocument(models.Model):
 
     step = models.ForeignKey(VerificationStep, on_delete=models.CASCADE, related_name="documents")
     file = models.FileField(upload_to=document_upload_path)
-    file_hash = models.CharField(max_length=64, blank=True)  # sha256 for integrity check
+    file_hash = models.CharField(max_length=64, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        import hashlib
+        if self.file and hasattr(self.file, "read"):
+            try:
+                hasher = hashlib.sha256()
+                for chunk in self.file.chunks():
+                    hasher.update(chunk)
+                self.file_hash = hasher.hexdigest()
+            except (ValueError, OSError):
+                pass
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Doc for {self.step}"
