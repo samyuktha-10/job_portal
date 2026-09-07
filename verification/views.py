@@ -1,5 +1,6 @@
 import json
 
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
@@ -10,7 +11,11 @@ from django.views.decorators.http import require_POST
 from core.models import JobApplication, Notification
 from .models import VerificationRequest, VerificationStep, VerifierProfile
 from django.utils import timezone
-from .models import VerificationDocument
+from .models import (
+    VerificationDocument,
+    ALLOWED_FILE_EXTENSIONS,
+    MAX_DOCUMENT_BYTES,
+)
 
 
 # ---------- Role helpers ----------
@@ -197,12 +202,27 @@ def candidate_upload(request, bgv_id):
             step = get_object_or_404(VerificationStep, id=step_id, request=bgv)
             uploaded_file = request.FILES.get("document")
             if uploaded_file:
-                VerificationDocument.objects.create(
-                    step=step, file=uploaded_file, uploaded_by=request.user
-                )
-                if step.status == VerificationStep.Status.PENDING:
-                    step.status = VerificationStep.Status.IN_REVIEW
-                    step.save(update_fields=["status", "updated_at"])
+                allowed = dict(step.allowed_doc_types)
+                doc_type = request.POST.get("doc_type", "document")
+                ext = uploaded_file.name.rsplit(".", 1)[-1].lower() if "." in uploaded_file.name else ""
+
+                if doc_type not in allowed:
+                    messages.error(
+                        request,
+                        f"'{doc_type}' is not an accepted document type for "
+                        f"{step.get_step_type_display()}. Choose one of the listed options.",
+                    )
+                elif ext not in ALLOWED_FILE_EXTENSIONS:
+                    messages.error(request, "Only PDF, JPG or PNG files are accepted.")
+                elif uploaded_file.size > MAX_DOCUMENT_BYTES:
+                    messages.error(request, "Document must be 5MB or smaller.")
+                else:
+                    VerificationDocument.objects.create(
+                        step=step, file=uploaded_file, uploaded_by=request.user, doc_type=doc_type
+                    )
+                    if step.status == VerificationStep.Status.PENDING:
+                        step.status = VerificationStep.Status.IN_REVIEW
+                        step.save(update_fields=["status", "updated_at"])
                     bgv.recalculate_overall_status()
             return redirect("verification:candidate_upload", bgv_id=bgv.id)
 

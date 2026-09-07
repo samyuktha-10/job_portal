@@ -4,6 +4,37 @@ from django.db import models
 from django.utils import timezone
 
 
+# ---------- Accepted evidence types per check ----------
+# Address: passport or any utility bill (plus common alternatives).
+# Employment: document-based verification (my chosen design) - no external vendor,
+# so it is fully testable offline and can later be swapped for an API if desired.
+STEP_DOC_TYPES = {
+    "address": [
+        ("passport", "Passport"),
+        ("utility_bill", "Utility bill (electricity / water / gas)"),
+        ("bank_statement", "Bank statement (last 3 months)"),
+        ("rental_agreement", "Rental agreement"),
+        ("aadhaar", "Aadhaar card"),
+    ],
+    "employment": [
+        ("offer_letter", "Offer / appointment letter"),
+        ("payslip", "Payslips (last 3 months)"),
+        ("pf_statement", "PF / EPF statement"),
+        ("relieving_letter", "Relieving / experience letter"),
+        ("employment_contract", "Current employment contract"),
+    ],
+}
+GENERIC_DOC_TYPE = ("document", "Supporting document")
+
+ALL_DOC_TYPES = sorted(
+    {GENERIC_DOC_TYPE} | {t for lst in STEP_DOC_TYPES.values() for t in lst},
+    key=lambda t: t[0],
+)
+
+ALLOWED_FILE_EXTENSIONS = ("pdf", "jpg", "jpeg", "png")
+MAX_DOCUMENT_BYTES = 5 * 1024 * 1024  # 5MB, consistent with the resume rule
+
+
 class VerifierProfile(models.Model):
     """Extends a Django User to be part of the internal BGV team."""
     ROLE_CHOICES = [
@@ -140,6 +171,11 @@ class VerificationStep(models.Model):
     def __str__(self):
         return f"{self.get_step_type_display()} - {self.status}"
 
+    @property
+    def allowed_doc_types(self):
+        """Accepted evidence types for this check; generic fallback otherwise."""
+        return STEP_DOC_TYPES.get(self.step_type, [GENERIC_DOC_TYPE])
+
     def mark(self, status, actor: VerifierProfile, remarks=""):
         """Segregation-of-duties enforced: actor cannot verify their own request."""
         if actor and self.request.requested_by_id == actor.user_id:
@@ -169,6 +205,7 @@ class VerificationDocument(models.Model):
 
     step = models.ForeignKey(VerificationStep, on_delete=models.CASCADE, related_name="documents")
     file = models.FileField(upload_to=document_upload_path)
+    doc_type = models.CharField(max_length=30, choices=ALL_DOC_TYPES, default="document", blank=True)
     file_hash = models.CharField(max_length=64, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
