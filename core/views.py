@@ -30,7 +30,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import (
     Job, JobApplication, Inquiry, Interview,
     JobSeekerProfile, SubscriptionPlan, EmployerSubscription, ResumeUnlock, Profile,
-    Notification, SavedJob, JobSeekerSignupOTP,
+    Notification, SavedJob, JobSeekerSignupOTP, SupportContact,
 )
 from .forms import (
     SignUpForm, EmployerLoginForm, JobSeekerLoginForm, JobPostForm,
@@ -1683,3 +1683,44 @@ def admin_plans_list(request):
         })
 
     return render(request, 'core/admin_plans_list.html', {'plans': rows})
+
+# Support chatbot + admin contact settings ----------------------------------------------------------------------------------------------------
+def support_chat(request):
+    """JSON endpoint powering the chatbot widget on every dashboard."""
+    from .chatbot import bot_reply, SUPPORTED_LANGS
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8') or '{}')
+    except (ValueError, UnicodeDecodeError):
+        data = {}
+    message = (data.get('message') or '').strip()
+    lang = data.get('lang') or 'en-IN'
+    if lang not in SUPPORTED_LANGS:
+        lang = 'en-IN'
+    if not message:
+        return JsonResponse({'error': 'message is required'}, status=400)
+
+    from django.contrib.auth.models import AnonymousUser
+    user = request.user if request.user.is_authenticated else AnonymousUser()
+    return JsonResponse(bot_reply(user, message, lang))
+
+
+@user_passes_test(_is_superuser, login_url='super_admin_login')
+def admin_support_settings(request):
+    """Super admin assigns the customer-support call / message numbers."""
+    contact = SupportContact.current()
+    saved = False
+    if request.method == 'POST':
+        contact.phone_number = request.POST.get('phone_number', '').strip()
+        contact.whatsapp_number = request.POST.get('whatsapp_number', '').strip()
+        contact.email = request.POST.get('email', '').strip()
+        contact.support_hours = request.POST.get('support_hours', '').strip()
+        contact.is_call_enabled = request.POST.get('is_call_enabled') == 'on'
+        contact.is_message_enabled = request.POST.get('is_message_enabled') == 'on'
+        contact.save()
+        saved = True
+    return render(request, 'core/admin_support_settings.html', {
+        'contact': contact,
+        'saved': saved,
+    })

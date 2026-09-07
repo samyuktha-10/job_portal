@@ -90,4 +90,6 @@ urlpatterns = [
     path('control-panel/inquiries/<int:inquiry_id>/update-status/', admin_panel_views.admin_inquiry_update_status, name='admin_inquiry_update_status'),
     path('control-panel/subscriptions/', views.admin_subscriptions_list, name='admin_subscriptions_list'),
     path('control-panel/plans/', views.admin_plans_list, name='admin_plans_list'),
+    path('control-panel/support/', views.admin_support_settings, name='admin_support_settings'),
+    path('support/chat/', views.support_chat, name='support_chat'),
 ]

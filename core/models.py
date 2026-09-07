@@ -378,3 +378,37 @@ class JobSeekerSignupOTP(models.Model):
 
     def __str__(self):
         return f"Pending signup: {self.username} ({self.email})"
+
+
+# SupportContact model ---------------------------------------------------------------------------------------------------------------
+class SupportContact(models.Model):
+    """
+    Customer-support contact details shown in the chatbot widget on every
+    dashboard. There is only ever one row (pk=1), edited by the super admin
+    from Control Panel -> Support Contact.
+    """
+    phone_number = models.CharField(max_length=20, blank=True, help_text="Support helpline number for calling")
+    whatsapp_number = models.CharField(max_length=20, blank=True, help_text="WhatsApp number for messaging (digits with country code)")
+    email = models.EmailField(blank=True)
+    support_hours = models.CharField(max_length=100, blank=True, default="Mon - Sat, 9:00 AM - 7:00 PM")
+    is_call_enabled = models.BooleanField(default=True)
+    is_message_enabled = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def current(cls):
+        obj, _created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def tel_link(self):
+        digits = "".join(ch for ch in self.phone_number if ch.isdigit() or ch == "+")
+        return f"tel:{digits}" if digits else ""
+
+    @property
+    def wa_link(self):
+        digits = "".join(ch for ch in self.whatsapp_number if ch.isdigit())
+        return f"https://wa.me/{digits}" if digits else ""
+
+    def __str__(self):
+        return f"Support: {self.phone_number or 'no phone'} / {self.whatsapp_number or 'no WhatsApp'}"
