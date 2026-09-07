@@ -43,6 +43,7 @@
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Steps</th>
                         <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Requested</th>
+                        <th style="padding: 0.85rem 1rem; color:#e2e8f0; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;">Candidate link</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,6 +73,16 @@
                         </td>
                         <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: #94a3b8;">
                             {{ bgv.created_at|date:"d M Y" }}
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <form method="post" action="{% url 'verification:resend_upload_link' bgv.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    style="background:#172554; color:#93c5fd; border:1px solid #273449; padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.78rem; font-weight:600;"
+                                    onmouseover="this.style.background='#1e3a8a'" onmouseout="this.style.background='#172554'">
+                                    &#9993; Email upload link
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}

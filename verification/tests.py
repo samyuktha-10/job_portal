@@ -179,3 +179,52 @@ class ShortlistNotificationTests(TestCase):
         self.assertIsNotNone(n)
         self.assertIn("/bgv/candidate/", n.link)
         self.assertIn("/upload/", n.link)
+
+
+class UploadLinkEmailTests(TestCase):
+    def setUp(self):
+        from django.core import mail
+        self.mail = mail
+        self.emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=self.emp, is_employer=True, company_name="Acme")
+        self.job = Job.objects.create(
+            posted_by=self.emp, job_title="UI/UX", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved", company_name="Acme",
+        )
+        self.seeker = User.objects.create_user("candidate1", "c1@x.com", "pw")
+        prof = JobSeekerProfile.objects.create(user=self.seeker, full_name="Sam", phone="9")
+        self.app = JobApplication.objects.create(job=self.job, job_seeker_profile=prof)
+
+    def _shortlist(self):
+        self.client.login(username="boss@x.com", password="pw")
+        self.client.post(reverse("update_application_status", args=[self.app.id]),
+                         {"status": "shortlisted"})
+
+    def test_shortlist_sends_upload_link_email(self):
+        self._shortlist()
+        self.assertEqual(len(self.mail.outbox), 1)
+        body = self.mail.outbox[0].body
+        self.assertIn("/bgv/candidate/", body)
+        self.assertIn("/upload/", body)
+        self.assertEqual(self.mail.outbox[0].to, ["c1@x.com"])
+
+    def test_verifier_can_resend_link(self):
+        self._shortlist()
+        self.mail.outbox.clear()
+        bgv = VerificationRequest.objects.get(application=self.app)
+        ver = User.objects.create_user("demo_verifier", "v@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.client.login(username="demo_verifier", password="pw")
+        r = self.client.post(reverse("verification:resend_upload_link", args=[bgv.id]))
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(self.mail.outbox), 1)
+
+    def test_plain_user_cannot_resend(self):
+        self._shortlist()
+        self.mail.outbox.clear()
+        bgv = VerificationRequest.objects.get(application=self.app)
+        self.client.login(username="candidate1", password="pw")
+        r = self.client.post(reverse("verification:resend_upload_link", args=[bgv.id]))
+        self.assertIn("login", r.url)  # bounced by user_passes_test, no email sent
+        self.assertEqual(len(self.mail.outbox), 0)

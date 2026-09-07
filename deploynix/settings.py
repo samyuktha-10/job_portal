@@ -136,6 +136,11 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
+# In development, print emails to the terminal instead of hitting Gmail SMTP,
+# so OTP / BGV links are always visible locally without app passwords.
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Read from Render environment variables with robust fallback
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') or config('EMAIL_HOST_USER', default='devisanjai2004@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD') or config('EMAIL_HOST_PASSWORD', default='')
@@ -145,6 +150,9 @@ SERVER_EMAIL = EMAIL_HOST_USER or 'no-reply@deploynix.in'
 
 EMAIL_TIMEOUT = 15
 LOGIN_URL = '/admin/login/'
+
+# Base URL used when building absolute links for emails (set SITE_URL on the host).
+SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
 #cookies timing -------------------------------------------------------------------------------------------------------------
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

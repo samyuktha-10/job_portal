@@ -13,6 +13,7 @@ urlpatterns = [
     path("staff/login/", views.verifier_login, name="verifier_login"),
     path("staff/verifier/", views.verifier_dashboard, name="verifier_dashboard"),
     path("staff/verifier/step/<int:step_id>/", views.verifier_step_detail, name="verifier_step_detail"),
+    path("staff/resend/<uuid:bgv_id>/", views.resend_upload_link, name="resend_upload_link"),
 
     # Admin
     path("staff/admin/queue/", views.admin_assignment_queue, name="admin_assignment_queue"),

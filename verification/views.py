@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from core.models import JobApplication, Notification
 from .models import VerificationRequest, VerificationStep, VerifierProfile
 from django.utils import timezone
+from .emails import send_upload_link_email
 from .models import (
     VerificationDocument,
     ALLOWED_FILE_EXTENSIONS,
@@ -155,6 +156,22 @@ def verifier_step_detail(request, step_id):
             return HttpResponseForbidden(str(e))
         return redirect("verification:verifier_dashboard")
     return render(request, "verification/step_detail.html", {"step": step})
+
+
+@login_required
+@user_passes_test(is_verifier_or_admin)
+@require_POST
+def resend_upload_link(request, bgv_id):
+    """Verifier/admin can (re)send the candidate the consent + upload link by email."""
+    bgv = get_object_or_404(VerificationRequest, id=bgv_id)
+    if send_upload_link_email(bgv):
+        messages.success(request, f"Upload link emailed to {bgv.candidate_email}.")
+    else:
+        messages.error(
+            request,
+            "Could not send the email (no candidate email on file, or email backend failed).",
+        )
+    return redirect(request.META.get("HTTP_REFERER") or "verification:verifier_dashboard")
 
 
 # ---------- Admin: assignment ----------

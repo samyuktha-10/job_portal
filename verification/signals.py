@@ -43,3 +43,6 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
             ),
             link=f"/bgv/candidate/{request.id}/upload/",
         )
+        # Best-effort email with the same link (never breaks the flow).
+        from .emails import send_upload_link_email
+        send_upload_link_email(request)
