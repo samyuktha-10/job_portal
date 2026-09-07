@@ -120,3 +120,40 @@ class DocTypeUploadTests(TestCase):
         r = self.client.get(reverse(
             "verification:verifier_step_detail", args=[self._step("address").id]))
         self.assertContains(r, "Utility bill")
+
+
+class EmployerBGVUITests(TestCase):
+    def setUp(self):
+        self.emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=self.emp, is_employer=True, company_name="Acme")
+        self.job = Job.objects.create(
+            posted_by=self.emp, job_title="UI/UX", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved",
+        )
+        seeker = User.objects.create_user("candidate1", "c1@x.com", "pw")
+        prof = JobSeekerProfile.objects.create(user=seeker, full_name="Sam", phone="9")
+        self.app = JobApplication.objects.create(job=self.job, job_seeker_profile=prof)
+        self.client.login(username="boss@x.com", password="pw")
+
+    def test_shortlist_autocreates_and_page_shows_bgv_link(self):
+        self.client.post(reverse("update_application_status", args=[self.app.id]),
+                         {"status": "shortlisted"})
+        r = self.client.get(reverse("manage_candidates"))
+        self.assertContains(r, "BGV: Not Started")
+
+    def test_request_bgv_button_and_manual_request(self):
+        # queryset update() bypasses the post_save signal, so no BGV exists yet
+        JobApplication.objects.filter(id=self.app.id).update(status="shortlisted")
+        self.assertContains(self.client.get(reverse("manage_candidates")), "Request BGV")
+        r = self.client.post(reverse("verification:request_bgv", args=[self.app.id]))
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(VerificationRequest.objects.filter(application_id=self.app.id).exists())
+        self.assertContains(self.client.get(reverse("manage_candidates")), "BGV: Not Started")
+
+    def test_request_bgv_requires_shortlist(self):
+        r = self.client.post(reverse("verification:request_bgv", args=[self.app.id]))
+        self.assertEqual(r.status_code, 400)
+
+    def test_employer_nav_has_verification_link(self):
+        self.assertContains(self.client.get(reverse("jobs_list")), "Verification")
