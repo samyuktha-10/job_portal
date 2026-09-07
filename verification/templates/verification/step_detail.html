@@ -70,9 +70,16 @@
             <ul style="list-style: none; padding: 0; margin: 0;">
                 {% for doc in step.documents.all %}
                 <li style="padding: 0.55rem 0; border-bottom: 1px solid #1e293b; font-size: 0.9rem; color:#cbd5e1;">
+                    {% if doc.file %}
                     &#128196; <a href="{{ doc.file.url }}" target="_blank" style="color: #ef4444; text-decoration:none;">{{ doc.file.name|slice:"20:" }}</a>
+                    {% else %}
+                    &#128196; {{ doc.digilocker_document.name|default:"DigiLocker reference" }}
+                    {% endif %}
                     <span style="background:#172554; color:#93c5fd; border-radius:999px; padding:0.1rem 0.55rem; font-size:0.7rem; margin-left:0.4rem;">{{ doc.get_doc_type_display }}</span>
-                    <span style="color: #64748b; font-size: 0.75rem;"> · uploaded {{ doc.uploaded_at|date:"d M Y, h:i A" }}</span>
+                    {% if doc.source == "digilocker" %}
+                    <span style="background:#052e16; color:#4ade80; border-radius:999px; padding:0.1rem 0.55rem; font-size:0.7rem; margin-left:0.3rem;">🔐 Via DigiLocker</span>
+                    {% endif %}
+                    <span style="color: #64748b; font-size: 0.75rem;"> · {{ doc.uploaded_at|date:"d M Y, h:i A" }}</span>
                 </li>
                 {% endfor %}
             </ul>

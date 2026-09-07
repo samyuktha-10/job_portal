@@ -155,6 +155,12 @@ LOGIN_URL = '/admin/login/'
 # Base URL used when building absolute links for emails (set SITE_URL on the host).
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
+# DigiLocker (https://digilocker.gov.in) — register at dashboard.digilocker.gov.in
+# to get real credentials. Without them the app runs the built-in demo simulator.
+DIGILOCKER_CLIENT_ID = config('DIGILOCKER_CLIENT_ID', default='')
+DIGILOCKER_CLIENT_SECRET = config('DIGILOCKER_CLIENT_SECRET', default='')
+DIGILOCKER_DEMO_MODE = config('DIGILOCKER_DEMO_MODE', default=True, cast=bool)
+
 #cookies timing -------------------------------------------------------------------------------------------------------------
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 28800

@@ -9,7 +9,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from core.models import JobApplication, Notification
-from .models import VerificationRequest, VerificationStep, VerifierProfile
+from .models import (VerificationRequest, VerificationStep, VerifierProfile,
+                   VerificationDocument, DigiLockerAccount)
+from . import digilocker as dl
 from django.utils import timezone
 from .emails import send_upload_link_email
 from .models import (
@@ -297,3 +299,126 @@ def candidate_upload(request, bgv_id):
 
     steps = bgv.steps.all().prefetch_related("documents")
     return render(request, "verification/candidate_upload.html", {"bgv": bgv, "steps": steps})
+
+# DigiLocker integration ---------------------------------------------------------------------
+def _candidate_bgvs(user):
+    return (VerificationRequest.objects
+            .filter(application__job_seeker_profile__user=user)
+            .order_by("-created_at"))
+
+
+@login_required(login_url="/job-seeker-login/")
+def digilocker_connect(request):
+    """Start linking the candidate's DigiLocker account."""
+    if hasattr(request.user, "digilocker_account"):
+        return redirect("verification:digilocker_documents")
+
+    if dl.demo_mode():
+        return render(request, "verification/digilocker_demo.html", {"demo": True})
+
+    import secrets
+    state = secrets.token_urlsafe(16)
+    request.session["digilocker_state"] = state
+    return redirect(dl.build_authorize_url(state))
+
+
+@login_required(login_url="/job-seeker-login/")
+@require_POST
+def digilocker_demo_confirm(request):
+    """Demo mode: simulate a successful DigiLocker authorization (no network)."""
+    if not dl.demo_mode():
+        return HttpResponseBadRequest("Demo mode is disabled.")
+    username = request.POST.get("username", "").strip() or f"{request.user.username}-demo"
+    account, _created = DigiLockerAccount.objects.get_or_create(
+        user=request.user,
+        defaults={"digilocker_username": username, "is_demo": True},
+    )
+    dl.save_documents(account, dl.demo_issued_documents(username))
+    messages.success(request, f"DigiLocker connected (demo) as '{username}'.")
+    return redirect("verification:digilocker_documents")
+
+
+def digilocker_callback(request):
+    """OAuth2 redirect back from api.digilocker.gov.in (real mode)."""
+    code = request.GET.get("code")
+    state = request.GET.get("state")
+    if not code or state != request.session.pop("digilocker_state", None):
+        messages.error(request, "DigiLocker authorization failed or was cancelled.")
+        return redirect("verification:digilocker_documents")
+    try:
+        token = dl.exchange_code(code)
+        access_token = token.get("access_token", "")
+        profile = dl.fetch_profile(access_token)
+        docs = dl.fetch_issued_documents(access_token)
+    except Exception:  # noqa: BLE001 - any network/API failure lands the user safely
+        messages.error(request, "Could not reach DigiLocker just now. Please try again.")
+        return redirect("verification:digilocker_documents")
+
+    from django.utils import timezone as dj_tz
+    from datetime import timedelta
+    account, _created = DigiLockerAccount.objects.update_or_create(
+        user=request.user,
+        defaults={
+            "digilocker_username": profile.get("username", request.user.username),
+            "access_token": access_token,
+            "refresh_token": token.get("refresh_token", ""),
+            "token_expires_at": dj_tz.now() + timedelta(seconds=int(token.get("expires_in", 3600))),
+            "is_demo": False,
+        },
+    )
+    saved = dl.save_documents(account, docs)
+    messages.success(request, f"DigiLocker connected. {len(saved)} document(s) found in your locker.")
+    return redirect("verification:digilocker_documents")
+
+
+@login_required(login_url="/job-seeker-login/")
+def digilocker_documents(request):
+    account = getattr(request.user, "digilocker_account", None)
+    if account is None:
+        return redirect("verification:digilocker_connect")
+    bgv = _candidate_bgvs(request.user).first()
+    steps = bgv.steps.all() if bgv else []
+    return render(request, "verification/digilocker_documents.html", {
+        "account": account,
+        "documents": account.documents.all(),
+        "bgv": bgv,
+        "steps": steps,
+    })
+
+
+@login_required(login_url="/job-seeker-login/")
+@require_POST
+def digilocker_attach(request, doc_id):
+    """Attach one DigiLocker document to a step of the candidate's BGV request."""
+    from .models import DigiLockerDocument
+    account = getattr(request.user, "digilocker_account", None)
+    if account is None:
+        return HttpResponseForbidden("Connect DigiLocker first.")
+    doc = get_object_or_404(DigiLockerDocument, id=doc_id, account=account)
+    step_id = request.POST.get("step_id")
+    step = get_object_or_404(VerificationStep, id=step_id)
+    bgv = step.request
+
+    candidate_user = getattr(bgv.application.job_seeker_profile, "user", None)
+    if candidate_user is None or candidate_user != request.user:
+        return HttpResponseForbidden("This verification request does not belong to you.")
+
+    allowed = dict(step.allowed_doc_types)
+    if doc.doc_type not in allowed:
+        messages.error(
+            request,
+            f"'{doc.name}' is not accepted for {step.get_step_type_display()}. "
+            "Attach it to a matching step instead.",
+        )
+        return redirect("verification:digilocker_documents")
+
+    VerificationDocument.objects.create(
+        step=step, doc_type=doc.doc_type, uploaded_by=request.user,
+        source="digilocker", digilocker_document=doc,
+    )
+    if step.status == VerificationStep.Status.PENDING:
+        step.status = VerificationStep.Status.IN_REVIEW
+        step.save(update_fields=["status", "updated_at"])
+    bgv.recalculate_overall_status()
+    messages.success(request, f"'{doc.name}' attached to {step.get_step_type_display()} via DigiLocker.")
+    return redirect("verification:digilocker_documents")

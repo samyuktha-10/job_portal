@@ -19,4 +19,11 @@ urlpatterns = [
     path("staff/admin/queue/", views.admin_assignment_queue, name="admin_assignment_queue"),
     path("staff/admin/assign/<uuid:bgv_id>/", views.admin_assign_verifier, name="admin_assign_verifier"),
     path("candidate/<uuid:bgv_id>/upload/", views.candidate_upload, name="candidate_upload"),
+
+    # DigiLocker
+    path("digilocker/connect/", views.digilocker_connect, name="digilocker_connect"),
+    path("digilocker/demo-confirm/", views.digilocker_demo_confirm, name="digilocker_demo_confirm"),
+    path("digilocker/callback/", views.digilocker_callback, name="digilocker_callback"),
+    path("digilocker/documents/", views.digilocker_documents, name="digilocker_documents"),
+    path("digilocker/attach/<int:doc_id>/", views.digilocker_attach, name="digilocker_attach"),
 ]

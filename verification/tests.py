@@ -1,7 +1,7 @@
 """Tests for address & employment document-type verification."""
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from core.models import Job, JobApplication, JobSeekerProfile, Profile
@@ -372,3 +372,121 @@ class IdentityCriminalTests(TestCase):
         self.bgv.refresh_from_db()
         self.assertTrue(self.bgv.criminal_declares_clean)
         self.assertContains(self._verifier_sees("criminal", "clean"), "Declares clean record")
+
+
+class DigiLockerTests(TestCase):
+    def setUp(self):
+        self.emp = User.objects.create_user("boss@x.com", "boss@x.com", "pw")
+        Profile.objects.create(user=self.emp, is_employer=True, company_name="Acme")
+        job = Job.objects.create(
+            posted_by=self.emp, job_title="Dev", job_description="d",
+            experience_required="fresher", job_type="full-time", location="R",
+            approval_status="approved", company_name="Acme")
+        self.seeker = User.objects.create_user("c1@x.com", "c1@x.com", "pw")
+        prof = JobSeekerProfile.objects.create(user=self.seeker, full_name="Sam", phone="9")
+        self.app = JobApplication.objects.create(job=job, job_seeker_profile=prof)
+        self.bgv = VerificationRequest.objects.create(application=self.app, requested_by=self.emp)
+        for st in ("identity", "education", "employment", "address", "criminal"):
+            VerificationStep.objects.create(request=self.bgv, step_type=st)
+        self.client.login(username="c1@x.com", password="pw")
+
+    def test_demo_connect_and_confirm(self):
+        r = self.client.get(reverse("verification:digilocker_connect"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "DEMO")
+        r = self.client.post(reverse("verification:digilocker_demo_confirm"),
+                             {"username": "sam-demo"})
+        self.assertEqual(r.status_code, 302)
+        account = self.seeker.digilocker_account
+        self.assertTrue(account.is_demo)
+        self.assertEqual(account.documents.count(), 5)
+        self.assertTrue(account.documents.filter(doc_key="ADHCRD").exists())
+
+    def test_documents_page_requires_connection(self):
+        r = self.client.get(reverse("verification:digilocker_documents"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("digilocker/connect", r.url)
+
+    def test_attach_to_matching_step(self):
+        self.client.post(reverse("verification:digilocker_demo_confirm"), {"username": "sam-demo"})
+        doc = self.seeker.digilocker_account.documents.get(doc_key="ADHCRD")
+        step = self.bgv.steps.get(step_type="identity")
+        r = self.client.post(reverse("verification:digilocker_attach", args=[doc.id]),
+                             {"step_id": step.id})
+        self.assertEqual(r.status_code, 302)
+        vd = VerificationDocument.objects.get(step=step, source="digilocker")
+        self.assertEqual(vd.doc_type, "aadhaar")
+        self.assertEqual(vd.digilocker_document, doc)
+        step.refresh_from_db()
+        self.assertEqual(step.status, VerificationStep.Status.IN_REVIEW)
+
+    def test_attach_to_wrong_step_rejected(self):
+        self.client.post(reverse("verification:digilocker_demo_confirm"), {"username": "sam-demo"})
+        doc = self.seeker.digilocker_account.documents.get(doc_key="ADHCRD")
+        edu_step = self.bgv.steps.get(step_type="education")
+        before = VerificationDocument.objects.count()
+        r = self.client.post(reverse("verification:digilocker_attach", args=[doc.id]),
+                             {"step_id": edu_step.id})
+        self.assertEqual(r.status_code, 302)  # back with an error message
+        self.assertEqual(VerificationDocument.objects.count(), before)
+
+    def test_attach_forbidden_for_other_users(self):
+        self.client.post(reverse("verification:digilocker_demo_confirm"), {"username": "sam-demo"})
+        doc = self.seeker.digilocker_account.documents.get(doc_key="ADHCRD")
+        self.client.login(username="boss@x.com", password="pw")
+        step = self.bgv.steps.get(step_type="identity")
+        r = self.client.post(reverse("verification:digilocker_attach", args=[doc.id]),
+                             {"step_id": step.id})
+        self.assertEqual(r.status_code, 403)
+
+    def test_verifier_sees_digilocker_badge(self):
+        self.client.post(reverse("verification:digilocker_demo_confirm"), {"username": "sam-demo"})
+        doc = self.seeker.digilocker_account.documents.get(doc_key="ADHCRD")
+        step = self.bgv.steps.get(step_type="identity")
+        self.client.post(reverse("verification:digilocker_attach", args=[doc.id]),
+                         {"step_id": step.id})
+        ver = User.objects.create_user("ver@x.com", "ver@x.com", "pw")
+        VerifierProfile.objects.create(user=ver, role="verifier")
+        self.bgv.assigned_verifier = ver.verifier_profile
+        self.bgv.save()
+        self.client.login(username="ver@x.com", password="pw")
+        r = self.client.get(reverse("verification:verifier_step_detail", args=[step.id]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Via DigiLocker")
+
+    @override_settings(DIGILOCKER_DEMO_MODE=False, DIGILOCKER_CLIENT_ID="CID123",
+                       DIGILOCKER_CLIENT_SECRET="SEC", SITE_URL="https://app.example.com")
+    def test_real_mode_redirects_to_digilocker(self):
+        r = self.client.get(reverse("verification:digilocker_connect"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("api.digilocker.gov.in/oauth2/authorize", r.url)
+        self.assertIn("client_id=CID123", r.url)
+        self.assertIn("https%3A%2F%2Fapp.example.com%2Fbgv%2Fdigilocker%2Fcallback%2F", r.url)
+        self.assertIn("digilocker_state", self.client.session)
+
+    @override_settings(DIGILOCKER_DEMO_MODE=False, DIGILOCKER_CLIENT_ID="CID123",
+                       DIGILOCKER_CLIENT_SECRET="SEC")
+    def test_real_mode_callback_saves_account(self):
+        from unittest import mock
+        self.client.get(reverse("verification:digilocker_connect"))
+        state = self.client.session["digilocker_state"]
+        with mock.patch("verification.digilocker.exchange_code",
+                        return_value={"access_token": "tok", "refresh_token": "r", "expires_in": 3600}), \
+             mock.patch("verification.digilocker.fetch_profile",
+                        return_value={"username": "sam-locker"}), \
+             mock.patch("verification.digilocker.fetch_issued_documents",
+                        return_value=[{"doc_key": "ADHCRD", "name": "Aadhaar Card",
+                                       "issued_date": "2019", "uri": "u"}]):
+            r = self.client.get(reverse("verification:digilocker_callback"),
+                                {"code": "abc", "state": state})
+        self.assertEqual(r.status_code, 302)
+        account = self.seeker.digilocker_account
+        self.assertFalse(account.is_demo)
+        self.assertEqual(account.digilocker_username, "sam-locker")
+        self.assertEqual(account.documents.count(), 1)
+
+    def test_callback_rejects_bad_state(self):
+        r = self.client.get(reverse("verification:digilocker_callback"),
+                            {"code": "abc", "state": "wrong"})
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(hasattr(self.seeker, "digilocker_account"))

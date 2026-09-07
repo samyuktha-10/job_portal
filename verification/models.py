@@ -245,11 +245,20 @@ class VerificationDocument(models.Model):
     """Uploaded evidence file per step. Store in a private bucket, never public media."""
 
     step = models.ForeignKey(VerificationStep, on_delete=models.CASCADE, related_name="documents")
-    file = models.FileField(upload_to=document_upload_path)
+    file = models.FileField(upload_to=document_upload_path, blank=True)
     doc_type = models.CharField(max_length=30, choices=ALL_DOC_TYPES, default="document", blank=True)
     file_hash = models.CharField(max_length=64, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(
+        max_length=20,
+        choices=[("upload", "Manual upload"), ("digilocker", "DigiLocker")],
+        default="upload",
+    )
+    digilocker_document = models.ForeignKey(
+        "DigiLockerDocument", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="attachments",
+    )
 
     def save(self, *args, **kwargs):
         import hashlib
@@ -288,3 +297,40 @@ class VerificationAuditLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValueError("Audit log entries cannot be deleted.")
+
+# DigiLocker models ---------------------------------------------------------------------------
+class DigiLockerAccount(models.Model):
+    """A candidate's linked DigiLocker account (OAuth tokens from api.digilocker.gov.in)."""
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name="digilocker_account")
+    digilocker_username = models.CharField(max_length=100, blank=True)
+    access_token = models.TextField(blank=True)
+    refresh_token = models.TextField(blank=True)
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    is_demo = models.BooleanField(default=False,
+                                  help_text="True when connected via the built-in demo simulator")
+    connected_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"DigiLocker: {self.user} ({'demo' if self.is_demo else 'live'})"
+
+
+class DigiLockerDocument(models.Model):
+    """An issued document available in the candidate's DigiLocker."""
+
+    account = models.ForeignKey(DigiLockerAccount, on_delete=models.CASCADE, related_name="documents")
+    doc_key = models.CharField(max_length=40, help_text="DigiLocker doc type e.g. ADHCRD, PANCARD")
+    name = models.CharField(max_length=120)
+    issued_date = models.CharField(max_length=40, blank=True)
+    uri = models.CharField(max_length=500, blank=True, help_text="DigiLocker document URI reference")
+    step_type = models.CharField(max_length=30, blank=True, help_text="Mapped BGV step type")
+    doc_type = models.CharField(max_length=30, blank=True, help_text="Mapped BGV doc_type")
+    fetched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("account", "doc_key")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.doc_key})"

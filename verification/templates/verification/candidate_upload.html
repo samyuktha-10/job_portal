@@ -16,6 +16,17 @@
             {{ bgv.application.job.company_name }}.
         </p>
 
+        <div style="background:#172554; border:1px solid #1e3a8a; border-radius:12px; padding:0.9rem 1.1rem; margin-bottom:1.4rem; display:flex; align-items:center; justify-content:space-between; gap:0.8rem; flex-wrap:wrap;">
+            <div style="font-size:0.88rem; color:#bfdbfe;">
+                🔐 Have Aadhaar, PAN, marksheets or degree in <b>DigiLocker</b>?
+                Skip the scans &mdash; fetch verified documents directly.
+            </div>
+            <a href="{% url 'verification:digilocker_connect' %}"
+               style="background:#1a56b0; color:#fff; text-decoration:none; border-radius:10px; padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:600; white-space:nowrap;">
+                Connect DigiLocker →
+            </a>
+        </div>
+
         {% if messages %}
         <div style="margin-bottom: 1.25rem;">
             {% for message in messages %}
