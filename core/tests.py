@@ -130,3 +130,28 @@ class ApplicationStatusChangeTests(TestCase):
         })
         self.application.refresh_from_db()
         self.assertEqual(self.application.status, 'applied')
+
+class RoleSeparationTests(TestCase):
+    def setUp(self):
+        self.seeker = User.objects.create_user('seeker@x.com', 'seeker@x.com', 'Pass123!')
+        JobSeekerProfile.objects.create(user=self.seeker, full_name='Seeker', phone='999')
+
+    def test_jobseeker_cannot_open_employer_pages(self):
+        self.client.login(username='seeker@x.com', password='Pass123!')
+        for url in ('/employer-dashboard/', '/company-profile/'):
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 302, url)
+            self.assertEqual(r.url, reverse('home'), url)
+
+    def test_employer_login_does_not_hijack_jobseeker_email(self):
+        r = self.client.post(reverse('employer_login'), {
+            'email': 'seeker@x.com', 'password': 'Pass123!', 'company_name': 'Evil Co'},
+            follow=True)
+        self.assertContains(r, 'registered as a job seeker')
+        self.assertFalse(hasattr(self.seeker, 'profile'))
+
+    def test_employer_can_still_access_dashboard(self):
+        emp = User.objects.create_user('emp@x.com', 'emp@x.com', 'Pass123!')
+        Profile.objects.create(user=emp, is_employer=True, company_name='Acme')
+        self.client.login(username='emp@x.com', password='Pass123!')
+        self.assertEqual(self.client.get(reverse('employer_dashboard')).status_code, 200)

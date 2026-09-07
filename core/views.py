@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from .decorators import employer_required
 from django.db.models import Q, F, Sum, Count
 from django.urls import reverse
 from django.utils import timezone
@@ -209,15 +210,31 @@ def employer_login(request):
             # Existing account — verify password
             user = authenticate(request, username=user_obj.username, password=password)
             if user is not None:
+                # A job seeker account must never be turned into an employer account.
+                if hasattr(user_obj, 'jobseeker_profile'):
+                    messages.error(
+                        request,
+                        "This email is registered as a job seeker account. "
+                        "Employer accounts need a different email.",
+                    )
+                    return render(request, 'core/employer_login.html', {'form': form})
+
                 login(request, user)
 
                 profile, created = Profile.objects.get_or_create(
                     user=user,
                     defaults={'is_employer': True, 'company_name': company_name}
                 )
-                if not created and company_name:
-                    profile.company_name = company_name
-                    profile.save()
+                if not created:
+                    changed = False
+                    if not profile.is_employer:
+                        profile.is_employer = True
+                        changed = True
+                    if company_name:
+                        profile.company_name = company_name
+                        changed = True
+                    if changed:
+                        profile.save()
 
                 return redirect('employer_dashboard')
             else:
@@ -231,7 +248,7 @@ def employer_login(request):
     return render(request, 'core/employer_login.html', {'form': form})
 
 #Employer Dashboard view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def employer_dashboard(request):
     jobs = Job.objects.filter(posted_by=request.user)
     applications = JobApplication.objects.filter(job__posted_by=request.user).order_by('-applied_at')
@@ -257,7 +274,7 @@ def employer_dashboard(request):
 
 
 #Company Profile view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def company_profile(request):
     profile, created = Profile.objects.get_or_create(
         user=request.user,
@@ -497,7 +514,7 @@ JOB_TYPE_CATEGORIES = [
 ]
 
 #Job Posting Selection view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def post_job_select(request):
     if settings.SUBSCRIPTION_ENABLED:
         subscription = getattr(request.user, 'subscription', None)
@@ -526,7 +543,7 @@ def post_job_select(request):
     return render(request, 'core/post_job_select.html', {'categories': categories})
 
 #Job Posting view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def post_job(request, job_type):
     valid_types = dict((jt, label) for jt, label, icon in JOB_TYPE_CATEGORIES)
     if job_type not in valid_types:
@@ -581,7 +598,7 @@ def job_detail(request, job_id):
     })
 
 #Employer Dashboard view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def employer_reports(request):
     jobs = Job.objects.filter(posted_by=request.user)
     job_ids = jobs.values_list('id', flat=True)
@@ -623,7 +640,7 @@ def employer_reports(request):
     return render(request, 'core/employer_reports.html', context)
 
 #Employer Settings view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def employer_settings(request):
     profile, created = Profile.objects.get_or_create(
         user=request.user, defaults={'is_employer': True}
@@ -658,7 +675,7 @@ def employer_settings(request):
     return render(request, 'core/employer_settings.html', context)
 
 #Job List view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def jobs_list(request):
     jobs = Job.objects.filter(posted_by=request.user).order_by('-posted_at')
     return render(request, 'core/jobs_list.html', {'jobs': jobs})
@@ -793,28 +810,28 @@ def _candidate_list_context(request, applications, page_title, show_search=False
         context['search_values'] = search_values
     return context
 
-@login_required(login_url='employer_login')
+@employer_required
 def new_applicants(request):
     applications = JobApplication.objects.filter(job__posted_by=request.user, status='applied').order_by('-applied_at')
     context = _candidate_list_context(request, applications, 'New Applicants')
     return render(request, 'core/candidates_list.html', context)
 
 
-@login_required(login_url='employer_login')
+@employer_required
 def manage_candidates(request):
     applications = JobApplication.objects.filter(job__posted_by=request.user).order_by('-applied_at')
     context = _candidate_list_context(request, applications, 'Manage Candidates')
     return render(request, 'core/candidates_list.html', context)
 
 
-@login_required(login_url='employer_login')
+@employer_required
 def shortlisted(request):
     applications = JobApplication.objects.filter(job__posted_by=request.user, status='shortlisted').order_by('-applied_at')
     context = _candidate_list_context(request, applications, 'Shortlisted Candidates')
     return render(request, 'core/candidates_list.html', context)
 
 
-@login_required(login_url='employer_login')
+@employer_required
 def search_resume(request):
     name = request.GET.get('name', '')
     skills = request.GET.get('skills', '')
@@ -931,7 +948,7 @@ def resend_verification(request):
     messages.info(request, 'Verification email sent. Please check your inbox.')
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
-@login_required(login_url='employer_login')
+@employer_required
 @require_POST
 def unlock_resume(request, application_id):
     application = JobApplication.objects.get(id=application_id)
@@ -958,7 +975,7 @@ def unlock_resume(request, application_id):
 
     return redirect(request.META.get('HTTP_REFERER', 'manage_candidates'))
 
-@login_required(login_url='employer_login')
+@employer_required
 def update_application_status(request, application_id):
     application = JobApplication.objects.get(id=application_id)
 
@@ -986,7 +1003,7 @@ def inquiries(request):
     return render(request, 'core/inquiries.html', {'inquiries': inquiries})
 
 
-@login_required(login_url='employer_login')
+@employer_required
 def add_candidate(request):
     if request.method == 'POST':
         form = EmployerAddCandidateForm(request.POST, request.FILES, user=request.user)
@@ -999,7 +1016,7 @@ def add_candidate(request):
     return render(request, 'core/add_candidate.html', {'form': form})
 
 
-@login_required(login_url='employer_login')
+@employer_required
 def add_interview(request):
     if request.method == 'POST':
         form = InterviewForm(request.POST, user=request.user)
@@ -1065,7 +1082,7 @@ def edit_profile(request):
 
 # ---- Subscription plans / Razorpay payment ----
 
-@login_required(login_url='employer_login')
+@employer_required
 def subscription_plans(request):
     plans = SubscriptionPlan.objects.all().order_by('price')
     current_sub = getattr(request.user, 'subscription', None)
@@ -1078,7 +1095,7 @@ def subscription_plans(request):
     })
 
 
-@login_required(login_url='employer_login')
+@employer_required
 @require_POST
 def create_razorpay_order(request, plan_id):
     plan = SubscriptionPlan.objects.get(id=plan_id)
@@ -1114,7 +1131,7 @@ def create_razorpay_order(request, plan_id):
 
 
 @csrf_exempt
-@login_required(login_url='employer_login')
+@employer_required
 @require_POST
 def verify_payment(request):
     data = json.loads(request.body)
@@ -1150,7 +1167,7 @@ def logout_view(request):
     return redirect('home')
 
 
-@login_required(login_url='employer_login')
+@employer_required
 @require_POST
 def delete_job(request, job_id):
     job = Job.objects.get(id=job_id)
@@ -1163,7 +1180,7 @@ def delete_job(request, job_id):
     messages.success(request, 'Job posting removed.')
     return redirect('jobs_list')
 
-@login_required(login_url='employer_login')
+@employer_required
 def candidate_detail(request, application_id):
     application = JobApplication.objects.get(id=application_id)
 
@@ -1383,7 +1400,7 @@ def walkin_jobs(request):
     })
 
 #edit job view ---------------------------------------------------------------------------------------------------------
-@login_required(login_url='employer_login')
+@employer_required
 def edit_job(request, job_id):
     job = get_object_or_404(Job, id=job_id)
 
