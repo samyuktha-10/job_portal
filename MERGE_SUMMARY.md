@@ -41,7 +41,7 @@ of both and removes duplicate systems.
   system (the friend's in-`core` verification was removed to avoid two competing systems).
   It provides:
   - 5 verification steps (identity, education, employment, address, criminal)
-  - DigiLocker integration stub (`verification/services/digilocker.py`)
+  - DigiLocker integration (`verification/digilocker.py` — OAuth2 + demo simulator)
   - Immutable audit log, per-step documents with SHA-256 hashing, segregation of duties
   - Company overview/status pages, verifier dashboard, admin assignment queue, candidate upload
 - **WhatsApp** opt-in field + API client (`core/whatsapp/client.py`).
@@ -64,7 +64,7 @@ of both and removes duplicate systems.
 - `company_bgv_overview` status-filter counting was corrected.
 - Two missing templates were created: `verification/company_overview.html` and
   `verification/step_detail.html`.
-- Stale tests (written against an old pre-OTP login flow) were updated; **all 9 tests pass**.
+- Stale tests (written against an old pre-OTP login flow) were updated; **all 79 tests pass** (core + verification).
 - A committed WhatsApp access token was removed from settings (now read from env vars) —
   **rotate that token**, since it was public in a GitHub repo.
 - Sample data (`datadump.json`) was patched so seeded jobs load as `approved`.
@@ -82,7 +82,7 @@ Deploynix_Job_Portal/
 │   ├── models.py         # VerificationRequest / VerificationStep / Document / AuditLog / VerifierProfile
 │   ├── views.py          # company + verifier + admin BGV views
 │   ├── urls.py           # mounted at /bgv/
-│   └── services/digilocker.py
+│   └── (services/ removed — DigiLocker now lives in verification/digilocker.py)
 ├── datadump.json         # sample data (jobs, users, plans)
 ├── build.sh              # Render build script
 ├── manage.py
@@ -137,7 +137,7 @@ The repo is already set up for **Render** (has `build.sh`, `dj-database-url`, Wh
    - Start command: `gunicorn deploynix.wsgi:application`
 3. Add environment variables (see `.env.example`): `SECRET_KEY`, `DATABASE_URL`
    (Render provides one automatically), `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`,
-   `RAZORPAY_*`, `WHATSAPP_*`, `DIGILOCKER_API_KEY`.
+   `RAZORPAY_*`, `WHATSAPP_*`, `DIGILOCKER_*`.
 
 Free alternatives: **PythonAnywhere** (Bash console → `pip install -r requirements.txt`,
 `python manage.py migrate`, `loaddata`, set up the WSGI file) or **Railway**.
@@ -146,10 +146,14 @@ Free alternatives: **PythonAnywhere** (Bash console → `pip install -r requirem
 
 ## Notes / next steps you may want
 
-- **DigiLocker**: `verification/services/digilocker.py` uses a placeholder vendor URL.
-  Replace `BASE_URL` and set `DIGILOCKER_API_KEY` to wire it to a real provider
-  (Surepass / Cashfree / IDSPay).
-- **WhatsApp**: the client is ready; add your Meta WhatsApp Business API credentials
-  and an approved template name to start sending alerts.
+- **DigiLocker**: fully implemented in `verification/digilocker.py` (OAuth2
+  authorization-code flow against `api.digilocker.gov.in`) with a built-in demo
+  simulator for local use. To go live, register at `dashboard.digilocker.gov.in`
+  and set `DIGILOCKER_CLIENT_ID`, `DIGILOCKER_CLIENT_SECRET`, and
+  `DIGILOCKER_DEMO_MODE=False` (see `.env.example`).
+- **WhatsApp**: `core/whatsapp/client.py` is ready but not yet wired into any
+  view; add your Meta WhatsApp Business API credentials and an approved template
+  name, then call `send_whatsapp_template()` from the application-status flows.
 - **Subscription gating**: `SUBSCRIPTION_ENABLED = True` in `deploynix/settings.py`
-  (set to `False` to disable paid plans while developing).
+  (set to `False` to disable paid plans while developing). Background-verification
+  company views are also gated by `SubscriptionPlan.includes_bgv_access`.

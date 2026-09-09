@@ -171,14 +171,12 @@
             <form method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="upload_step_id" value="{{ step.id }}">
-                {% if step.step_type == 'address' or step.step_type == 'employment' %}
                 <select name="doc_type" required
                     style="padding:0.55rem; background:#030619; color:#e2e8f0; border:1px solid #273449; border-radius:8px; font-size:0.9rem;">
                     {% for value, label in step.allowed_doc_types %}
                     <option value="{{ value }}">{{ label }}</option>
                     {% endfor %}
                 </select>
-                {% endif %}
                 <div style="display:flex; gap:0.75rem; align-items:center;">
                     <input type="file" name="document" required accept=".pdf,.jpg,.jpeg,.png"
                         style="flex:1; color:#94a3b8; font-size:0.85rem;">

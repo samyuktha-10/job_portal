@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% if editing %}Edit Plan{% else %}Add Plan{% endif %} - Deploynix</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f4f5f7; color: #1a1a1a; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; background: #0d0f14; color: #eaeaea; padding: 24px 0; }
+  .sidebar .brand { font-family: Georgia, serif; font-size: 20px; font-weight: bold; padding: 0 24px 24px; }
+  .sidebar .brand span { color: #e0322f; }
+  .sidebar .tag { font-size: 10px; letter-spacing: 1px; color: #8a8f9e; text-transform: uppercase; padding: 0 24px 16px; }
+  .sidebar nav a { display: block; padding: 12px 24px; color: #c7c9d1; text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
+  .sidebar nav a:hover, .sidebar nav a.active { background: #171b26; color: #fff; border-left-color: #d32f2f; }
+  .main { flex: 1; padding: 28px 36px; }
+  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
+  .form-card { background: #fff; border: 1px solid #e6e6e6; border-radius: 10px; padding: 24px; max-width: 560px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #333; }
+  .form-group input[type=text], .form-group input[type=number] {
+    width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+  }
+  .errorlist { color: #b3261e; font-size: 12px; list-style: none; margin-top: 4px; }
+  .btn { background: #d32f2f; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+  .btn:hover { background: #b3261e; }
+  .cancel { color: #555; text-decoration: none; font-size: 14px; margin-left: 12px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div>
+      <div class="brand">Deploy<span>nix</span></div>
+      <div class="tag">Provider Portal</div>
+    </div>
+    <nav>
+      <a href="{% url 'control_panel' %}">Dashboard</a>
+      <a href="{% url 'jobs_list' %}">Jobs</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
+      <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
+      <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
+      <a href="{% url 'admin_plans_list' %}" class="active">Plans</a>
+      <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
+      <a href="/admin/">Django Admin</a>
+      <a href="{% url 'admin_support_settings' %}">Support Contact</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <h1>{% if editing %}Edit Plan{% else %}Add Plan{% endif %}</h1>
+    <div class="subtitle">{% if editing %}Update {{ plan.name }}{% else %}Create a new subscription plan for employers.{% endif %}</div>
+
+    <div class="form-card">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn">Save Plan</button>
+        <a href="{% url 'admin_plans_list' %}" class="cancel">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

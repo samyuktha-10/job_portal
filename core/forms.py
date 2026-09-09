@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Job, JobApplication, Interview, JobSeekerProfile
+from .models import Job, JobApplication, Interview, JobSeekerProfile, Inquiry, SubscriptionPlan
 #SignUpForm -------------------------------------------------------------------------------------------------
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(
@@ -223,6 +223,35 @@ class JobSeekerLoginForm(forms.Form):
             'placeholder': 'Password'
         })
     )
+
+
+#PlanForm -------------------------------------------------------------------------------------------------
+class PlanForm(forms.ModelForm):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ['name', 'price', 'duration_days', 'job_post_limit', 'resume_view_limit', 'includes_bgv_access']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm'}),
+            'price': forms.NumberInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'min': 0}),
+            'duration_days': forms.NumberInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'min': 1}),
+            'job_post_limit': forms.NumberInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'min': 0}),
+            'resume_view_limit': forms.NumberInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'min': 0}),
+            'includes_bgv_access': forms.CheckboxInput(attrs={'class': 'w-5 h-5'}),
+        }
+
+
+#ContactForm -------------------------------------------------------------------------------------------------
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Inquiry
+        fields = ['name', 'email', 'phone', 'subject', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'placeholder': 'Your name'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'placeholder': 'you@example.com'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'placeholder': 'Phone (optional)'}),
+            'subject': forms.TextInput(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'placeholder': 'Subject'}),
+            'message': forms.Textarea(attrs={'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm', 'rows': 5, 'placeholder': 'How can we help?'}),
+        }
 
 
 #OTPVerifyForm -------------------------------------------------------------------------------------------------

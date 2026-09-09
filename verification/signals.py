@@ -6,23 +6,26 @@ from .models import VerificationRequest, VerificationStep
 
 
 @receiver(post_save, sender=JobApplication)
-def create_verification_request_on_shortlist(sender, instance, created, **kwargs):
+def create_verification_request_on_shortlist(sender, instance, created, raw=False, **kwargs):
     """
     NOTE: This auto-creates a BGV the instant status becomes 'shortlisted'.
     If you'd rather the company click a 'Request BGV' button manually (recommended,
     since BGV likely costs money), remove this signal and rely only on the
     `request_bgv` view instead.
     """
+    if raw:
+        return  # loaddata / migrations: related rows may not be inserted yet
     if instance.status != "shortlisted":
         return
 
     if hasattr(instance, "verification_request"):
         return  # already exists, do nothing
 
+    profile = instance.job_seeker_profile if instance.job_seeker_profile_id else None
     request = VerificationRequest.objects.create(
         application=instance,
         requested_by=instance.job.posted_by,
-        candidate_education=(instance.job_seeker_profile.education if instance.job_seeker_profile else ""),
+        candidate_education=(profile.education if profile else ""),
     )
 
     for step_type, _label in VerificationStep.StepType.choices:
@@ -34,9 +37,9 @@ def create_verification_request_on_shortlist(sender, instance, created, **kwargs
         VerificationStep.objects.create(request=request, step_type=step_type, method=method)
 
     # Tell the candidate to give consent and upload documents.
-    if instance.job_seeker_profile:
+    if profile:
         Notification.objects.create(
-            user=instance.job_seeker_profile.user,
+            user=profile.user,
             notification_type="general",
             message=(
                 f"{instance.job.company_name or instance.job.posted_by.username} has requested "
