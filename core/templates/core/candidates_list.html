@@ -86,6 +86,14 @@
                             JD Match {{ app.jd_match_score }}%
                         </span>
                         {% endif %}
+
+                        {% if app.display_resume %}
+                            {% if app.id in unlocked_ids %}
+                            <span style="font-size:0.72rem; font-weight:600; padding:0.15rem 0.6rem; border-radius:9999px; background:#ecfdf5; color:#059669;">🔓 Resume unlocked</span>
+                            {% else %}
+                            <a href="{% url 'candidate_detail' app.id %}" style="font-size:0.72rem; font-weight:600; padding:0.15rem 0.6rem; border-radius:9999px; background:#fef2f2; color:#dc2626; text-decoration:none;">🔒 Resume locked — view to unlock</a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
 

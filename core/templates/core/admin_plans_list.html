@@ -156,8 +156,16 @@
       <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
     </div>
 
-    <h1>Plans</h1>
-    <div class="subtitle">Subscription plans available to employers.</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <h1>Plans</h1>
+        <div class="subtitle">Subscription plans available to employers.</div>
+      </div>
+      <a href="{% url 'admin_plan_create' %}"
+         style="background:#d32f2f; color:#fff; text-decoration:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:bold;">
+        + Add Plan
+      </a>
+    </div>
 
     {% if plans %}
     <div class="plans-grid">
@@ -167,7 +175,21 @@
         <div class="plan-price">₹{{ plan.price }} <span>/ {{ plan.duration_days }} days</span></div>
         <div class="plan-feature">Job Posting Limit: <strong>{{ plan.job_post_limit }}</strong></div>
         <div class="plan-feature">Resume View Limit: <strong>{{ plan.resume_view_limit }}</strong></div>
+        <div class="plan-feature">BGV Access:
+          {% if plan.includes_bgv_access %}<strong style="color:#1e7e34;">Included</strong>
+          {% else %}<strong style="color:#b3261e;">Not included</strong>{% endif %}
+        </div>
         <span class="active-count">{{ plan.active_subs_count }} active subscriber{{ plan.active_subs_count|pluralize }}</span>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <a href="{% url 'admin_plan_edit' plan.id %}"
+             style="flex:1; text-align:center; background:#0d0f14; color:#fff; text-decoration:none; padding:8px 10px; border-radius:6px; font-size:13px;">Edit</a>
+          <form method="post" action="{% url 'admin_plan_delete' plan.id %}"
+                onsubmit="return confirm('Delete this plan?');" style="flex:1;">
+            {% csrf_token %}
+            <button type="submit"
+                    style="width:100%; background:#555; color:#fff; border:none; padding:8px 10px; border-radius:6px; font-size:13px; cursor:pointer;">Delete</button>
+          </form>
+        </div>
       </div>
       {% endfor %}
     </div>

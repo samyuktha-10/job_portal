@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'core',
     'verification',
 ]
@@ -52,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 ROOT_URLCONF = 'deploynix.urls'
 
@@ -125,32 +126,90 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 PROTECTED_MEDIA_ROOT = BASE_DIR / 'protected_media'
 
+# ---------------------------------------------------------------------------
+# Media / file storage.
+# On Render/Railway the local disk is ephemeral (uploads vanish on redeploy),
+# so when AWS credentials are present, user uploads (resumes, logos, BGV docs)
+# go to S3. Without them it falls back to local media/ for development.
+# ---------------------------------------------------------------------------
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='')
+AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default='')  # e.g. Cloudflare R2 / MinIO
+AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default='')  # optional CDN
+AWS_DEFAULT_ACL = None  # bucket manages its own ACL
+AWS_QUERYSTRING_AUTH = False  # public-read objects with no signed URLs
+
+USE_S3 = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME)
+
+STORAGES = {
+    "default": {
+        "BACKEND": (
+            "storages.backends.s3.S3Storage" if USE_S3
+            else "django.core.files.storage.FileSystemStorage"
+        ),
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Production security hardening.
+# In production (DEBUG=False) traffic is HTTPS via the hosting proxy, so we
+# secure cookies and enable HSTS by default; everything can be overridden via
+# environment variables on the host.
+# ---------------------------------------------------------------------------
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000 if not DEBUG else 0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=not DEBUG, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='',
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()],
+)
+
 # Razorpay
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
 SUBSCRIPTION_ENABLED = True  # Set to True to enable subscription feature
 
-# Email configuration (Gmail SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-
-# In development, print emails to the terminal instead of hitting Gmail SMTP,
-# so OTP / BGV links are always visible locally without app passwords.
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Read from Render environment variables with robust fallback
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') or config('EMAIL_HOST_USER', default='devisanjai2004@gmail.com')
+# ---------------------------------------------------------------------------
+# Email
+# ---------------------------------------------------------------------------
+# Backend is chosen like this:
+#   1. EMAIL_BACKEND env var (full dotted path) — explicit override wins.
+#   2. Otherwise SMTP when real credentials are set (EMAIL_HOST_USER + PASSWORD).
+#   3. Otherwise the console backend, so OTPs/BGV links are still visible
+#      in the runserver output while developing (DEBUG or no credentials).
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') or config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD') or config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=15, cast=int)
+
+_explicit_backend = config('EMAIL_BACKEND', default='')
+if _explicit_backend:
+    EMAIL_BACKEND = _explicit_backend
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'no-reply@deploynix.in'
 SERVER_EMAIL = EMAIL_HOST_USER or 'no-reply@deploynix.in'
 
-EMAIL_TIMEOUT = 15
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = 'job_seeker_login'
 
 # Base URL used when building absolute links for emails (set SITE_URL on the host).
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
@@ -171,6 +230,3 @@ WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID') or config(
 WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN') or config('WHATSAPP_ACCESS_TOKEN', default='')
 WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', default='v25.0')
 WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN') or config('WHATSAPP_VERIFY_TOKEN', default='')
-
-# Background verification - DigiLocker / vendor API key (verification app)
-DIGILOCKER_API_KEY = os.environ.get('DIGILOCKER_API_KEY') or config('DIGILOCKER_API_KEY', default='')

@@ -16,7 +16,8 @@ from datetime import timedelta
 from django.core.paginator import Paginator
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from pypdf import PdfReader
@@ -35,7 +36,7 @@ from .models import (
 from .forms import (
     SignUpForm, EmployerLoginForm, JobSeekerLoginForm, JobPostForm,
     JobApplicationForm, EmployerAddCandidateForm, InterviewForm, JobSeekerProfileForm,
-    OTPVerifyForm,
+    OTPVerifyForm, ContactForm, PlanForm,
 )
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
@@ -79,6 +80,16 @@ def create_notification(user, message, notification_type='general', link=''):
         notification_type=notification_type,
         link=link,
     )
+
+
+def _safe_next_url(request, fallback='home'):
+    """Return a safe relative `next` target, rejecting external/open-redirect URLs."""
+    target = request.POST.get('next') or request.GET.get('next') or ''
+    if target and url_has_allowed_host_and_scheme(
+        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return target
+    return fallback
 
 def service_detail(request, slug):
     service = SERVICES_DATA.get(slug)
@@ -149,17 +160,10 @@ def signup(request):
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             user = User.objects.create_user(username=username, email=email, password=password)
-            user.save()
-
-            free_plan = SubscriptionPlan.objects.filter(name='Free').first()
-            if free_plan:
-                EmployerSubscription.objects.create(
-                    user=user,
-                    plan=free_plan,
-                    expires_at=timezone.now() + timedelta(days=free_plan.duration_days),
-                )
-
-            return redirect('home')
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            messages.success(request, 'Account created! Complete your profile to start applying.')
+            return redirect('create_profile')
     else:
         form = SignUpForm()
     return render(request, 'core/signup.html', {'form': form})
@@ -311,6 +315,18 @@ def company_profile(request):
 def job_seeker_options(request):
     return render(request, 'core/job_seeker_options.html')
 
+
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Thanks! Your message has been sent. Our team will get back to you soon.')
+            return redirect('contact')
+    else:
+        form = ContactForm()
+    return render(request, 'core/contact.html', {'form': form})
+
 @login_required(login_url='job_seeker_login')
 def my_applications(request):
     applications = JobApplication.objects.filter(
@@ -347,7 +363,7 @@ def _send_signup_otp_email(pending):
 
 #Job Seeker Login view ---------------------------------------------------------------------------------------------------------
 def job_seeker_login(request):
-    next_url = request.POST.get('next') or request.GET.get('next') or 'home'
+    next_url = _safe_next_url(request)
     if request.method == 'POST':
         form = JobSeekerLoginForm(request.POST)
         if form.is_valid():
@@ -578,8 +594,14 @@ def post_job(request, job_type):
 
 #Job Detail view ---------------------------------------------------------------------------------------------------------
 def job_detail(request, job_id):
-    job = Job.objects.get(id=job_id)
+    job = get_object_or_404(Job, id=job_id)
     is_owner = request.user.is_authenticated and request.user == job.posted_by
+
+    # Only the posting employer (and staff) may view a job that is still
+    # pending approval or was rejected; the public must not see it.
+    if job.approval_status != 'approved' and not is_owner and not request.user.is_staff:
+        raise Http404
+
     base_template = 'core/dashboard_base.html' if is_owner else 'core/base.html'
 
     if not is_owner:
@@ -770,15 +792,16 @@ def apply_job(request, job_id):
     )
 
 #Application Success view ---------------------------------------------------------------------------------------------------------
+@login_required(login_url='job_seeker_login')
 def application_success(request, job_id):
-    job = Job.objects.get(id=job_id)
+    job = get_object_or_404(Job, id=job_id)
     return render(request, 'core/application_success.html', {'job': job})
 
 #Delete Application view ---------------------------------------------------------------------------------------------------------
 @login_required(login_url='job_seeker_login')
 @require_POST
 def delete_application(request, application_id):
-    application = JobApplication.objects.get(id=application_id)
+    application = get_object_or_404(JobApplication, id=application_id)
 
     if application.job_seeker_profile.user != request.user:
         messages.error(request, 'You are not authorized to do that.')
@@ -951,7 +974,7 @@ def resend_verification(request):
 @employer_required
 @require_POST
 def unlock_resume(request, application_id):
-    application = JobApplication.objects.get(id=application_id)
+    application = get_object_or_404(JobApplication, id=application_id)
 
     if application.job.posted_by != request.user:
         messages.error(request, 'You are not authorized to do that.')
@@ -977,7 +1000,7 @@ def unlock_resume(request, application_id):
 
 @employer_required
 def update_application_status(request, application_id):
-    application = JobApplication.objects.get(id=application_id)
+    application = get_object_or_404(JobApplication, id=application_id)
 
     if application.job.posted_by != request.user:
         messages.error(request, 'You are not authorized to do that.')
@@ -998,6 +1021,7 @@ def update_application_status(request, application_id):
 
     return redirect(request.META.get('HTTP_REFERER', 'manage_candidates'))
 
+@employer_required
 def inquiries(request):
     inquiries = Inquiry.objects.all().order_by('-created_at')
     return render(request, 'core/inquiries.html', {'inquiries': inquiries})
@@ -1041,8 +1065,7 @@ def create_profile(request):
             profile.user = request.user
             profile.save()
             messages.success(request, 'Profile created successfully.')
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
+            return redirect(_safe_next_url(request))
     else:
         form = JobSeekerProfileForm()
 
@@ -1066,7 +1089,7 @@ def edit_profile(request):
 
             messages.success(request, 'Profile updated successfully.')
 
-            next_url = request.POST.get('next') or request.GET.get('next')
+            next_url = _safe_next_url(request, fallback='')
             if next_url:
                 return redirect(next_url)
             return redirect('job_vacancies')
@@ -1076,6 +1099,34 @@ def edit_profile(request):
     return render(request, 'core/edit_profile.html', {
         'form': form,
         'next': request.GET.get('next', ''),
+        'current_email': request.user.email,
+    })
+
+
+@login_required(login_url='job_seeker_login')
+def candidate_settings(request):
+    if request.method == 'POST':
+        if 'save_account' in request.POST:
+            new_email = request.POST.get('email', '').strip()
+            if new_email:
+                request.user.email = new_email
+                request.user.save(update_fields=['email'])
+                messages.success(request, 'Account details updated.')
+            return redirect('candidate_settings')
+
+        elif 'change_password' in request.POST:
+            form = PasswordChangeForm(request.user, request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Password changed successfully.')
+            else:
+                for field_errors in form.errors.values():
+                    for error in field_errors:
+                        messages.error(request, error)
+            return redirect('candidate_settings')
+
+    return render(request, 'core/candidate_settings.html', {
         'current_email': request.user.email,
     })
 
@@ -1170,7 +1221,7 @@ def logout_view(request):
 @employer_required
 @require_POST
 def delete_job(request, job_id):
-    job = Job.objects.get(id=job_id)
+    job = get_object_or_404(Job, id=job_id)
 
     if job.posted_by != request.user:
         messages.error(request, 'You are not authorized to do that.')
@@ -1182,7 +1233,7 @@ def delete_job(request, job_id):
 
 @employer_required
 def candidate_detail(request, application_id):
-    application = JobApplication.objects.get(id=application_id)
+    application = get_object_or_404(JobApplication, id=application_id)
 
     if application.job.posted_by != request.user:
         messages.error(request, 'You are not authorized to view that.')
@@ -1192,14 +1243,24 @@ def candidate_detail(request, application_id):
         application.is_viewed = True
         application.save()
 
-    return render(request, 'core/candidate_detail.html', {'application': application})
+    # Resume is pay-per-view: gate it behind an unlock when subscriptions are on.
+    resume_unlocked = True
+    if settings.SUBSCRIPTION_ENABLED:
+        resume_unlocked = ResumeUnlock.objects.filter(
+            employer=request.user, application=application
+        ).exists()
+
+    return render(request, 'core/candidate_detail.html', {
+        'application': application,
+        'resume_unlocked': resume_unlocked,
+    })
 
 
 def internships(request):
     query = request.GET.get('q', '').strip()
     location = request.GET.get('location', '').strip()
 
-    jobs = Job.objects.filter(job_type='internship').order_by('-posted_at')
+    jobs = Job.objects.filter(job_type='internship', approval_status='approved').order_by('-posted_at')
 
     if query:
         jobs = jobs.filter(Q(job_title__icontains=query) | Q(skills_required__icontains=query))
@@ -1332,9 +1393,9 @@ def delete_account(request):
     if hasattr(user, 'jobseeker_profile'):
         JobApplication.objects.filter(job_seeker_profile=user.jobseeker_profile).delete()
 
-    logout(request)
     user.delete()
-    messages.success(request, 'Your account has been permanently deleted.')
+    # logout() after delete: it flushes the session so no stale references remain.
+    logout(request)
     return redirect('home')
 
 
@@ -1378,7 +1439,7 @@ def walkin_jobs(request):
     query = request.GET.get('q', '').strip()
     location = request.GET.get('location', '').strip()
 
-    jobs = Job.objects.filter(job_type='walk-in').order_by('-posted_at')
+    jobs = Job.objects.filter(job_type='walk-in', approval_status='approved').order_by('-posted_at')
 
     if query:
         jobs = jobs.filter(Q(job_title__icontains=query) | Q(skills_required__icontains=query))
@@ -1479,7 +1540,12 @@ def super_admin_verify(request):
 
         if entered == expected:
             UserModel = get_user_model()
-            user = UserModel.objects.get(id=user_id)
+            try:
+                user = UserModel.objects.get(id=user_id)
+            except UserModel.DoesNotExist:
+                request.session.pop('sa_otp', None)
+                request.session.pop('sa_pending_user_id', None)
+                return redirect('super_admin_login')
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
 
@@ -1679,14 +1745,59 @@ def admin_plans_list(request):
             'duration_days': plan.duration_days,
             'job_post_limit': plan.job_post_limit,
             'resume_view_limit': plan.resume_view_limit,
+            'includes_bgv_access': plan.includes_bgv_access,
             'active_subs_count': active_subs_count,
         })
 
     return render(request, 'core/admin_plans_list.html', {'plans': rows})
 
+
+@user_passes_test(_is_superuser, login_url='super_admin_login')
+def admin_plan_create(request):
+    if request.method == 'POST':
+        form = PlanForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Plan created.')
+            return redirect('admin_plans_list')
+    else:
+        form = PlanForm()
+    return render(request, 'core/admin_plan_form.html', {'form': form, 'editing': False})
+
+
+@user_passes_test(_is_superuser, login_url='super_admin_login')
+def admin_plan_edit(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    if request.method == 'POST':
+        form = PlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Plan updated.')
+            return redirect('admin_plans_list')
+    else:
+        form = PlanForm(instance=plan)
+    return render(request, 'core/admin_plan_form.html', {'form': form, 'editing': True, 'plan': plan})
+
+
+@user_passes_test(_is_superuser, login_url='super_admin_login')
+@require_POST
+def admin_plan_delete(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    name = plan.name
+    plan.delete()
+    messages.success(request, f'Deleted plan "{name}".')
+    return redirect('admin_plans_list')
+
 # Support chatbot + admin contact settings ----------------------------------------------------------------------------------------------------
+@csrf_exempt
 def support_chat(request):
-    """JSON endpoint powering the chatbot widget on every dashboard."""
+    """JSON endpoint powering the chatbot widget on every dashboard.
+
+    Read-only (returns canned replies + the caller's own counts), so it is
+    CSRF-exempt: the widget is shown on public pages where anonymous visitors
+    have no CSRF cookie, and Django would otherwise reject every message with
+    a 403.
+    """
     from .chatbot import bot_reply, SUPPORTED_LANGS
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)

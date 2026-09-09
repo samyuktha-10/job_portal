@@ -396,12 +396,14 @@ def digilocker_attach(request, doc_id):
         return HttpResponseForbidden("Connect DigiLocker first.")
     doc = get_object_or_404(DigiLockerDocument, id=doc_id, account=account)
     step_id = request.POST.get("step_id")
-    step = get_object_or_404(VerificationStep, id=step_id)
+    # Scope the step to a verification request that belongs to the logged-in
+    # candidate, so a user can never attach a document to someone else's step.
+    step = get_object_or_404(
+        VerificationStep,
+        id=step_id,
+        request__application__job_seeker_profile__user=request.user,
+    )
     bgv = step.request
-
-    candidate_user = getattr(bgv.application.job_seeker_profile, "user", None)
-    if candidate_user is None or candidate_user != request.user:
-        return HttpResponseForbidden("This verification request does not belong to you.")
 
     allowed = dict(step.allowed_doc_types)
     if doc.doc_type not in allowed:

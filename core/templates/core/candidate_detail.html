@@ -20,7 +20,18 @@
             <div><strong>Cover Note:</strong> {{ application.cover_note }}</div>
             {% endif %}
             {% if application.display_resume %}
-            <div><a href="{{ application.display_resume.url }}" target="_blank" class="dashboard-action-btn" style="display:inline-block; width:auto;">View Resume 📄</a></div>
+            <div>
+                {% if resume_unlocked %}
+                <a href="{{ application.display_resume.url }}" target="_blank" class="dashboard-action-btn" style="display:inline-block; width:auto;">View Resume 📄</a>
+                {% else %}
+                <form method="post" action="{% url 'unlock_resume' application.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="dashboard-action-btn" style="display:inline-block; width:auto; background: #dc2626; color: white; border: none; cursor: pointer;">
+                        🔒 Unlock Resume (uses 1 resume credit)
+                    </button>
+                </form>
+                {% endif %}
+            </div>
             {% endif %}
 
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f3f4f6;">

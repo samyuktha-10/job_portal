@@ -56,7 +56,7 @@ class Job(models.Model):
         ('part-time', 'Part-time'),
         ('internship', 'Internship'),
         ('remote', 'Remote'),
-        ('Walk-in', 'Walk-in'),
+        ('walk-in', 'Walk-in'),
     ]
 
     APPROVAL_CHOICES = [
