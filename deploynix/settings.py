@@ -230,3 +230,5 @@ WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID') or config(
 WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN') or config('WHATSAPP_ACCESS_TOKEN', default='')
 WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', default='v25.0')
 WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN') or config('WHATSAPP_VERIFY_TOKEN', default='')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
