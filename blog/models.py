@@ -24,17 +24,25 @@ CATEGORIES = [
 ]
 CATEGORY_DICT = dict(CATEGORIES)
 
-# key -> CSS gradient (inline style, no Tailwind dependency)
+# key -> (admin label, CSS gradient used as inline style)
 BANNERS = [
-    ("purple", "linear-gradient(135deg, #a855f7 0%, #6d28d9 100%)"),
-    ("blue", "linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)"),
-    ("pink", "linear-gradient(135deg, #f472b6 0%, #be185d 100%)"),
-    ("teal", "linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%)"),
-    ("amber", "linear-gradient(135deg, #fbbf24 0%, #b45309 100%)"),
-    ("green", "linear-gradient(135deg, #4ade80 0%, #15803d 100%)"),
-    ("slate", "linear-gradient(135deg, #64748b 0%, #1e293b 100%)"),
+    ("purple", "Purple"),
+    ("blue", "Blue"),
+    ("pink", "Pink"),
+    ("teal", "Teal"),
+    ("amber", "Amber"),
+    ("green", "Green"),
+    ("slate", "Slate"),
 ]
-BANNER_DICT = dict(BANNERS)
+BANNER_CSS = {
+    "purple": "linear-gradient(135deg, #a855f7 0%, #6d28d9 100%)",
+    "blue": "linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)",
+    "pink": "linear-gradient(135deg, #f472b6 0%, #be185d 100%)",
+    "teal": "linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%)",
+    "amber": "linear-gradient(135deg, #fbbf24 0%, #b45309 100%)",
+    "green": "linear-gradient(135deg, #4ade80 0%, #15803d 100%)",
+    "slate": "linear-gradient(135deg, #64748b 0%, #1e293b 100%)",
+}
 
 AVATAR_COLORS = [
     ("red", "#dc2626"),
@@ -131,7 +139,7 @@ class BlogPost(models.Model):
     # ---- display helpers -------------------------------------------------
     @property
     def banner_style(self):
-        return BANNER_DICT.get(self.banner, BANNER_DICT["blue"])
+        return BANNER_CSS.get(self.banner, BANNER_CSS["blue"])
 
     @property
     def tags_list(self):
