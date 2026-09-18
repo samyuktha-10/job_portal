@@ -58,6 +58,10 @@ def verifier_login(request):
             error = "This login is for verification staff only."
         else:
             login(request, user)
+            if request.POST.get("remember_me"):
+                request.session.set_expiry(60 * 60 * 24 * 14)
+            else:
+                request.session.set_expiry(0)
             return redirect("verification:verifier_dashboard")
 
     return render(request, "verification/verifier_login.html", {"error": error})

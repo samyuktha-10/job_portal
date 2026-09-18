@@ -91,6 +91,7 @@ urlpatterns = [
     path('control-panel/inquiries/', admin_panel_views.admin_inquiries_list, name='admin_inquiries_list'),
     path('control-panel/inquiries/<int:inquiry_id>/update-status/', admin_panel_views.admin_inquiry_update_status, name='admin_inquiry_update_status'),
     path('control-panel/subscriptions/', views.admin_subscriptions_list, name='admin_subscriptions_list'),
+    path('control-panel/paid-members/', views.admin_paid_members_list, name='admin_paid_members_list'),
     path('control-panel/plans/', views.admin_plans_list, name='admin_plans_list'),
     path('control-panel/plans/new/', views.admin_plan_create, name='admin_plan_create'),
     path('control-panel/plans/<int:plan_id>/edit/', views.admin_plan_edit, name='admin_plan_edit'),

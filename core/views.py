@@ -205,6 +205,7 @@ def employer_login(request):
 
                 user = authenticate(request, username=username, password=password)
                 login(request, user)
+                _apply_remember_me(request)
 
                 if user_obj.email:
                     send_verification_email(request, user_obj)
@@ -224,6 +225,7 @@ def employer_login(request):
                     return render(request, 'core/employer_login.html', {'form': form})
 
                 login(request, user)
+                _apply_remember_me(request)
 
                 profile, created = Profile.objects.get_or_create(
                     user=user,
@@ -362,6 +364,32 @@ def _send_signup_otp_email(pending):
         return False
 
 #Job Seeker Login view ---------------------------------------------------------------------------------------------------------
+def _looks_like_mobile(text):
+    """True when the login identifier looks like a phone number, not a username."""
+    digits = re.sub(r'\D', '', text or '')
+    return len(digits) >= 10 and len(re.sub(r'[\d\s+()-]', '', text or '')) == 0
+
+
+def _normalize_mobile(text):
+    """Return the 10-digit Indian mobile from text like '+91 98765 43210', or None."""
+    digits = re.sub(r'\D', '', text or '')
+    if len(digits) == 12 and digits.startswith('91'):
+        digits = digits[2:]
+    elif len(digits) == 11 and digits.startswith('0'):
+        digits = digits[1:]
+    if len(digits) == 10 and digits[0] in '6789':
+        return digits
+    return None
+
+
+def _apply_remember_me(request):
+    """'Remember me' checked -> stay logged in 2 weeks; unchecked -> logout when the browser closes."""
+    if request.POST.get('remember_me'):
+        request.session.set_expiry(60 * 60 * 24 * 14)
+    else:
+        request.session.set_expiry(0)
+
+
 def job_seeker_login(request):
     next_url = _safe_next_url(request)
     if request.method == 'POST':
@@ -372,6 +400,20 @@ def job_seeker_login(request):
             password = form.cleaned_data['password']
 
             user_obj = User.objects.filter(username__iexact=username).first()
+
+            # Easy login: the same box also accepts a 10-digit mobile number
+            # (with or without +91 / leading 0) matched against profile phones.
+            if user_obj is None and _looks_like_mobile(username):
+                mobile = _normalize_mobile(username)
+                user_obj = (User.objects.filter(jobseeker_profile__phone=mobile).first()
+                            if mobile else None)
+                if user_obj is None:
+                    messages.error(
+                        request,
+                        'No job seeker account found for this mobile number. '
+                        'Use your username, or tap Create Profile to sign up.')
+                    return render(request, 'core/job_seeker_login.html',
+                                  {'form': form, 'next': next_url})
 
             if user_obj is None:
                 if not email:
@@ -402,6 +444,7 @@ def job_seeker_login(request):
                 user = authenticate(request, username=user_obj.username, password=password)
                 if user is not None:
                     login(request, user)
+                    _apply_remember_me(request)
                     return redirect(next_url)
                 else:
                     messages.error(request, 'Incorrect password. If this is a new account, use a different username.')
@@ -1500,10 +1543,13 @@ def super_admin_login(request):
                 break
 
         if user is not None and user.is_superuser:
+            # Carry the checkbox across the OTP step.
+            request.session['sa_remember'] = '1' if request.POST.get('remember_me') else ''
             if settings.DEBUG:
                 # Local development convenience: skip the email OTP.
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
+                _apply_remember_me(request)
                 return redirect("control_panel")
 
             otp = str(random.randint(100000, 999999))
@@ -1548,6 +1594,10 @@ def super_admin_verify(request):
                 return redirect('super_admin_login')
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
+            if request.session.pop('sa_remember', '') == '1':
+                request.session.set_expiry(60 * 60 * 24 * 14)
+            else:
+                request.session.set_expiry(0)
 
             del request.session["sa_otp"]
             del request.session["sa_pending_user_id"]
@@ -1726,6 +1776,49 @@ def admin_subscriptions_list(request):
         'page_obj': page_obj,
         'search': search,
         'status_filter': status_filter,
+    })
+
+
+@user_passes_test(_is_superuser, login_url='super_admin_login')
+def admin_paid_members_list(request):
+    """Paid people list: every employer on a plan that costs money."""
+    now = timezone.now()
+    subs = (EmployerSubscription.objects
+            .select_related('user', 'plan')
+            .exclude(plan__price=0)
+            .order_by('-expires_at'))
+
+    search = request.GET.get('search', '').strip()
+    if search:
+        subs = subs.filter(
+            Q(user__username__icontains=search) | Q(user__email__icontains=search)
+        )
+
+    rows = []
+    for sub in subs:
+        profile = Profile.objects.filter(user=sub.user).first()
+        rows.append({
+            'company_name': profile.company_name if profile else sub.user.username,
+            'email': sub.user.email,
+            'plan_name': sub.plan.name if sub.plan else '—',
+            'price': sub.plan.price if sub.plan else 0,
+            'is_active': sub.expires_at > now,
+            'started_at': sub.started_at,
+            'expires_at': sub.expires_at,
+        })
+
+    total_revenue = sum(r['price'] for r in rows)
+    active_count = sum(1 for r in rows if r['is_active'])
+
+    paginator = Paginator(rows, 20)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'core/admin_paid_members_list.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'total_revenue': total_revenue,
+        'paid_count': len(rows),
+        'active_count': active_count,
     })
 
 
