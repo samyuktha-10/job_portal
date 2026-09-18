@@ -1,9 +1,11 @@
 {% load static %}
-{# ============================================================
-   Deploynix Support Chatbot — floating widget (bottom-right).
-   Included in base.html and dashboard_base.html, so it appears
-   on every public page and every dashboard.
-   ============================================================ #}
+{% comment %}
+Deploynix Support Chatbot — floating widget (bottom-right).
+Included in base.html and dashboard_base.html, so it appears
+on every public page and every dashboard.
+(NOTE: Django only strips SINGLE-LINE {# ... #} comments; multi-line
+comments leak into the page, so this block must stay {% comment %}.)
+{% endcomment %}
 <style>
   #dnx-chat-btn {
     position: fixed; right: 22px; bottom: 22px; z-index: 9998;
