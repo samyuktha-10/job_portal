@@ -293,3 +293,59 @@ class HomePagePolishTests(TestCase):
         self.assertNotContains(r, "Hackathon image")
         self.assertNotContains(r, "bg-gray-200 h-40")
         self.assertContains(r, "linear-gradient")
+
+class NoTemplateLeakSweepTests(TestCase):
+    """Multi-line {# ... #} comments leak into rendered HTML on some Django
+    versions — sweep every major page, in every role, for template syntax."""
+
+    URLS_PUBLIC = ["/", "/vacancies/", "/internships/", "/walk-in-jobs/",
+                   "/blog/", "/contact/", "/signup/", "/job-seeker-login/",
+                   "/employer-login/", "/super-admin/login/", "/bgv/staff/login/",
+                   "/plans/"]
+    URLS_SEEKER = ["/my-applications/", "/saved-jobs/", "/notifications/",
+                   "/ats-checker/", "/account-settings/", "/profile/edit/"]
+    URLS_EMPLOYER = ["/employer-dashboard/", "/company-profile/",
+                     "/employer-settings/", "/employer-reports/",
+                     "/candidates/manage/", "/candidates/search/", "/inquiries/"]
+    URLS_ADMIN = ["/control-panel/", "/control-panel/jobs/",
+                  "/control-panel/employers/", "/control-panel/job-seekers/",
+                  "/control-panel/subscriptions/", "/control-panel/paid-members/",
+                  "/control-panel/inquiries/", "/control-panel/plans/"]
+    URLS_VERIFIER = ["/bgv/staff/verifier/"]
+
+    def _sweep(self, urls):
+        for url in urls:
+            r = self.client.get(url)
+            if r.status_code == 200:
+                self.assertNotContains(r, "{#", msg_prefix="leaked template comment at " + url)
+
+    def setUp(self):
+        self.employer = User.objects.create_user("sweepemp@x.com", "sweepemp@x.com", "pw")
+        Profile.objects.create(user=self.employer, is_employer=True, company_name="Sweep Co")
+        self.seeker = User.objects.create_user("sweepseeker", "ss@x.com", "pw")
+        JobSeekerProfile.objects.create(user=self.seeker, full_name="Sweep Seeker",
+                                        phone="9000000099")
+        self.admin = User.objects.create_user("sweepadmin", "sa@x.com", "pw",
+                                              is_superuser=True, is_staff=True)
+
+    def test_public_pages_no_leak(self):
+        self._sweep(self.URLS_PUBLIC)
+
+    def test_seeker_pages_no_leak(self):
+        self.client.force_login(self.seeker)
+        self._sweep(self.URLS_SEEKER)
+
+    def test_employer_pages_no_leak(self):
+        self.client.force_login(self.employer)
+        self._sweep(self.URLS_EMPLOYER)
+
+    def test_admin_pages_no_leak(self):
+        self.client.force_login(self.admin)
+        self._sweep(self.URLS_ADMIN)
+
+    def test_verifier_pages_no_leak(self):
+        from verification.models import VerifierProfile
+        verifier = User.objects.create_user("sweepver", "sv@x.com", "pw")
+        VerifierProfile.objects.create(user=verifier, role="verifier", is_active=True)
+        self.client.force_login(verifier)
+        self._sweep(self.URLS_VERIFIER)
