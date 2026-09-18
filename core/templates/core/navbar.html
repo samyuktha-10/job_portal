@@ -1,13 +1,14 @@
 {% load static %}
 <nav class="bg-black text-white flex items-center justify-between px-10 py-4">
 
-    <div class="flex items-center">
+    <div class="flex items-center flex-none">
         <a href="{% url 'home' %}">
             <img src="{% static 'core/assets/logo.png' %}" alt="Deploynix Logo" class="h-20">
         </a>
     </div>
 
-    <div class="flex gap-10 text-base">
+    <!-- Main navigation (same for everyone, one clean row) -->
+    <div class="flex gap-8 text-base">
         <a href="{% url 'job_vacancies' %}" class="hover:text-red-400">Job Vacancy</a>
 
         <div class="nav-dropdown">
@@ -19,18 +20,18 @@
             </div>
         </div>
 
-<div class="nav-dropdown">
-    <a href="{% url 'internships' %}" class="hover:text-red-400">Internships</a>
-    <div class="nav-dropdown-menu">
-        <a href="#" class="nav-dropdown-item">Part-time</a>
-        <a href="#" class="nav-dropdown-item">Full-time</a>
-        <a href="#" class="nav-dropdown-item">Remote</a>
-    </div>
-</div>
+        <div class="nav-dropdown">
+            <a href="{% url 'internships' %}" class="hover:text-red-400">Internships</a>
+            <div class="nav-dropdown-menu">
+                <a href="#" class="nav-dropdown-item">Part-time</a>
+                <a href="#" class="nav-dropdown-item">Full-time</a>
+                <a href="#" class="nav-dropdown-item">Remote</a>
+            </div>
+        </div>
 
-<a href="{% url 'walkin_jobs' %}" class="hover:text-red-400">Walk-in</a>
+        <a href="{% url 'walkin_jobs' %}" class="hover:text-red-400">Walk-in</a>
 
-<a href="{% url 'blog_home' %}" class="hover:text-red-400">Blog</a>
+        <a href="{% url 'blog_home' %}" class="hover:text-red-400">Blog</a>
 
         <div class="nav-dropdown">
             <a href="#" class="hover:text-red-400">About Us</a>
@@ -39,24 +40,35 @@
             </div>
         </div>
     </div>
-    <div class="flex items-center gap-4">
-        {% if user.is_authenticated %}
-        {% if user.jobseeker_profile %}
-        <a href="{% url 'my_applications' %}" class="hover:text-red-400 text-sm mr-2">My Applications</a>
-        <a href="{% url 'saved_jobs_list' %}" class="hover:text-red-400 text-sm mr-2">Saved Jobs</a>
-        <a href="{% url 'notifications_list' %}" class="hover:text-red-400 text-sm mr-2">Notifications<span id="notif-badge" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:0.05rem 0.45rem; font-size:0.7rem; margin-left:0.3rem;"></span></a>
-        <a href="{% url 'ats_checker' %}" class="hover:text-red-400 text-sm mr-2">ATS Checker</a>
-        <a href="{% url 'candidate_settings' %}" class="hover:text-red-400 text-sm mr-2">Settings</a>
 
-        
-        <a href="{% url 'edit_profile' %}" class="text-sm hover:text-red-400">Hi, {{ user.username }}</a>
-        {% else %}
-        <a href="{% url 'company_profile' %}" class="text-sm hover:text-red-400">Hi, {{ user.username }}</a>
-        {% endif %}
-        {% if user.is_superuser %}
-        <a href="{% url 'control_panel' %}" class="hover:text-red-400 text-sm mr-2">Admin Panel</a>
-        {% endif %}
-        <a href="{% url 'logout' %}" class="border border-white px-4 py-2 rounded text-sm hover:text-red-400">Logout</a>
+    <div class="flex items-center gap-4 flex-none">
+        {% if user.is_authenticated %}
+
+        <!-- Everything account-related lives in one tidy dropdown -->
+        <div class="nav-dropdown nav-account">
+            <a href="#" class="hover:text-red-400 flex items-center gap-1">
+                Hi, {{ user.username }} <span aria-hidden="true">▾</span>
+            </a>
+            <div class="nav-dropdown-menu">
+                {% if user.jobseeker_profile %}
+                <a href="{% url 'my_applications' %}" class="nav-dropdown-item">My Applications</a>
+                <a href="{% url 'saved_jobs_list' %}" class="nav-dropdown-item">Saved Jobs</a>
+                <a href="{% url 'notifications_list' %}" class="nav-dropdown-item">Notifications<span id="notif-badge" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:0.05rem 0.45rem; font-size:0.7rem; margin-left:0.3rem;"></span></a>
+                <a href="{% url 'ats_checker' %}" class="nav-dropdown-item">ATS Checker</a>
+                <a href="{% url 'candidate_settings' %}" class="nav-dropdown-item">Settings</a>
+                <a href="{% url 'edit_profile' %}" class="nav-dropdown-item">Edit Profile</a>
+                {% else %}
+                <a href="{% url 'company_profile' %}" class="nav-dropdown-item">Company Profile</a>
+                <a href="{% url 'employer_dashboard' %}" class="nav-dropdown-item">Dashboard</a>
+                <a href="{% url 'employer_settings' %}" class="nav-dropdown-item">Settings</a>
+                {% endif %}
+                {% if user.is_superuser %}
+                <a href="{% url 'control_panel' %}" class="nav-dropdown-item">Admin Panel</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="nav-dropdown-item" style="color:#dc2626;">Logout</a>
+            </div>
+        </div>
+
         {% else %}
         <a href="{% url 'employer_login' %}" class="border border-white px-4 py-2 rounded text-sm">For Employers</a>
         <a href="{% url 'job_seeker_login' %}" class="border border-white px-4 py-2 rounded text-sm">Job Seekers</a>
