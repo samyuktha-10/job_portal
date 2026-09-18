@@ -1,0 +1,133 @@
+{% extends 'core/base.html' %}
+{% block title %}Deploynix Blog — Great careers start here{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="bg-black text-white">
+    <div class="max-w-6xl mx-auto px-4 py-14 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-3">Deploynix <span class="text-red-500">Blog</span></h1>
+        <p class="text-gray-300 italic mb-6">— Great careers start here!</p>
+        <form action="{% url 'blog_search' %}" method="get"
+              class="max-w-xl mx-auto flex gap-2">
+            <input type="search" name="q" value="" maxlength="200" required
+                   placeholder="Search articles: resume, interview, salary…"
+                   class="flex-1 rounded px-4 py-3 text-gray-900 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+            <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white rounded px-6 py-3 text-sm font-semibold">Search</button>
+        </form>
+    </div>
+</section>
+
+<!-- Category nav -->
+<div class="border-b border-gray-200 bg-white sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 flex gap-2 overflow-x-auto py-3 text-sm">
+        <a href="{% url 'blog_home' %}"
+           class="flex-none rounded-full px-4 py-1.5 bg-red-600 text-white font-medium">All</a>
+        {% for key, label in categories %}
+        <a href="{% url 'blog_category' key %}"
+           class="flex-none rounded-full px-4 py-1.5 border border-gray-300 hover:border-red-500 hover:text-red-600">{{ label }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if not total %}
+<div class="max-w-6xl mx-auto px-4 py-20 text-center text-gray-500">
+    <p class="text-5xl mb-4">📝</p>
+    <p class="text-lg">No articles published yet. Check back soon!</p>
+</div>
+{% endif %}
+
+<!-- Featured -->
+{% if featured %}
+<section class="max-w-6xl mx-auto px-4 mt-10">
+    <h2 class="text-2xl font-bold mb-6">Featured</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for post in featured %}
+        <a href="{% url 'blog_detail' post.slug %}"
+           class="group block border border-gray-200 rounded-xl overflow-hidden bg-white hover:shadow-xl transition relative">
+            <span class="absolute top-3 left-3 z-10 bg-yellow-400 text-black text-xs font-bold rounded-full px-3 py-1">★ Featured</span>
+            <div class="h-48 flex items-center justify-center text-6xl"
+                 style="background: {{ post.banner_style }};" aria-hidden="true">{{ post.emoji }}</div>
+            <div class="p-6">
+                <div class="flex items-center gap-2 text-xs text-gray-500 mb-2 flex-wrap">
+                    <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-2.5 py-0.5 font-medium">{{ post.get_category_display }}</span>
+                    <span>{{ post.published_at|date:"j M Y" }}</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 leading-snug group-hover:text-red-600">{{ post.title }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ post.excerpt|truncatechars:180 }}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span class="flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold"
+                              style="background: {{ post.author.avatar_color_value|default:'#64748b' }};">{{ post.author.initial|default:"D" }}</span>
+                        {{ post.author_name }}
+                    </span>
+                    <span>👁 {{ post.views }} · {{ post.read_time }} min read</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Category sections -->
+{% for section in sections %}
+<section class="max-w-6xl mx-auto px-4 mt-14">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold"><span class="text-red-600 mr-2">▍</span>{{ section.label }}</h2>
+        <a href="{% url 'blog_category' section.key %}" class="text-sm text-red-600 hover:underline">View All ({{ section.count }}) →</a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for post in section.posts %}
+            {% include 'blog/_post_card.html' with post=post %}
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}
+
+<!-- Recently published -->
+{% if recent %}
+<section class="max-w-6xl mx-auto px-4 mt-14">
+    <h2 class="text-2xl font-bold mb-6"><span class="text-red-600 mr-2">▍</span>Recently Published</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for post in recent %}
+            {% include 'blog/_post_card.html' with post=post %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Contributors -->
+{% if authors %}
+<section class="max-w-6xl mx-auto px-4 mt-14 mb-4">
+    <h2 class="text-2xl font-bold mb-6"><span class="text-red-600 mr-2">▍</span>Contributors</h2>
+    <div class="flex gap-6 flex-wrap">
+        {% for author in authors %}
+        <a href="{% url 'blog_author' author.slug %}"
+           class="flex items-center gap-3 border border-gray-200 rounded-full pl-2 pr-5 py-2 hover:shadow-md transition bg-white">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full text-white font-bold"
+                  style="background: {{ author.avatar_color_value }};">{{ author.initial }}</span>
+            <span>
+                <span class="block font-semibold text-sm">{{ author.name }}</span>
+                <span class="block text-xs text-gray-500">{{ author.role|default:"Writer" }}</span>
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="bg-black text-white mt-14">
+    <div class="max-w-6xl mx-auto px-4 py-12 text-center">
+        <h2 class="text-2xl font-bold mb-2">Ready to put the advice into practice?</h2>
+        <p class="text-gray-400 text-sm mb-6">Browse live openings on Deploynix and apply in minutes.</p>
+        <div class="flex justify-center gap-4 flex-wrap">
+            <a href="{% url 'job_vacancies' %}" class="bg-red-600 hover:bg-red-700 rounded px-6 py-3 text-sm font-semibold">Browse Jobs</a>
+            <a href="{% url 'ats_checker' %}" class="border border-white rounded px-6 py-3 text-sm font-semibold hover:text-red-400">Check My Resume (ATS)</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

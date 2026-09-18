@@ -24,6 +24,7 @@ INTENTS = [
     ("saved_jobs", ["saved job", "saved jobs", "my saved", "bookmark"]),
     ("bgv", ["bgv", "background verification", "verification status", "documents", "upload document", "my verification"]),
     ("ats", ["ats", "resume score", "resume check", "resume match"]),
+    ("blog", ["blog", "article", "articles", "career tips", "interview tips", "career advice", "blog post"]),
     ("apply_how", ["how to apply", "how do i apply", "apply for a job", "apply job"]),
     ("post_job", ["post job", "post a job", "posting a job", "publish job", "add job"]),
     ("my_jobs_stats", ["my jobs", "my postings", "applicants", "my candidates", "how many candidates", "my job posts"]),
@@ -60,6 +61,11 @@ REPLIES = {
         "en": "Open the ATS Checker from your menu, paste the job description and upload your resume PDF. I will score how well your resume matches the job.",
         "ta": "மெனுவில் ATS Checker திறந்து, வேலை விவரத்தை ஒட்டி உங்கள் ரெஸ்யூமே PDF பதிவேற்றுங்கள். பொருத்த மதிப்பெண் கிடைக்கும்.",
         "hi": "मेनू से ATS Checker खोलें, जॉब विवरण पेस्ट करें और अपना रिज़्यूमे PDF अपलोड करें। मैच स्कोर मिलेगा।",
+    },
+    "blog": {
+        "en": "We have a career blog with guides on interviews, resumes, applications, salaries and internships. Open Blog from the top menu, or tell me a topic like 'interview tips' and I will point you to the right section.",
+        "ta": "எங்கள் கேரியர் ப்ளாக்கில் இண்டர்வியூ, ரெஸ்யூமே, விண்ணப்பம், சம்பளம் மற்றும் இன்டர்ன்ஷிப் வழிகாட்டிகள் உள்ளன. மேல் மெனுவில் Blog திறக்கவும்.",
+        "hi": "हमारे करियर ब्लॉग में इंटरव्यू, रिज़्यूमे, आवेदन, वेतन और इंटर्नशिप गाइड हैं। ऊपर मेनू से Blog खोलें।",
     },
     "apply_how": {
         "en": "Browse Vacancies or Internships, open a job, and tap Apply. Complete your profile first if asked. You can track everything under My Applications.",

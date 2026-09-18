@@ -1,0 +1,25 @@
+<a href="{% url 'blog_detail' post.slug %}"
+   class="group block border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-lg transition h-full">
+    <div class="h-36 flex items-center justify-center text-5xl"
+         style="background: {{ post.banner_style }};" aria-hidden="true">
+        <span>{{ post.emoji }}</span>
+    </div>
+    <div class="p-5 flex flex-col h-full">
+        <div class="flex items-center gap-2 text-xs text-gray-500 mb-2 flex-wrap">
+            <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-2.5 py-0.5 font-medium">
+                {{ post.get_category_display }}
+            </span>
+            <span>{{ post.published_at|date:"j M Y" }}</span>
+        </div>
+        <h3 class="font-bold mb-2 leading-snug group-hover:text-red-600">{{ post.title }}</h3>
+        <p class="text-sm text-gray-600 mb-4 flex-1">{{ post.excerpt|truncatechars:150 }}</p>
+        <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+            <span class="flex items-center gap-2 min-w-0">
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold flex-none"
+                      style="background: {{ post.author.avatar_color_value|default:'#64748b' }};">{{ post.author.initial|default:"D" }}</span>
+                <span class="truncate">{{ post.author_name }}</span>
+            </span>
+            <span class="flex-none">👁 {{ post.views }} · {{ post.read_time }} min</span>
+        </div>
+    </div>
+</a>
