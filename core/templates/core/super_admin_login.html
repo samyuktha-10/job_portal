@@ -141,6 +141,13 @@
   <div class="card">
     <div class="tag">Deploynix Provider Portal</div>
 
+    {% if messages %}
+      {% for message in messages %}<div class="info">{{ message }}</div>{% endfor %}
+    {% endif %}
+    {% if demo %}
+      <div class="info">Local demo super admin: <strong>superadmin@deploynix.local</strong> / <strong>admin@123</strong> (created by <code>seed_demo_users</code>)</div>
+    {% endif %}
+
     {% if step == "verify" %}
       <div class="title">Verify your login</div>
       <div class="subtitle">Separate secure access for platform administrators.</div>
