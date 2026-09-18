@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Employers — Deploynix</title>
+<title>Paid Members - Deploynix</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -12,7 +12,6 @@
   }
   .layout { display: flex; min-height: 100vh; }
 
-  /* Sidebar */
   .sidebar {
     width: 240px;
     background: #0d0f14;
@@ -64,7 +63,6 @@
     font-size: 13px;
   }
 
-  /* Main */
   .main { flex: 1; padding: 28px 36px; }
   .topbar {
     display: flex;
@@ -74,7 +72,13 @@
   }
   .topbar form { display: flex; gap: 8px; }
   .topbar input[type="text"] {
-    width: 340px;
+    width: 300px;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .topbar select {
     padding: 10px 14px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -125,16 +129,6 @@
   }
   .badge.active { background: #e6f4ea; color: #1e7e34; }
   .badge.inactive { background: #fdecea; color: #b3261e; }
-  .ban-btn {
-    padding: 5px 12px;
-    border: 1px solid #d32f2f;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    background: #fff;
-    color: #d32f2f;
-  }
-  .ban-btn:hover { background: #d32f2f; color: #fff; }
   .empty { color: #999; font-size: 13px; padding: 16px 0; }
 
   .pagination {
@@ -161,7 +155,6 @@
 
 <div class="layout">
 
-  <!-- Sidebar -->
   <div class="sidebar">
     <div>
       <div class="brand">Deploy<span>nix</span></div>
@@ -170,10 +163,10 @@
     <nav>
       <a href="{% url 'control_panel' %}">Dashboard</a>
       <a href="{% url 'admin_jobs_list' %}">Jobs</a>
-      <a href="{% url 'admin_employers_list' %}" class="active">Employers</a>
+      <a href="{% url 'admin_employers_list' %}">Employers</a>
       <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
       <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
-      <a href="{% url 'admin_paid_members_list' %}">Paid Members</a>
+      <a href="{% url 'admin_paid_members_list' %}" class="active">Paid Members</a>
       <a href="{% url 'admin_inquiries_list' %}">Inquiries</a>
       <a href="/admin/">Django Admin</a>
           <a href="{% url 'admin_support_settings' %}">Support Contact</a>
@@ -185,18 +178,23 @@
     </div>
   </div>
 
-  <!-- Main content -->
   <div class="main">
     <div class="topbar">
-      <form method="get">
+      <form method="get" style="display:flex; gap:8px;">
         <input type="text" name="search" placeholder="Search company or email..." value="{{ search }}">
-        <button type="submit">Search</button>
+        <button type="submit">Filter</button>
       </form>
       <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
     </div>
 
-    <h1>Employers</h1>
-    <div class="subtitle">All registered companies on Deploynix.</div>
+    <h1>Paid Members</h1>
+    <div class="subtitle">Employers on paid plans (Basic / Premium) — the people who pay Deploynix.</div>
+
+    <div class="panel" style="display:flex; gap:32px; padding:16px 20px; margin-bottom:16px;">
+      <div><div style="font-size:22px; font-weight:bold;">{{ paid_count }}</div><div style="font-size:12px; color:#666;">Paid members</div></div>
+      <div><div style="font-size:22px; font-weight:bold; color:#1e7e34;">{{ active_count }}</div><div style="font-size:12px; color:#666;">Currently active</div></div>
+      <div><div style="font-size:22px; font-weight:bold;">₹{{ total_revenue }}</div><div style="font-size:12px; color:#666;">Total collected (all-time)</div></div>
+    </div>
 
     <div class="panel">
       {% if page_obj %}
@@ -205,31 +203,25 @@
           <th>Company</th>
           <th>Email</th>
           <th>Plan</th>
+          <th>Amount Paid</th>
+          <th>Started</th>
+          <th>Expires</th>
           <th>Status</th>
-          <th>Jobs Posted</th>
-          <th>Joined</th>
-          <th>Actions</th>
         </tr>
         {% for row in page_obj %}
         <tr>
           <td>{{ row.company_name }}</td>
           <td>{{ row.email }}</td>
-          <td>{{ row.plan }}</td>
+          <td>{{ row.plan_name }}</td>
+          <td>₹{{ row.price }}</td>
+          <td>{{ row.started_at|date:"d M Y" }}</td>
+          <td>{{ row.expires_at|date:"d M Y" }}</td>
           <td>
             {% if row.is_active %}
               <span class="badge active">Active</span>
             {% else %}
-              <span class="badge inactive">Inactive</span>
+              <span class="badge inactive">Expired</span>
             {% endif %}
-          </td>
-          <td>{{ row.jobs_count }}</td>
-          <td>{{ row.joined|date:"d M Y" }}</td>
-          <td>
-            <form method="post" action="{% url 'admin_user_toggle_active' row.user_id %}" onsubmit="return confirm('Ban/unban this employer?');">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{% url 'admin_employers_list' %}">
-              <button type="submit" class="ban-btn">Ban / Unban</button>
-            </form>
           </td>
         </tr>
         {% endfor %}
@@ -246,7 +238,7 @@
       </div>
 
       {% else %}
-      <div class="empty">No employers found.</div>
+      <div class="empty">No subscriptions found.</div>
       {% endif %}
     </div>
 

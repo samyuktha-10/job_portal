@@ -173,6 +173,10 @@
         <label>Password</label>
         <input type="password" name="password" required>
 
+        <label style="display:flex; gap:8px; align-items:center; font-size:13px; margin:12px 0 4px;">
+          <input type="checkbox" name="remember_me" value="1" checked> Remember me on this device
+        </label>
+
         <button type="submit">Sign In</button>
       </form>
       <div class="links">
@@ -183,5 +187,6 @@
   </div>
 </div>
 
+{% include "core/_password_toggle.html" %}
 </body>
 </html>

@@ -23,9 +23,10 @@
             <h3 class="text-red-500 font-semibold mb-4">For Students</h3>
             <ul class="space-y-2 text-sm text-gray-300">
                 <li><a href="{% url 'job_vacancies' %}" class="hover:text-white">Browse Jobs</a></li>
-                <li><a href="#" class="hover:text-white">Internships</a></li>
-                <li><a href="#" class="hover:text-white">Career Guidance</a></li>
-                <li><a href="#" class="hover:text-white">Success Stories</a></li>
+                <li><a href="{% url 'internships' %}" class="hover:text-white">Internships</a></li>
+                <li><a href="{% url 'blog_home' %}" class="hover:text-white">Deploynix Blog</a></li>
+                <li><a href="{% url 'blog_category' 'career-guidance' %}" class="hover:text-white">Career Guidance</a></li>
+                <li><a href="{% url 'blog_category' 'interview-questions' %}" class="hover:text-white">Interview Preparation</a></li>
             </ul>
         </div>
 

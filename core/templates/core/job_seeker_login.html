@@ -21,8 +21,9 @@
         <input type="hidden" name="next" value="{{ next }}">
 
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Username</label>
+            <label class="block text-sm font-medium mb-1">Username or Mobile Number</label>
             {{ form.username }}
+            <p class="text-gray-400 text-xs mt-1">Forgot your username? Just enter the 10-digit mobile number on your profile.</p>
         </div>
 
         <div class="mb-4">
@@ -35,10 +36,15 @@
             {% endif %}
         </div>
 
-        <div class="mb-6">
+        <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Password</label>
             {{ form.password }}
         </div>
+
+        <label class="flex items-center gap-2 text-sm text-gray-600 mb-6 cursor-pointer">
+            <input type="checkbox" name="remember_me" value="1" class="w-4 h-4" checked>
+            Remember me on this device
+        </label>
 
         <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-semibold">
             Log In

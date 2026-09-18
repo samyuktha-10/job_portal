@@ -207,7 +207,7 @@ class JobSeekerLoginForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'w-full border-2 border-gray-400 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400',
-            'placeholder': 'Username'
+            'placeholder': 'Username or Mobile Number'
         })
     )
     email = forms.EmailField(

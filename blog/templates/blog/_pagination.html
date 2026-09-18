@@ -1,0 +1,22 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="flex justify-center items-center gap-2 mt-10 flex-wrap" aria-label="Blog pagination">
+    {% if page_obj.has_previous %}
+    <a href="?{{ extra_qs }}page={{ page_obj.previous_page_number }}"
+       class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">← Prev</a>
+    {% endif %}
+
+    {% for n in page_obj.paginator.page_range %}
+        {% if n == page_obj.number %}
+        <span class="bg-red-600 text-white rounded px-3 py-1.5 text-sm font-semibold">{{ n }}</span>
+        {% else %}
+        <a href="?{{ extra_qs }}page={{ n }}"
+           class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">{{ n }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="?{{ extra_qs }}page={{ page_obj.next_page_number }}"
+       class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">Next →</a>
+    {% endif %}
+</nav>
+{% endif %}
