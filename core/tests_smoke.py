@@ -282,3 +282,14 @@ class VerifierSmokeTests(TestCase):
         self.client.login(username="other@x.com", password="pw")
         r = self.client.get(reverse("verification:candidate_upload", args=[self.bgv.id]))
         self.assertEqual(r.status_code, 403)
+
+class HomePagePolishTests(TestCase):
+    """The home page event cards use gradient banners, never gray placeholders."""
+
+    def test_no_gray_placeholders(self):
+        r = self.client.get("/")
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, "Webinar image")
+        self.assertNotContains(r, "Hackathon image")
+        self.assertNotContains(r, "bg-gray-200 h-40")
+        self.assertContains(r, "linear-gradient")
