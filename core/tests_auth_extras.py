@@ -183,3 +183,53 @@ class SeedDemoDataTests(TestCase):
         self.assertContains(r, "Zenith Softworks")
         r = self.client.get("/control-panel/paid-members/")
         self.assertContains(r, "Zenith Softworks")
+
+class ControlPanelAccessTests(TestCase):
+    """Non-superusers get redirected to the super-admin login (with ?next=),
+    never a bare 'no access' dead end; super admins go straight through."""
+
+    def setUp(self):
+        self.employer = User.objects.create_user("boss2@x.com", "boss2@x.com", "pw")
+        Profile.objects.create(user=self.employer, is_employer=True, company_name="B2")
+        self.su = User.objects.create_user("root3", "root3@x.com", "pw",
+                                           is_superuser=True, is_staff=True)
+
+    def test_anonymous_redirects_with_next(self):
+        r = self.client.get("/control-panel/jobs/")
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/super-admin/login/", r.url)
+        self.assertIn("next=/control-panel/jobs/", r.url)
+
+    def test_employer_redirects_not_403(self):
+        self.client.force_login(self.employer)
+        r = self.client.get("/control-panel/subscriptions/", follow=True)
+        self.assertEqual(r.status_code, 200)  # lands on the login page, not a 403
+        self.assertContains(r, "Super Admin Sign In")
+        self.assertNotContains(r, "You don&#x27;t have access to this page.")
+
+    def test_employer_logs_in_and_lands_back_on_target(self):
+        from django.test import override_settings
+        self.client.force_login(self.employer)
+        r = self.client.get("/control-panel/jobs/")
+        self.assertEqual(r.status_code, 302)
+        with override_settings(DEBUG=True):  # direct login without OTP
+            r2 = self.client.post(r.url, {"email": "root3@x.com", "password": "pw",
+                                          "remember_me": "1"})
+        self.assertEqual(r2.status_code, 302)
+        self.assertEqual(r2.url, "/control-panel/jobs/")
+        r3 = self.client.get("/control-panel/jobs/")
+        self.assertEqual(r3.status_code, 200)
+
+    def test_superuser_still_gets_in(self):
+        self.client.force_login(self.su)
+        self.assertEqual(self.client.get("/control-panel/jobs/").status_code, 200)
+        self.assertEqual(self.client.get("/control-panel/subscriptions/").status_code, 200)
+        self.assertEqual(self.client.get("/control-panel/paid-members/").status_code, 200)
+
+    def test_demo_hint_only_in_debug(self):
+        r = self.client.get("/super-admin/login/")
+        self.assertNotContains(r, "Local demo super admin")
+        from django.test import override_settings
+        with override_settings(DEBUG=True):
+            r = self.client.get("/super-admin/login/")
+        self.assertContains(r, "Local demo super admin")

@@ -390,6 +390,13 @@ def _apply_remember_me(request):
         request.session.set_expiry(0)
 
 
+def _sa_next(request):
+    """Validated ?next= target for the super-admin flow; remembered across the OTP step."""
+    target = _safe_next_url(request, fallback='control_panel')
+    request.session['sa_next'] = target
+    return target
+
+
 def job_seeker_login(request):
     next_url = _safe_next_url(request)
     if request.method == 'POST':
@@ -1528,6 +1535,12 @@ def edit_job(request, job_id):
 # ---------------------------------------------------------------------------
 # Super Admin (platform admin) login -- separate flow with email OTP
 # ---------------------------------------------------------------------------
+def _sa_render(request, **context):
+    """Render the super-admin login; expose demo credentials only in DEBUG."""
+    context.setdefault("demo", settings.DEBUG)
+    return render(request, "core/super_admin_login.html", context)
+
+
 def super_admin_login(request):
     if request.method == "POST":
         email = request.POST.get("email", "").strip()
@@ -1543,14 +1556,15 @@ def super_admin_login(request):
                 break
 
         if user is not None and user.is_superuser:
-            # Carry the checkbox across the OTP step.
+            # Carry the checkbox and the ?next= target across the OTP step.
             request.session['sa_remember'] = '1' if request.POST.get('remember_me') else ''
+            _sa_next(request)
             if settings.DEBUG:
                 # Local development convenience: skip the email OTP.
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
                 _apply_remember_me(request)
-                return redirect("control_panel")
+                return redirect(_sa_next(request))
 
             otp = str(random.randint(100000, 999999))
             request.session["sa_pending_user_id"] = user.id
@@ -1563,16 +1577,13 @@ def super_admin_login(request):
                 fail_silently=True,
             )
             print(f"[DEV] Super admin OTP for {user.email}: {otp}")
-            return render(request, "core/super_admin_login.html", {
-                "step": "verify",
-                "info": "Enter the verification code sent to your email.",
-            })
+            return _sa_render(request, step="verify",
+                              info="Enter the verification code sent to your email.")
 
-        return render(request, "core/super_admin_login.html", {
-            "error": "Invalid credentials or not authorized as a platform admin.",
-        })
+        return _sa_render(request,
+                          error="Invalid credentials or not authorized as a platform admin.")
 
-    return render(request, "core/super_admin_login.html", {})
+    return _sa_render(request)
 
 
 def super_admin_verify(request):
@@ -1602,12 +1613,9 @@ def super_admin_verify(request):
             del request.session["sa_otp"]
             del request.session["sa_pending_user_id"]
 
-            return redirect("control_panel")
+            return redirect(request.session.pop("sa_next", "") or reverse("control_panel"))
 
-        return render(request, "core/super_admin_login.html", {
-            "step": "verify",
-            "error": "Incorrect code. Please try again.",
-        })
+        return _sa_render(request, step="verify", error="Incorrect code. Please try again.")
 
     return redirect("super_admin_login")
 

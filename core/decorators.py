@@ -1,16 +1,26 @@
 from functools import wraps
-from django.http import HttpResponseForbidden
+from urllib.parse import quote
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.urls import reverse
 
 
 def admin_required(view_func):
+    """Control Panel pages: platform super admins only.
+
+    Anyone else is sent to the super-admin login with a ?next= back to the
+    page they wanted, instead of a bare "no access" dead end."""
     @wraps(view_func)
-    @login_required(login_url='super_admin_login')
     def wrapper(request, *args, **kwargs):
         if not request.user.is_superuser:
-            return HttpResponseForbidden("You don't have access to this page.")
+            if request.user.is_authenticated:
+                messages.info(
+                    request,
+                    "The Control Panel is only for the platform super admin. "
+                    "Sign in with the super admin account to continue.")
+            return redirect(
+                reverse('super_admin_login') + '?next=' + quote(request.path))
         return view_func(request, *args, **kwargs)
     return wrapper
 
