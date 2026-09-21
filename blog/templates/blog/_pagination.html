@@ -1,22 +1,22 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<nav class="flex justify-center items-center gap-2 mt-10 flex-wrap" aria-label="Blog pagination">
+<nav class="flex justify-center items-center gap-2 mt-12 flex-wrap" aria-label="Blog pagination">
     {% if page_obj.has_previous %}
     <a href="?{{ extra_qs }}page={{ page_obj.previous_page_number }}"
-       class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">← Prev</a>
+       class="border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-500 hover:text-red-600 transition shadow-sm">← Prev</a>
     {% endif %}
 
     {% for n in page_obj.paginator.page_range %}
         {% if n == page_obj.number %}
-        <span class="bg-red-600 text-white rounded px-3 py-1.5 text-sm font-semibold">{{ n }}</span>
+        <span class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-bold shadow-sm">{{ n }}</span>
         {% else %}
         <a href="?{{ extra_qs }}page={{ n }}"
-           class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">{{ n }}</a>
+           class="border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-500 hover:text-red-600 transition shadow-sm">{{ n }}</a>
         {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
     <a href="?{{ extra_qs }}page={{ page_obj.next_page_number }}"
-       class="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-100">Next →</a>
+       class="border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-500 hover:text-red-600 transition shadow-sm">Next →</a>
     {% endif %}
 </nav>
 {% endif %}
