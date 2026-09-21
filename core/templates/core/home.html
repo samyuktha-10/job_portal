@@ -226,69 +226,169 @@ function toggleCategories() {
 </div>
 
 <div class="max-w-6xl mx-auto mt-24 px-4">
-    <h2 class="text-3xl font-bold mb-10">Upcoming events and challenges</h2>
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div>
+            <p class="text-red-600 font-semibold text-sm uppercase tracking-wider mb-2">Learn & Compete</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Upcoming events and challenges</h2>
+        </div>
+        <p class="text-gray-500 text-sm max-w-md">Join live masterclasses, hackathons, and workshops hosted by industry leaders on Deploynix.</p>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div class="border rounded-lg overflow-hidden">
-            <div class="h-40 flex items-center justify-center text-6xl"
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl hover:border-red-500 hover:-translate-y-1 transition duration-300 flex flex-col justify-between group">
+            <div class="h-44 flex items-center justify-center text-6xl relative select-none"
                  style="background: linear-gradient(135deg, #a855f7 0%, #6d28d9 100%);">
-                <span aria-hidden="true">📊</span>
+                <span class="absolute top-3 left-3 bg-white/95 backdrop-blur text-purple-900 text-xs font-bold rounded-full px-3 py-1 shadow-sm">
+                    Live Webinar
+                </span>
+                <span class="transform group-hover:scale-110 transition duration-300" aria-hidden="true">📊</span>
             </div>
-            <div class="p-5">
-                <p class="text-blue-600 text-sm font-medium mb-1">Coding Ninjas</p>
-                <h3 class="font-bold mb-3">Zomato Data Analysis Case Study: Ace 25L+ Roles in FoodTech</h3>
-                <div class="flex gap-2 mb-4">
-                    <span class="text-xs border rounded-full px-3 py-1">Interview Preparation</span>
-                    <span class="text-xs border rounded-full px-3 py-1">Career Guidance</span>
+            <div class="p-6 flex flex-col flex-1 justify-between">
+                <div>
+                    <p class="text-red-600 text-sm font-semibold mb-1 flex items-center gap-1.5">
+                        <span>🎯</span> Deploynix Academy
+                    </p>
+                    <h3 class="font-bold text-lg mb-3 text-gray-900 leading-snug group-hover:text-red-600 transition">
+                        Zomato Data Analysis Case Study: Ace 25L+ Roles in FoodTech
+                    </h3>
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <span class="text-xs bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1 font-semibold">Interview Preparation</span>
+                        <span class="text-xs bg-gray-50 text-gray-700 border border-gray-200 rounded-full px-3 py-1 font-medium">Career Guidance</span>
+                    </div>
                 </div>
-                <div class="flex justify-between text-xs text-gray-500 mb-4">
-                    <span>📅 19 Jan, 7:00 PM</span>
-                    <span>👥 873 Enrolled</span>
+                <div>
+                    <div class="flex justify-between items-center text-xs text-gray-500 mb-5 pt-3 border-t border-gray-100 font-medium">
+                        <span class="flex items-center gap-1">📅 19 Jan, 7:00 PM</span>
+                        <span class="flex items-center gap-1">👥 873 Enrolled</span>
+                    </div>
+                    <button onclick="openEventModal('Zomato Data Analysis Case Study: Ace 25L+ Roles in FoodTech', 'Deploynix Academy', '19 Jan, 7:00 PM', '873 Enrolled', 'Master real-world data analytics techniques used by FoodTech unicorns. Learn SQL queries, product analytics metrics, and interview frameworks to land 25L+ packages.', ['Interview Preparation', 'Career Guidance'])"
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-sm text-sm">
+                        View details
+                    </button>
                 </div>
-                <button class="w-full border rounded py-2 text-sm font-semibold">View details</button>
             </div>
         </div>
 
-        <div class="border rounded-lg overflow-hidden">
-            <div class="h-40 flex items-center justify-center text-6xl"
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl hover:border-red-500 hover:-translate-y-1 transition duration-300 flex flex-col justify-between group">
+            <div class="h-44 flex items-center justify-center text-6xl relative select-none"
                  style="background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);">
-                <span aria-hidden="true">🤖</span>
+                <span class="absolute top-3 left-3 bg-white/95 backdrop-blur text-blue-900 text-xs font-bold rounded-full px-3 py-1 shadow-sm">
+                    AI Workshop
+                </span>
+                <span class="transform group-hover:scale-110 transition duration-300" aria-hidden="true">🤖</span>
             </div>
-            <div class="p-5">
-                <p class="text-blue-600 text-sm font-medium mb-1">Coding Ninjas</p>
-                <h3 class="font-bold mb-3">Multi-Agent AI Systems: Live Workshop for 25L+ CTC at Google</h3>
-                <div class="flex gap-2 mb-4">
-                    <span class="text-xs border rounded-full px-3 py-1">Interview Preparation</span>
-                    <span class="text-xs border rounded-full px-3 py-1">Career Guidance</span>
+            <div class="p-6 flex flex-col flex-1 justify-between">
+                <div>
+                    <p class="text-red-600 text-sm font-semibold mb-1 flex items-center gap-1.5">
+                        <span>⚡</span> Deploynix AI Labs
+                    </p>
+                    <h3 class="font-bold text-lg mb-3 text-gray-900 leading-snug group-hover:text-red-600 transition">
+                        Multi-Agent AI Systems: Live Workshop for 25L+ CTC at Google
+                    </h3>
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <span class="text-xs bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1 font-semibold">Interview Preparation</span>
+                        <span class="text-xs bg-gray-50 text-gray-700 border border-gray-200 rounded-full px-3 py-1 font-medium">Career Guidance</span>
+                    </div>
                 </div>
-                <div class="flex justify-between text-xs text-gray-500 mb-4">
-                    <span>📅 20 Jan, 8:30 PM</span>
-                    <span>👥 47 Enrolled</span>
+                <div>
+                    <div class="flex justify-between items-center text-xs text-gray-500 mb-5 pt-3 border-t border-gray-100 font-medium">
+                        <span class="flex items-center gap-1">📅 20 Jan, 8:30 PM</span>
+                        <span class="flex items-center gap-1">👥 47 Enrolled</span>
+                    </div>
+                    <button onclick="openEventModal('Multi-Agent AI Systems: Live Workshop for 25L+ CTC at Google', 'Deploynix AI Labs', '20 Jan, 8:30 PM', '47 Enrolled', 'Hands-on architectural deep dive into LLM multi-agent orchestration, tool calling, and autonomous agents for senior engineering interviews.', ['Interview Preparation', 'Career Guidance'])"
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-sm text-sm">
+                        View details
+                    </button>
                 </div>
-                <button class="w-full border rounded py-2 text-sm font-semibold">View details</button>
             </div>
         </div>
 
-        <div class="border rounded-lg overflow-hidden">
-            <div class="h-40 flex items-center justify-center text-6xl"
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl hover:border-red-500 hover:-translate-y-1 transition duration-300 flex flex-col justify-between group">
+            <div class="h-44 flex items-center justify-center text-6xl relative select-none"
                  style="background: linear-gradient(135deg, #f472b6 0%, #be185d 100%);">
-                <span aria-hidden="true">💻</span>
+                <span class="absolute top-3 left-3 bg-white/95 backdrop-blur text-pink-900 text-xs font-bold rounded-full px-3 py-1 shadow-sm">
+                    Hackathon
+                </span>
+                <span class="transform group-hover:scale-110 transition duration-300" aria-hidden="true">💻</span>
             </div>
-            <div class="p-5">
-                <p class="text-blue-600 text-sm font-medium mb-1">Coding Ninjas</p>
-                <h3 class="font-bold mb-3">Frontend Hackathon Challenge</h3>
-                <div class="flex gap-2 mb-4">
-                    <span class="text-xs border rounded-full px-3 py-1">Interview Preparation</span>
-                    <span class="text-xs border rounded-full px-3 py-1">Career Guidance</span>
+            <div class="p-6 flex flex-col flex-1 justify-between">
+                <div>
+                    <p class="text-red-600 text-sm font-semibold mb-1 flex items-center gap-1.5">
+                        <span>🏆</span> Deploynix Community
+                    </p>
+                    <h3 class="font-bold text-lg mb-3 text-gray-900 leading-snug group-hover:text-red-600 transition">
+                        Frontend Hackathon Challenge
+                    </h3>
+                    <div class="flex gap-2 mb-4 flex-wrap">
+                        <span class="text-xs bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1 font-semibold">Interview Preparation</span>
+                        <span class="text-xs bg-gray-50 text-gray-700 border border-gray-200 rounded-full px-3 py-1 font-medium">Career Guidance</span>
+                    </div>
                 </div>
-                <div class="flex justify-between text-xs text-gray-500 mb-4">
-                    <span>📅 22 Jan, 6:00 PM</span>
-                    <span>👥 1.2k Enrolled</span>
+                <div>
+                    <div class="flex justify-between items-center text-xs text-gray-500 mb-5 pt-3 border-t border-gray-100 font-medium">
+                        <span class="flex items-center gap-1">📅 22 Jan, 6:00 PM</span>
+                        <span class="flex items-center gap-1">👥 1.2k Enrolled</span>
+                    </div>
+                    <button onclick="openEventModal('Frontend Hackathon Challenge', 'Deploynix Community', '22 Jan, 6:00 PM', '1.2k Enrolled', 'Build production-ready frontend apps with modern React/Tailwind. Top 10 finalists get direct interview referrals to hiring partner companies on Deploynix.', ['Interview Preparation', 'Career Guidance'])"
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-sm text-sm">
+                        View details
+                    </button>
                 </div>
-                <button class="w-full border rounded py-2 text-sm font-semibold">View details</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Event Details Modal (Deploynix Theme) -->
+<div id="event-detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-gray-200 animate-in fade-in zoom-in duration-200">
+        <button onclick="closeEventModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">&times;</button>
+        <span id="modal-event-org" class="text-red-600 font-bold text-xs uppercase tracking-wider block mb-1"></span>
+        <h3 id="modal-event-title" class="text-2xl font-bold text-gray-900 mb-3 leading-snug"></h3>
+        <div id="modal-event-tags" class="flex gap-2 mb-4 flex-wrap"></div>
+        <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 mb-4 flex justify-between">
+            <span id="modal-event-time"></span>
+            <span id="modal-event-enrolled"></span>
+        </div>
+        <p id="modal-event-desc" class="text-gray-700 text-sm leading-relaxed mb-6"></p>
+        <div class="flex gap-3">
+            <a href="{% url 'signup' %}" class="flex-1 text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-sm text-sm">
+                Register for Free
+            </a>
+            <button onclick="closeEventModal()" class="border border-gray-300 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-100 transition duration-200 text-sm">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openEventModal(title, org, time, enrolled, desc, tags) {
+    document.getElementById('modal-event-title').textContent = title;
+    document.getElementById('modal-event-org').textContent = org;
+    document.getElementById('modal-event-time').textContent = '📅 ' + time;
+    document.getElementById('modal-event-enrolled').textContent = '👥 ' + enrolled;
+    document.getElementById('modal-event-desc').textContent = desc;
+    const tagsContainer = document.getElementById('modal-event-tags');
+    tagsContainer.innerHTML = '';
+    tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'text-xs bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1 font-semibold';
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+    });
+    const modal = document.getElementById('event-detail-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeEventModal() {
+    const modal = document.getElementById('event-detail-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEventModal();
+});
+</script>
 {% endblock %}
