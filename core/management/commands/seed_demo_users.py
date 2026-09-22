@@ -66,13 +66,17 @@ class Command(BaseCommand):
         user.save()
         profile = Profile.objects.filter(user=user).first()
         if profile is None:
-            Profile.objects.create(user=user, is_employer=True,
-                                   company_name=EMPLOYER["company_name"])
+            profile = Profile.objects.create(user=user, is_employer=True,
+                                             company_name=EMPLOYER["company_name"])
         else:
             profile.is_employer = True
             if not profile.company_name:
                 profile.company_name = EMPLOYER["company_name"]
-            profile.save()
+        # Demo employers ship pre-verified so the posting flow is usable out
+        # of the box; real signups still start at 'unverified'.
+        profile.company_id = "U72900MH2020PTC%06d" % (100000 + user.id)
+        profile.trust_status = "verified"
+        profile.save()
         self.stdout.write("  employer  %s / %s  (log in with EMAIL)" %
                           (EMPLOYER["email"], DEMO))
 

@@ -288,6 +288,37 @@ def company_profile(request):
     )
 
     if request.method == 'POST':
+        if 'submit_trust' in request.POST:
+            # ---- Company trust verification (KYC) submission ----
+            company_id = request.POST.get('company_id', '').strip()
+            document = request.FILES.get('company_id_document')
+
+            if not company_id:
+                messages.error(request, 'Please enter your company registration ID (CIN / GSTIN / LLPIN).')
+            elif not document:
+                messages.error(request, 'Please upload your corporate ID card or certificate of incorporation.')
+            else:
+                from django.core.exceptions import ValidationError as _VE
+                try:
+                    Profile._meta.get_field('company_id_document').run_validators(document)
+                except _VE as exc:
+                    for err in exc.messages:
+                        messages.error(request, err)
+                else:
+                    if profile.company_id_document and profile.company_id_document != document:
+                        profile.company_id_document.delete(save=False)
+                    profile.company_id = company_id
+                    profile.company_id_document = document
+                    profile.trust_status = 'pending'
+                    profile.trust_submitted_at = timezone.now()
+                    profile.trust_rejection_reason = ''
+                    profile.save()
+                    messages.success(
+                        request,
+                        'Company verification submitted. Our team will review your documents shortly.'
+                    )
+            return redirect('company_profile')
+
         profile.company_name = request.POST.get('company_name', '')
         profile.phone = request.POST.get('phone', '')
         profile.about = request.POST.get('about', '')
@@ -580,8 +611,31 @@ JOB_TYPE_CATEGORIES = [
 ]
 
 #Job Posting Selection view ---------------------------------------------------------------------------------------------------------
+def _company_trust_gate(request):
+    """Block job posting for companies that are not verified as trusted & valid.
+
+    Returns a redirect to the company verification form when the employer has
+    not completed KYC (registration ID + corporate ID card, approved by a
+    super admin), otherwise None.
+    """
+    profile = getattr(request.user, 'profile', None)
+    if profile is not None and profile.can_post_jobs:
+        return None
+    messages.warning(
+        request,
+        'Company verification is required before posting jobs. Add your company '
+        'registration ID and upload your corporate ID card so we can confirm your '
+        'company is trusted and valid.'
+    )
+    return redirect('company_profile')
+
+
 @employer_required
 def post_job_select(request):
+    gate = _company_trust_gate(request)
+    if gate:
+        return gate
+
     if settings.SUBSCRIPTION_ENABLED:
         subscription = getattr(request.user, 'subscription', None)
         if not subscription or not subscription.can_post_job():
@@ -615,6 +669,10 @@ def post_job(request, job_type):
     if job_type not in valid_types:
         messages.error(request, 'Invalid job category.')
         return redirect('post_job_select')
+
+    gate = _company_trust_gate(request)
+    if gate:
+        return gate
 
     if settings.SUBSCRIPTION_ENABLED:
         subscription = getattr(request.user, 'subscription', None)

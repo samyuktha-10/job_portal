@@ -118,6 +118,63 @@
         <button type="submit" class="dashboard-action-btn" style="width:auto; padding:0.75rem 2rem;">Save Changes</button>
     </form>
 </div>
+
+<!-- Company Trust Verification (KYC) -->
+<div style="margin-top: 3rem; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; max-width: 720px;">
+    <div style="padding: 1.5rem 1.75rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+        <div>
+            <h3 style="font-weight: bold; font-size: 1.1rem; color: #111827; margin-bottom: 0.25rem;">🛡️ Company Trust Verification</h3>
+            <p style="color: #6b7280; font-size: 0.85rem;">Mandatory for posting jobs. We check every company's registration ID and corporate ID card so seekers only see trusted, valid employers.</p>
+        </div>
+        {% if profile.trust_status == 'verified' %}
+        <span style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:9999px; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">✓ Trusted &amp; Valid</span>
+        {% elif profile.trust_status == 'pending' %}
+        <span style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; border-radius:9999px; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">⏳ Pending Review</span>
+        {% elif profile.trust_status == 'rejected' %}
+        <span style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; border-radius:9999px; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">✕ Rejected</span>
+        {% else %}
+        <span style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; border-radius:9999px; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">Not Submitted</span>
+        {% endif %}
+    </div>
+
+    <div style="padding: 1.5rem 1.75rem;">
+        {% if profile.trust_status == 'rejected' %}
+        <div style="background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:0.5rem; padding:0.85rem 1rem; font-size:0.85rem; margin-bottom:1.25rem;">
+            <strong>Rejection reason:</strong> {{ profile.trust_rejection_reason }}<br>
+            Fix the issue above and re-submit your details below.
+        </div>
+        {% endif %}
+
+        {% if profile.trust_status == 'verified' %}
+        <p style="color:#15803d; font-size:0.9rem; margin-bottom:0.75rem;">
+            Your company was verified on {{ profile.trust_reviewed_at|date:"d M Y" }}. A “Trusted &amp; Valid” badge now appears on your job listings.
+        </p>
+        <p style="color:#6b7280; font-size:0.85rem;">Registration ID: <strong style="color:#111827;">{{ profile.company_id }}</strong> · Document on file: <strong style="color:#111827;">{{ profile.company_id_document.name|cut:"company_ids/" }}</strong></p>
+        {% elif profile.trust_status == 'pending' %}
+        <p style="color:#b45309; font-size:0.9rem; margin-bottom:0.75rem;">
+            Submitted on {{ profile.trust_submitted_at|date:"d M Y, H:i" }} — our team is reviewing your documents. Job posting unlocks as soon as you're approved.
+        </p>
+        <p style="color:#6b7280; font-size:0.85rem;">Registration ID: <strong style="color:#111827;">{{ profile.company_id }}</strong> · Document on file: <strong style="color:#111827;">{{ profile.company_id_document.name|cut:"company_ids/" }}</strong></p>
+        {% else %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#111827; margin-bottom:0.4rem;">Company Registration ID (CIN / GSTIN / LLPIN) *</label>
+                <input type="text" name="company_id" value="{{ profile.company_id }}" required maxlength="100"
+                       placeholder="e.g. U72900MH2020PTC345678"
+                       style="width:100%; border:1px solid #d1d5db; border-radius:0.375rem; padding:0.6rem 0.75rem; font-size:0.9rem;">
+            </div>
+            <div style="margin-bottom:1.1rem;">
+                <label style="display:block; font-size:0.85rem; font-weight:600; color:#111827; margin-bottom:0.4rem;">Corporate ID Card / Certificate of Incorporation *</label>
+                <input type="file" name="company_id_document" accept=".pdf,.jpg,.jpeg,.png" required
+                       style="width:100%; border:1px solid #d1d5db; border-radius:0.375rem; padding:0.5rem 0.75rem; font-size:0.85rem; background:#f9fafb;">
+                <p style="color:#6b7280; font-size:0.75rem; margin-top:0.4rem;">PDF, JPG or PNG, max 5 MB. Stored privately — only Deploynix platform admins can open it during review.</p>
+            </div>
+            <button type="submit" name="submit_trust" value="1" class="dashboard-action-btn" style="width:auto; padding:0.75rem 2rem;">Submit for Verification</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
 <div style="margin-top: 3rem; border: 1px solid #fecaca; border-radius: 0.75rem; overflow: hidden;">
     <div style="background: #fef2f2; padding: 1.5rem 1.75rem; display: flex; align-items: flex-start; gap: 1rem;">
         <div style="width: 40px; height: 40px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">

@@ -13,6 +13,10 @@ and `Deploynix_Job_Portal_Blueprint.pdf` for the complete project blueprint.
 - **Employers** — login by company email, dashboard, post/edit/delete jobs in 5 types,
   candidate management + resume search, interview scheduling, walk-in candidates,
   company profile, Razorpay subscription plans, resume unlock, reports.
+  **Company trust verification (KYC):** every company must submit its registration ID
+  (CIN / GSTIN / LLPIN) and upload a corporate ID card; a super admin reviews it in
+  Control Panel → Company Verification, and only verified companies can post jobs and
+  carry the public “Trusted & Valid” badge.
 - **Super Admin** — email + OTP login, control panel with job approval workflow,
   employer / job-seeker / subscription / plan / inquiry management.
 - **Background Verification (BGV)** — dedicated `verification` app with a 5-step

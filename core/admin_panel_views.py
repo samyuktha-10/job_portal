@@ -1,11 +1,18 @@
+import mimetypes
+import os
+
+from django.db.models import Case, IntegerField, When
+from django.http import FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 
 from .decorators import admin_required
-from .models import Job, Inquiry
+from .models import Job, Inquiry, Profile
+from .views import create_notification
 
 
 @admin_required
@@ -88,3 +95,95 @@ def admin_user_toggle_active(request, user_id):
         user.save(update_fields=['is_active'])
         messages.success(request, f"{user.username} is now {'active' if user.is_active else 'banned'}.")
     return redirect(request.POST.get('next') or 'admin_job_seekers_list')
+
+
+# ---------------------------------------------------------------------------
+# Company trust verification (KYC) review queue
+# ---------------------------------------------------------------------------
+_TRUST_ORDER = Case(
+    When(trust_status='pending', then=0),
+    When(trust_status='rejected', then=1),
+    When(trust_status='unverified', then=2),
+    default=3,
+    output_field=IntegerField(),
+)
+
+
+@admin_required
+def admin_company_verification(request):
+    """Review queue: companies that submitted a registration ID + corporate ID card."""
+    profiles = (
+        Profile.objects.filter(is_employer=True)
+        .select_related('user', 'trust_reviewed_by')
+        .order_by(_TRUST_ORDER, '-trust_submitted_at', 'company_name')
+    )
+
+    status = request.GET.get('status')
+    if status in ('pending', 'rejected', 'verified', 'unverified'):
+        profiles = profiles.filter(trust_status=status)
+
+    return render(request, 'core/admin_company_verification.html', {
+        'profiles': profiles,
+        'status': status,
+        'pending_count': Profile.objects.filter(is_employer=True, trust_status='pending').count(),
+    })
+
+
+@admin_required
+@require_POST
+def admin_company_trust_set(request, profile_id, action):
+    if action not in ('verify', 'reject'):
+        raise Http404('Unknown trust action.')
+
+    profile = get_object_or_404(Profile, pk=profile_id, is_employer=True)
+
+    if action == 'verify':
+        profile.trust_status = 'verified'
+        profile.trust_rejection_reason = ''
+        create_notification(
+            user=profile.user,
+            message='Your company has been verified as Trusted & Valid. You can now post jobs.',
+            notification_type='general',
+            link='/company-profile/',
+        )
+        messages.success(request, f"{profile.company_name or profile.user.username} marked Trusted & Valid.")
+    else:
+        reason = request.POST.get('reason', '').strip()
+        if not reason:
+            messages.error(request, 'A rejection reason is required so the employer knows what to fix.')
+            return redirect('admin_company_verification')
+        profile.trust_status = 'rejected'
+        profile.trust_rejection_reason = reason[:300]
+        create_notification(
+            user=profile.user,
+            message=f'Company verification rejected: {reason[:200]}',
+            notification_type='general',
+            link='/company-profile/',
+        )
+        messages.success(request, f"{profile.company_name or profile.user.username} rejected.")
+
+    profile.trust_reviewed_at = timezone.now()
+    profile.trust_reviewed_by = request.user
+    profile.save()
+    return redirect('admin_company_verification')
+
+
+@admin_required
+def company_id_document_download(request, profile_id):
+    """Stream a company's corporate ID document. Super admins only.
+
+    The file lives in PROTECTED_MEDIA_ROOT (never served as public media), so
+    this view is the single controlled access point.
+    """
+    profile = get_object_or_404(Profile, pk=profile_id, is_employer=True)
+    if not profile.company_id_document:
+        raise Http404('No corporate ID document on file for this company.')
+
+    name = os.path.basename(profile.company_id_document.name)
+    content_type = mimetypes.guess_type(name)[0] or 'application/octet-stream'
+    return FileResponse(
+        profile.company_id_document.open('rb'),
+        as_attachment=True,
+        filename=name,
+        content_type=content_type,
+    )

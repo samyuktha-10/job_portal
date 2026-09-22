@@ -131,6 +131,24 @@ class EmployerSmokeTests(TestCase):
                      "add_candidate", "add_interview", "inquiries", "subscription_plans"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
 
+        # Company trust gate: a brand-new employer cannot post jobs yet.
+        self.assertRedirects(self.client.get(reverse("post_job_select")),
+                             reverse("company_profile"))
+
+        # KYC submission -> super-admin review -> verified (production flow).
+        self.client.post(reverse("company_profile"), {
+            "submit_trust": "1", "company_id": "U72900MH2020PTC000001",
+            "company_id_document": SimpleUploadedFile(
+                "cid.pdf", b"%PDF-1.4 corporate id", content_type="application/pdf")})
+        profile = Profile.objects.get(user=emp)
+        self.assertEqual(profile.trust_status, "pending")
+        admin = User.objects.create_superuser("root", "root@x.com", "Adm1nPass!")
+        self.client.force_login(admin)
+        self.client.post(reverse("admin_company_trust_set", args=[profile.id, "verify"]))
+        profile.refresh_from_db()
+        self.assertEqual(profile.trust_status, "verified")
+        self.client.force_login(emp)  # resume the employer journey
+
         # post a job
         r = self.client.post("/post-job/full-time/", {
             "job_title": "Backend Dev", "company_name": "NewCo",
@@ -173,6 +191,14 @@ class EmployerSmokeTests(TestCase):
         # delete job
         self.client.post(reverse("delete_job", args=[job.id]))
         self.assertFalse(Job.objects.filter(id=job.id).exists())
+
+        # The protected KYC store is a real directory that outlives the test
+        # database, so remove the uploaded corporate ID card from disk.
+        import os
+        import shutil
+        from django.conf import settings as dj_settings
+        shutil.rmtree(os.path.join(dj_settings.PROTECTED_MEDIA_ROOT, "company_ids"),
+                      ignore_errors=True)
 
     def test_bgv_gated_by_plan(self):
         SubscriptionPlan.objects.filter(name="Free").update(includes_bgv_access=False)

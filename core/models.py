@@ -4,6 +4,8 @@ from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from .storage import protected_storage
+
 
 def validate_file_size(value):
     max_size_mb = 5
@@ -19,6 +21,16 @@ class Profile(models.Model):
         ('51-200', '51-200 employees'),
         ('201-500', '201-500 employees'),
         ('500+', '500+ employees'),
+    ]
+
+    # Company trust verification (KYC). A company is only allowed to post jobs
+    # once a super admin has reviewed its registration ID + corporate ID card
+    # and marked it 'verified' (Trusted & Valid).
+    TRUST_STATUS_CHOICES = [
+        ('unverified', 'Not Submitted'),
+        ('pending', 'Pending Review'),
+        ('verified', 'Trusted & Valid'),
+        ('rejected', 'Rejected'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -37,8 +49,38 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_email_verified = models.BooleanField(default=False)
 
+    # ---- Company trust verification (KYC) ----
+    company_id = models.CharField(
+        max_length=100, blank=True,
+        help_text="Company registration ID (CIN / GSTIN / LLPIN)",
+    )
+    company_id_document = models.FileField(
+        upload_to='company_ids/',
+        storage=protected_storage,
+        blank=True, null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png']),
+            validate_file_size,
+        ],
+        help_text="Corporate ID card / certificate of incorporation. PDF or image, max 5MB. "
+                  "Stored outside public media; only platform super admins can open it.",
+    )
+    trust_status = models.CharField(max_length=12, choices=TRUST_STATUS_CHOICES, default='unverified')
+    trust_submitted_at = models.DateTimeField(null=True, blank=True)
+    trust_reviewed_at = models.DateTimeField(null=True, blank=True)
+    trust_reviewed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='company_trust_reviews',
+    )
+    trust_rejection_reason = models.CharField(max_length=300, blank=True)
+
     def __str__(self):
         return self.user.username
+
+    @property
+    def can_post_jobs(self):
+        """Job posting is unlocked only for companies verified as trusted & valid."""
+        return self.trust_status == 'verified'
 
 
 # Job model ---------------------------------------------------------------------------------------------------------------

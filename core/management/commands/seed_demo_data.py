@@ -141,7 +141,9 @@ class Command(BaseCommand):
             Profile.objects.update_or_create(
                 user=user,
                 defaults={"is_employer": True, "company_name": company,
-                          "phone": "8%09d" % (200000000 + i * 511)},
+                          "phone": "8%09d" % (200000000 + i * 511),
+                          "company_id": "U72900MH2021PTC%06d" % (200000 + i),
+                          "trust_status": "verified"},
             )
 
             # Plan assignment: first 5 Premium, next 4 Basic, rest Free.

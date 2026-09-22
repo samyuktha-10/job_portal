@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jobs - Deploynix</title>
+<title>Company Verification - Deploynix</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -118,12 +118,14 @@
     border-radius: 10px;
     font-size: 11px;
     font-weight: bold;
+    white-space: nowrap;
   }
-  .badge.approved { background: #e6f4ea; color: #1e7e34; }
+  .badge.verified { background: #e6f4ea; color: #1e7e34; }
   .badge.pending { background: #fff4e0; color: #b8860b; }
   .badge.rejected { background: #fdecea; color: #b3261e; }
+  .badge.unverified { background: #eef0f3; color: #555; }
 
-  .actions { display: flex; gap: 6px; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .actions form { display: inline; }
   .actions button {
     padding: 5px 10px;
@@ -132,47 +134,30 @@
     font-size: 12px;
     cursor: pointer;
   }
-  .btn-approve { background: #1e7e34; color: #fff; }
+  .btn-verify { background: #1e7e34; color: #fff; }
   .btn-reject { background: #b3261e; color: #fff; }
-  .btn-pending { background: #b8860b; color: #fff; }
-  .btn-delete { background: #555; color: #fff; }
-
-  .empty { color: #999; font-size: 13px; padding: 16px 0; }
-
-  .pagination {
-    margin-top: 20px;
-    display: flex;
-    gap: 8px;
-    font-size: 13px;
-  }
-  .pagination a, .pagination span {
-    padding: 6px 12px;
+  .actions input[type=text] {
+    padding: 5px 8px;
     border: 1px solid #ddd;
     border-radius: 6px;
-    text-decoration: none;
-    color: #333;
+    font-size: 12px;
+    width: 220px;
   }
-  .pagination .current {
-    background: #d32f2f;
-    color: #fff;
-    border-color: #d32f2f;
-  }
+  a.doclink { color: #1a56b0; font-size: 12px; }
+  .reason { color: #b3261e; font-size: 12px; max-width: 260px; }
+  .empty { color: #999; font-size: 13px; padding: 16px 0; }
 </style>
 </head>
 <body>
-
 <div class="layout">
-
   <div class="sidebar">
-    <div>
-      <div class="brand">Deploy<span>nix</span></div>
-      <div class="tag">Provider Portal</div>
-    </div>
+    <div class="brand">Deploynix<span>.</span></div>
+    <div class="tag">Control Panel</div>
     <nav>
       <a href="{% url 'control_panel' %}">Dashboard</a>
-      <a href="{% url 'admin_jobs_list' %}" class="active">Jobs</a>
+      <a href="{% url 'admin_jobs_list' %}">Jobs</a>
       <a href="{% url 'admin_employers_list' %}">Employers</a>
-      <a href="{% url 'admin_company_verification' %}">Company Verification</a>
+      <a href="{% url 'admin_company_verification' %}" class="active">Company Verification</a>
       <a href="{% url 'admin_job_seekers_list' %}">Job Seekers</a>
       <a href="{% url 'admin_subscriptions_list' %}">Subscriptions</a>
       <a href="{% url 'admin_paid_members_list' %}">Paid Members</a>
@@ -192,91 +177,88 @@
     <div class="topbar">
       <div class="filters">
         <a href="?" class="{% if not status %}active{% endif %}">All</a>
-        <a href="?status=approved" class="{% if status == 'approved' %}active{% endif %}">Approved</a>
-        <a href="?status=pending" class="{% if status == 'pending' %}active{% endif %}">Pending</a>
+        <a href="?status=pending" class="{% if status == 'pending' %}active{% endif %}">Pending ({{ pending_count }})</a>
         <a href="?status=rejected" class="{% if status == 'rejected' %}active{% endif %}">Rejected</a>
+        <a href="?status=verified" class="{% if status == 'verified' %}active{% endif %}">Verified</a>
+        <a href="?status=unverified" class="{% if status == 'unverified' %}active{% endif %}">Not Submitted</a>
       </div>
       <div class="welcome">Welcome, <strong>{{ request.user.username }}</strong></div>
     </div>
 
-    <h1>Jobs</h1>
-    <div class="subtitle">Approve, reject or delete job postings on Deploynix.</div>
+    <h1>Company Verification</h1>
+    <div class="subtitle">Confirm each company's registration ID and corporate ID card. Only verified companies may post jobs and carry the “Trusted &amp; Valid” badge.</div>
 
     <div class="panel">
-      {% if page_obj %}
+      {% if profiles %}
       <table>
         <tr>
-          <th>Title</th>
           <th>Company</th>
-          <th>Type</th>
-          <th>Location</th>
-          <th>Views</th>
+          <th>Contact</th>
+          <th>Registration ID</th>
           <th>Status</th>
-          <th>Posted</th>
+          <th>Submitted</th>
+          <th>Corporate ID</th>
+          <th>Reviewed</th>
           <th>Actions</th>
         </tr>
-        {% for job in page_obj %}
+        {% for p in profiles %}
         <tr>
-          <td>{{ job.job_title }}</td>
-          <td>{{ job.company_name|default:job.posted_by.username }}</td>
-          <td>{{ job.job_type }}</td>
-          <td>{{ job.location }}</td>
-          <td>{{ job.views_count }}</td>
+          <td><strong>{{ p.company_name|default:p.user.username }}</strong></td>
+          <td>{{ p.user.email }}</td>
+          <td>{{ p.company_id|default:"—" }}</td>
           <td>
-            {% if job.approval_status == 'approved' %}
-              <span class="badge approved">Approved</span>
-            {% elif job.approval_status == 'rejected' %}
+            {% if p.trust_status == 'verified' %}
+              <span class="badge verified">Trusted &amp; Valid</span>
+            {% elif p.trust_status == 'pending' %}
+              <span class="badge pending">Pending Review</span>
+            {% elif p.trust_status == 'rejected' %}
               <span class="badge rejected">Rejected</span>
             {% else %}
-              <span class="badge pending">Pending</span>
+              <span class="badge unverified">Not Submitted</span>
             {% endif %}
           </td>
-          <td>{{ job.posted_at|date:"d M Y" }}</td>
+          <td>{{ p.trust_submitted_at|date:"d M Y, H:i"|default:"—" }}</td>
+          <td>
+            {% if p.company_id_document %}
+              <a class="doclink" href="{% url 'company_id_document_download' p.id %}" target="_blank" rel="noopener">Open document</a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            {% if p.trust_reviewed_at %}
+              {{ p.trust_reviewed_at|date:"d M Y" }}<br>
+              <span style="color:#888; font-size:11px;">by {{ p.trust_reviewed_by.username|default:"admin" }}</span>
+            {% else %}
+              —
+            {% endif %}
+          </td>
           <td class="actions">
-            {% if job.approval_status != 'approved' %}
-            <form method="post" action="{% url 'admin_job_set_status' job.id 'approved' %}">
+            {% if p.trust_status != 'verified' %}
+            <form method="post" action="{% url 'admin_company_trust_set' p.id 'verify' %}" onsubmit="return confirm('Mark {{ p.company_name|default:p.user.username }} as Trusted &amp; Valid?');">
               {% csrf_token %}
-              <button type="submit" class="btn-approve">Approve</button>
+              <button class="btn-verify" type="submit">Verify</button>
             </form>
             {% endif %}
-            {% if job.approval_status != 'rejected' %}
-            <form method="post" action="{% url 'admin_job_set_status' job.id 'rejected' %}">
+            {% if p.trust_status != 'rejected' and p.trust_status != 'unverified' %}
+            <form method="post" action="{% url 'admin_company_trust_set' p.id 'reject' %}">
               {% csrf_token %}
-              <button type="submit" class="btn-reject">Reject</button>
+              <input type="text" name="reason" placeholder="Rejection reason (required)" required>
+              <button class="btn-reject" type="submit">Reject</button>
             </form>
             {% endif %}
-            {% if job.approval_status != 'pending' %}
-            <form method="post" action="{% url 'admin_job_set_status' job.id 'pending' %}">
-              {% csrf_token %}
-              <button type="submit" class="btn-pending">Mark Pending</button>
-            </form>
+            {% if p.trust_status == 'rejected' %}
+              <div class="reason">“{{ p.trust_rejection_reason }}”</div>
             {% endif %}
-            <form method="post" action="{% url 'admin_job_delete' job.id %}" onsubmit="return confirm('Delete this job posting?');">
-              {% csrf_token %}
-              <button type="submit" class="btn-delete">Delete</button>
-            </form>
           </td>
         </tr>
         {% endfor %}
       </table>
-
-      <div class="pagination">
-        {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}">Previous</a>
-        {% endif %}
-        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}">Next</a>
-        {% endif %}
-      </div>
-
       {% else %}
-      <div class="empty">No jobs found.</div>
+      <div class="empty">No employer accounts in this filter.</div>
       {% endif %}
     </div>
-
   </div>
 </div>
-
 </body>
 </html>
