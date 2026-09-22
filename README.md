@@ -29,7 +29,10 @@ and `Deploynix_Job_Portal_Blueprint.pdf` for the complete project blueprint.
   recording + speech-to-text transcript). Every answer gets an explainable AI score
   (relevance / completeness / communication); on completion the employer is notified
   and can review the full transcript, play the private voice recordings and see the
-  per-question scores from the candidate detail page.
+  per-question scores from the candidate detail page. Candidates get up to **3
+  attempts** — a retake archives the previous score in the attempt history (visible
+  to both sides) and issues a fresh question set; the employer always reviews the
+  latest attempt plus the best score.
 
 ---
 

@@ -15,7 +15,24 @@
         <h2 class="text-5xl font-extrabold mb-2">{{ session.overall_score }}<span class="text-xl font-semibold text-red-200">/100</span></h2>
         <p class="text-sm text-red-100 mb-4">{{ app.job.job_title }} at {{ app.job.company_name|default:"the hiring company" }}</p>
         <p class="text-sm leading-relaxed max-w-xl mx-auto">{{ session.summary }}</p>
+        {% if session.history or session.current_attempt > 1 %}
+        <p class="text-xs text-red-100 mt-3 font-semibold">
+            Attempt {{ session.current_attempt }} of {{ max_attempts }} &middot; Best score: {{ session.best_overall_score }}/100
+        </p>
+        {% endif %}
     </div>
+
+    {% if session.history %}
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-6">
+        <p class="text-xs font-semibold text-gray-500 mb-2">ATTEMPT HISTORY (oldest first)</p>
+        <div class="flex flex-wrap gap-2">
+            {% for h in session.history %}
+            <span class="bg-gray-100 text-gray-600 rounded-full px-3 py-1.5 text-xs font-semibold">Attempt {{ h.attempt }}: {{ h.overall_score }}/100</span>
+            {% endfor %}
+            <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1.5 text-xs font-semibold">Attempt {{ session.current_attempt }}: {{ session.overall_score }}/100 (this report)</span>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="flex justify-between items-center mb-6">
         <a href="{% url 'my_applications' %}" class="text-xs font-semibold text-gray-500 hover:text-gray-700">← Back to My Applications</a>
@@ -59,6 +76,28 @@
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mt-8 text-center">
+        {% if can_retake %}
+        <h3 class="font-bold text-gray-900 mb-2">Not happy with this score?</h3>
+        <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+            Retake with a fresh set of questions. This report is archived in your attempt
+            history, and the company will see your newest attempt.
+        </p>
+        <form method="post" action="{% url 'mock_interview_retake' app.id %}"
+              onsubmit="return confirm('Start attempt {{ session.current_attempt|add:1 }} of {{ max_attempts }}? Your current report moves to the attempt history.');">
+            {% csrf_token %}
+            <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2.5 rounded-lg transition text-sm">
+                🔁 Retake the interview (attempt {{ session.current_attempt|add:1 }} of {{ max_attempts }})
+            </button>
+        </form>
+        {% else %}
+        <p class="text-sm text-gray-500">
+            All {{ max_attempts }} attempts used &mdash; this report is final.
+        </p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

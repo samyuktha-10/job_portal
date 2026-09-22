@@ -49,7 +49,7 @@
             {% if app.mock_interview and app.mock_interview.status == 'completed' %}
             <a href="{% url 'mock_interview_result' app.id %}"
                style="display:inline-block; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
-                &#127908; AI Mock Interview Complete &mdash; Scored {{ app.mock_interview.overall_score }}/100 &middot; View My Report
+                &#127908; AI Mock Interview Complete &mdash; Scored {{ app.mock_interview.overall_score }}/100{% if app.mock_interview.history %} (attempt {{ app.mock_interview.current_attempt }}){% endif %} &middot; View My Report
             </a>
             {% elif app.mock_interview %}
             <a href="{% url 'mock_interview_run' app.id %}"

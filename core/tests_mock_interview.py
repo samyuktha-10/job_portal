@@ -9,7 +9,7 @@ from .models import (Job, JobApplication, JobSeekerProfile,
                      MockInterviewSession, Notification, Profile)
 
 
-class MockInterviewTestCase(TestCase):
+class MockInterviewBase(TestCase):
     def setUp(self):
         self.employer = User.objects.create_user('employer', 'e@x.com', 'pass1234')
         Profile.objects.create(user=self.employer, is_employer=True, company_name='Deploynix')
@@ -32,11 +32,42 @@ class MockInterviewTestCase(TestCase):
         self.app = JobApplication.objects.create(
             job=self.job, job_seeker_profile=self.js_profile, status='shortlisted')
 
+    def _answer(self, text='I used Python and Django to build REST APIs with tests.',
+                audio=None, extra=None):
+        session = self.app.mock_interview
+        current = session.answers.filter(answered_at__isnull=True).first()
+        data = {'index': current.order, 'answer_text': text}
+        if extra:
+            data.update(extra)
+        if audio:
+            data['answer_audio'] = audio
+        return self.client.post(
+            reverse('mock_interview_run', args=[self.app.id]), data, follow=True)
+
+    def _session(self):
+        return MockInterviewSession.objects.get(application_id=self.app.id)
+
+    def _complete_session(self, with_audio=False):
+        self.client.force_login(self.candidate)
+        self._start(self.client)
+        for i in range(5):
+            kwargs = {}
+            if with_audio and i == 0:
+                kwargs = {'audio': SimpleUploadedFile(
+                    'answer.webm', b'RIFFaudio', content_type='audio/webm')}
+            self._answer(
+                text=f'Answer {i}: Python Django REST APIs testing teamwork ownership.',
+                **kwargs)
+        return self.app.mock_interview
+
     def _start(self, client, application=None):
         application = application or self.app
         return client.get(reverse('mock_interview_start',
                                   args=[application.id]), follow=True)
 
+
+
+class MockInterviewFlowTests(MockInterviewBase):
     # ---------------- eligibility ----------------
 
     def test_start_blocked_before_shortlist(self):
@@ -75,17 +106,6 @@ class MockInterviewTestCase(TestCase):
 
     # ---------------- answering ----------------
 
-    def _answer(self, text='I used Python and Django to build REST APIs with tests.',
-                audio=None, extra=None):
-        session = self.app.mock_interview
-        current = session.answers.filter(answered_at__isnull=True).first()
-        data = {'index': current.order, 'answer_text': text}
-        if extra:
-            data.update(extra)
-        if audio:
-            data['answer_audio'] = audio
-        return self.client.post(
-            reverse('mock_interview_run', args=[self.app.id]), data, follow=True)
 
     def test_typed_answer_is_scored(self):
         self.client.force_login(self.candidate)
@@ -172,18 +192,6 @@ class MockInterviewTestCase(TestCase):
 
     # ---------------- employer review + audio streaming ----------------
 
-    def _complete_session(self, with_audio=False):
-        self.client.force_login(self.candidate)
-        self._start(self.client)
-        for i in range(5):
-            kwargs = {}
-            if with_audio and i == 0:
-                kwargs = {'audio': SimpleUploadedFile(
-                    'answer.webm', b'RIFFaudio', content_type='audio/webm')}
-            self._answer(
-                text=f'Answer {i}: Python Django REST APIs testing teamwork ownership.',
-                **kwargs)
-        return self.app.mock_interview
 
     def test_employer_review_shows_scores_and_transcript(self):
         self._complete_session()
@@ -228,3 +236,104 @@ class MockInterviewTestCase(TestCase):
         self.client.force_login(self.other)
         response = self.client.get(url)
         self.assertRedirects(response, reverse('home'))
+
+
+class MockInterviewRetakeTests(MockInterviewBase):
+    RETAKE_TEXT = ('Retake answer: I led Python Django REST API delivery with unit '
+                   'testing, mentored juniors and improved results because of it.')
+
+    def _retake(self):
+        return self.client.post(
+            reverse('mock_interview_retake', args=[self.app.id]), follow=True)
+
+    def _complete_attempt(self):
+        for i in range(5):
+            self._answer(text=f'{self.RETAKE_TEXT} Point {i}.')
+
+    def test_retake_archives_history_and_resets_session(self):
+        self._complete_session()
+        first_score = self._session().overall_score
+        self.client.force_login(self.candidate)
+        response = self._retake()
+        session = self._session()
+        self.assertEqual(session.status, 'in_progress')
+        self.assertEqual(session.current_attempt, 2)
+        self.assertEqual(len(session.history), 1)
+        self.assertEqual(session.history[0]['attempt'], 1)
+        self.assertEqual(session.history[0]['overall_score'], first_score)
+        self.assertEqual(session.best_overall_score, first_score)
+        self.assertIsNone(session.overall_score)
+        self.assertIsNone(session.completed_at)
+        self.assertEqual(session.answers.count(), 5)
+        self.assertEqual(session.answers.filter(answered_at__isnull=True).count(), 5)
+        self.assertContains(response, 'Attempt 2 of 3')
+
+    def test_retake_blocked_before_completion(self):
+        self.client.force_login(self.candidate)
+        self._start(self.client)
+        response = self._retake()
+        self.assertRedirects(
+            response, reverse('mock_interview_run', args=[self.app.id]))
+        self.assertEqual(self._session().current_attempt, 1)
+        self.assertEqual(self._session().answers.count(), 5)
+
+    def test_retake_blocked_for_other_candidate(self):
+        self._complete_session()
+        self.client.force_login(self.other)
+        response = self.client.post(
+            reverse('mock_interview_retake', args=[self.app.id]))
+        self.assertRedirects(response, reverse('my_applications'))
+        self.assertEqual(self._session().current_attempt, 1)
+        self.assertEqual(self._session().status, 'completed')
+
+    def test_max_three_attempts_enforced(self):
+        self._complete_session()
+        self.client.force_login(self.candidate)
+        for _ in range(2):
+            self._retake()
+            self._complete_attempt()
+        session = self._session()
+        self.assertEqual(session.current_attempt, 3)
+        self.assertEqual(len(session.history), 2)
+
+        response = self._retake()  # 4th attempt must be refused
+        session = self._session()
+        self.assertEqual(session.current_attempt, 3)
+        self.assertEqual(session.status, 'completed')
+        self.assertContains(response, 'final')
+        self.assertNotContains(response, 'Retake the interview')
+
+    def test_best_score_tracked_and_employer_sees_history(self):
+        self._complete_session()
+        self.client.force_login(self.candidate)
+        self._retake()
+        self._complete_attempt()
+        session = self._session()
+        self.assertEqual(session.current_attempt, 2)
+        self.assertEqual(
+            session.best_overall_score,
+            max(session.overall_score, session.history[0]['overall_score']))
+
+        note = Notification.objects.filter(user=self.employer).latest('id')
+        self.assertIn('attempt 2 of 3', note.message)
+
+        self.client.force_login(self.employer)
+        response = self.client.get(
+            reverse('mock_interview_review', args=[self.app.id]))
+        self.assertContains(response, 'ATTEMPT HISTORY')
+        self.assertContains(response, 'Best:')
+
+    def test_result_page_offers_retake_only_when_attempts_remain(self):
+        self._complete_session()
+        self.client.force_login(self.candidate)
+        response = self.client.get(
+            reverse('mock_interview_result', args=[self.app.id]))
+        self.assertContains(response, 'Retake the interview')
+        self._retake()
+        self._complete_attempt()
+        self._retake()
+        self._complete_attempt()
+        response = self.client.get(
+            reverse('mock_interview_result', args=[self.app.id]))
+        self.assertNotContains(response, 'Retake the interview')
+        self.assertContains(response, 'this report is final')

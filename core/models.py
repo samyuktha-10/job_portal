@@ -273,6 +273,11 @@ class MockInterviewSession(models.Model):
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='in_progress')
     overall_score = models.PositiveIntegerField(null=True, blank=True)
     summary = models.TextField(blank=True)
+    current_attempt = models.PositiveIntegerField(default=1)
+    best_overall_score = models.PositiveIntegerField(null=True, blank=True)
+    history = models.JSONField(
+        default=list, blank=True,
+        help_text="Archived earlier attempts: [{attempt, overall_score, summary, completed_at}]")
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 

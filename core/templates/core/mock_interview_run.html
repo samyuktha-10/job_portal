@@ -6,8 +6,13 @@
 
     <div class="flex items-center justify-between mb-2">
         <h2 class="text-2xl font-bold text-gray-900">🎤 AI Mock Interview</h2>
-        <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-4 py-1.5 text-xs font-semibold">
-            Question {{ answered|add:1 }} of {{ total }}
+        <span class="flex items-center gap-2">
+            <span class="bg-gray-100 text-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold">
+                Attempt {{ session.current_attempt }} of {{ max_attempts }}
+            </span>
+            <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-4 py-1.5 text-xs font-semibold">
+                Question {{ answered|add:1 }} of {{ total }}
+            </span>
         </span>
     </div>
     <p class="text-sm text-gray-500 mb-6">

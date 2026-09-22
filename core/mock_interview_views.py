@@ -23,6 +23,7 @@ from .models import JobApplication, MockInterviewAnswer, MockInterviewSession
 from .views import create_notification
 
 ALLOWED_STATUSES = {'shortlisted', 'hired'}
+MAX_ATTEMPTS = 3  # 1 interview + 2 retakes; employer always sees the latest attempt
 
 
 def _candidate_application(request, application_id):
@@ -118,15 +119,20 @@ def mock_interview_run(request, application_id):
             session.summary = summary
             session.status = 'completed'
             session.completed_at = timezone.now()
+            session.best_overall_score = max(session.best_overall_score or 0, overall)
             session.save()
+            attempt_note = (f" (attempt {session.current_attempt} of {MAX_ATTEMPTS})"
+                            if session.current_attempt > 1 else "")
             create_notification(
                 user=app.job.posted_by,
                 message=(f"{app.display_full_name} completed an AI mock interview "
-                         f"for {app.job.job_title} - scored {overall}/100."),
+                         f"for {app.job.job_title} - scored {overall}/100{attempt_note}."),
                 notification_type='new_applicant',
                 link=reverse('mock_interview_review', args=[app.id]),
             )
-            messages.success(request, f'Mock interview complete - you scored {overall}/100.')
+            messages.success(
+                request, f'Mock interview complete - you scored {overall}/100'
+                         f'{attempt_note}.')
             return redirect('mock_interview_result', application_id=app.id)
 
         return redirect('mock_interview_run', application_id=app.id)
@@ -139,6 +145,7 @@ def mock_interview_run(request, application_id):
         'current': current,
         'total': session.answers.count(),
         'answered': answered,
+        'max_attempts': MAX_ATTEMPTS,
     })
 
 
@@ -154,7 +161,52 @@ def mock_interview_result(request, application_id):
         'app': app,
         'session': session,
         'answers': session.answers.all(),
+        'max_attempts': MAX_ATTEMPTS,
+        'can_retake': session.current_attempt < MAX_ATTEMPTS,
     })
+
+
+@login_required(login_url='job_seeker_login')
+@require_POST
+def mock_interview_retake(request, application_id):
+    """Archive the finished attempt and start a fresh set of questions."""
+    app = _candidate_application(request, application_id)
+    if app is None:
+        return redirect('my_applications')
+    session = getattr(app, 'mock_interview', None)
+    if session is None or session.status != 'completed':
+        messages.error(request, 'You can retake the mock interview only after '
+                                'completing the current attempt.')
+        return redirect('mock_interview_run', application_id=app.id)
+    if session.current_attempt >= MAX_ATTEMPTS:
+        messages.warning(request, f'You have used all {MAX_ATTEMPTS} attempts for '
+                                  'this application - your latest report is final.')
+        return redirect('mock_interview_result', application_id=app.id)
+
+    session.history = session.history + [{
+        'attempt': session.current_attempt,
+        'overall_score': session.overall_score,
+        'summary': session.summary,
+        'completed_at': (session.completed_at.isoformat()
+                         if session.completed_at else None),
+    }]
+    session.best_overall_score = max(session.best_overall_score or 0,
+                                     session.overall_score or 0)
+    session.answers.all().delete()
+    session.overall_score = None
+    session.summary = ''
+    session.completed_at = None
+    session.status = 'in_progress'
+    session.current_attempt += 1
+    session.save()
+    for i, q in enumerate(mock_ai.generate_questions(app.job)):
+        session.answers.create(
+            order=i, question=q['question'], kind=q['kind'],
+            focus_keywords=q['focus_keywords'])
+    messages.info(request, f'Retake started - attempt {session.current_attempt} of '
+                           f'{MAX_ATTEMPTS}. Your earlier score is kept in the '
+                           'attempt history.')
+    return redirect('mock_interview_run', application_id=app.id)
 
 
 @employer_required
@@ -168,6 +220,7 @@ def mock_interview_review(request, application_id):
         'application': app,
         'session': session,
         'answers': session.answers.all() if session else [],
+        'max_attempts': MAX_ATTEMPTS,
     })
 
 

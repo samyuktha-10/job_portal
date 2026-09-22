@@ -34,10 +34,26 @@
         {% if session.status == 'completed' %}
         <h3 class="text-5xl font-extrabold mb-2">{{ session.overall_score }}<span class="text-xl font-semibold text-red-200">/100</span></h3>
         <p class="text-sm leading-relaxed max-w-xl mx-auto">{{ session.summary }}</p>
+        <p class="text-xs text-red-100 mt-3 font-semibold">
+            Latest attempt: {{ session.current_attempt }} of {{ max_attempts }}
+            {% if session.best_overall_score %}&middot; Best: {{ session.best_overall_score }}/100{% endif %}
+        </p>
         {% else %}
         <p class="text-sm text-red-100">The candidate has started but not completed the interview. Check back shortly.</p>
         {% endif %}
     </div>
+
+    {% if session.history %}
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-6">
+        <p class="text-xs font-semibold text-gray-500 mb-2">ATTEMPT HISTORY (oldest first)</p>
+        <div class="flex flex-wrap gap-2">
+            {% for h in session.history %}
+            <span class="bg-gray-100 text-gray-600 rounded-full px-3 py-1.5 text-xs font-semibold">Attempt {{ h.attempt }}: {{ h.overall_score }}/100</span>
+            {% endfor %}
+            <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1.5 text-xs font-semibold">Attempt {{ session.current_attempt }}: {{ session.overall_score }}/100 (shown below)</span>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="space-y-6">
         {% for a in answers %}

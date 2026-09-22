@@ -48,6 +48,7 @@ urlpatterns = [
     path('mock-interview/<int:application_id>/start/', mock_interview_views.mock_interview_start, name='mock_interview_start'),
     path('mock-interview/<int:application_id>/', mock_interview_views.mock_interview_run, name='mock_interview_run'),
     path('mock-interview/<int:application_id>/result/', mock_interview_views.mock_interview_result, name='mock_interview_result'),
+    path('mock-interview/<int:application_id>/retake/', mock_interview_views.mock_interview_retake, name='mock_interview_retake'),
     path('mock-interview/audio/<int:answer_id>/', mock_interview_views.mock_interview_audio, name='mock_interview_audio'),
     path('employer/mock-interview/<int:application_id>/', mock_interview_views.mock_interview_review, name='mock_interview_review'),
     path('delete-account/', views.delete_account, name='delete_account'),
