@@ -17,12 +17,12 @@
     </style>
 </head>
 <body>
-    {% include 'core/navbar.html' %}
+    {% block navbar %}{% include 'core/navbar.html' %}{% endblock %}
 
     {% block content %}
     {% endblock %}
 
-    {% include 'core/footer.html' %}
+    {% block footer %}{% include 'core/footer.html' %}{% endblock %}
     {% if user.is_authenticated %}
     <script>
         function updateNotifBadge() {

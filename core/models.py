@@ -243,7 +243,7 @@ class Interview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Interview: {self.application.full_name} - {self.scheduled_at.strftime('%d/%m/%Y')}"
+        return f"Interview: {self.application.display_full_name} - {self.scheduled_at.strftime('%d/%m/%Y')}"
 
 
 # JobSeekerProfile model ---------------------------------------------------------------------------------------------------------------
@@ -349,6 +349,34 @@ class EmployerSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.plan.name}"
+
+
+class Payment(models.Model):
+    """Server-side audit trail for Razorpay orders.
+
+    Created when an order is opened; the plan and amount are fixed here, on
+    the server, so the client can never choose which plan a successful
+    payment activates. ``payment_id`` is unique, which makes a captured
+    payment impossible to replay.
+    """
+
+    STATUS_CHOICES = [
+        ('created', 'Created'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
+    order_id = models.CharField(max_length=64, unique=True)
+    payment_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    amount_paise = models.PositiveIntegerField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='created')
+    created_at = models.DateTimeField(auto_now_add=True)
+    captured_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.order_id} ({self.status})"
 
 
 # ResumeUnlock model ---------------------------------------------------------------------------------------------------------------

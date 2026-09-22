@@ -182,11 +182,13 @@ class EmployerSmokeTests(TestCase):
         self.assertTrue(ResumeUnlock.objects.filter(employer=emp, application=app).exists())
         self.assertEqual(self.client.get(reverse("candidate_detail", args=[app.id])).status_code, 200)
 
-        # free-plan order endpoint
+        # free-plan order endpoint: the one-time trial was already consumed by
+        # the subscription granted at signup, so re-claiming must be refused
+        # (this is what stops quota counters being reset for free).
         plan = SubscriptionPlan.objects.get(name="Free")
         r = self.client.post(reverse("create_razorpay_order", args=[plan.id]))
-        self.assertEqual(r.status_code, 200)
-        self.assertIn(b"free", r.content)
+        self.assertEqual(r.status_code, 403)
+        self.assertIn(b"once", r.content)
 
         # delete job
         self.client.post(reverse("delete_job", args=[job.id]))

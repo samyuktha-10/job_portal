@@ -31,7 +31,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import (
     Job, JobApplication, Inquiry, Interview,
     JobSeekerProfile, SubscriptionPlan, EmployerSubscription, ResumeUnlock, Profile,
-    Notification, SavedJob, JobSeekerSignupOTP, SupportContact,
+    Notification, SavedJob, JobSeekerSignupOTP, SupportContact, Payment,
 )
 from .forms import (
     SignUpForm, EmployerLoginForm, JobSeekerLoginForm, JobPostForm,
@@ -1257,19 +1257,28 @@ def subscription_plans(request):
 @employer_required
 @require_POST
 def create_razorpay_order(request, plan_id):
-    plan = SubscriptionPlan.objects.get(id=plan_id)
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
 
     if plan.price == 0:
-        EmployerSubscription.objects.update_or_create(
+        # The free tier is a one-time trial: re-claiming it must not reset
+        # quota counters or extend an existing subscription.
+        if EmployerSubscription.objects.filter(user=request.user).exists():
+            return JsonResponse(
+                {'free': False, 'error': 'The free plan can only be claimed once per account.'},
+                status=403,
+            )
+        EmployerSubscription.objects.create(
             user=request.user,
-            defaults={
-                'plan': plan,
-                'expires_at': timezone.now() + timedelta(days=plan.duration_days),
-                'jobs_posted_count': 0,
-                'resumes_viewed_count': 0,
-            }
+            plan=plan,
+            expires_at=timezone.now() + timedelta(days=plan.duration_days),
         )
         return JsonResponse({'free': True, 'redirect': reverse('employer_dashboard')})
+
+    if not (settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET):
+        return JsonResponse(
+            {'free': False, 'error': 'Payments are not configured on this server.'},
+            status=503,
+        )
 
     amount_paise = plan.price * 100
     order = razorpay_client.order.create({
@@ -1278,6 +1287,15 @@ def create_razorpay_order(request, plan_id):
         'payment_capture': 1,
         'notes': {'plan_id': plan.id, 'user_id': request.user.id},
     })
+
+    # Bind order -> plan -> amount on the SERVER. verify_payment activates
+    # whatever this row says, never what the browser sends.
+    Payment.objects.create(
+        user=request.user,
+        plan=plan,
+        order_id=order['id'],
+        amount_paise=amount_paise,
+    )
 
     return JsonResponse({
         'free': False,
@@ -1289,25 +1307,76 @@ def create_razorpay_order(request, plan_id):
     })
 
 
-@csrf_exempt
 @employer_required
 @require_POST
 def verify_payment(request):
-    data = json.loads(request.body)
-    plan_id = data.get('plan_id')
+    """Activate a subscription for a payment that really happened.
 
-    params_dict = {
-        'razorpay_order_id': data.get('razorpay_order_id'),
-        'razorpay_payment_id': data.get('razorpay_payment_id'),
-        'razorpay_signature': data.get('razorpay_signature'),
-    }
+    Hardened flow: the plan comes from the server-side Payment row created
+    when the order was opened (never from the request body), the signature is
+    verified, the order is re-fetched from Razorpay to confirm it is paid for
+    the exact expected amount, and the unique payment_id blocks replays.
+    """
+    data = json.loads(request.body)
+    order_id = data.get('razorpay_order_id') or ''
+    payment_id = data.get('razorpay_payment_id') or ''
+    signature = data.get('razorpay_signature') or ''
+
+    payment = Payment.objects.filter(
+        order_id=order_id, user=request.user, status='created'
+    ).first()
+    if payment is None:
+        return JsonResponse(
+            {'success': False, 'error': 'Unknown or already-processed order.'}, status=400)
+    if payment.payment_id:  # unique constraint backs this; belt-and-braces
+        return JsonResponse({'success': False, 'error': 'Payment already captured.'}, status=400)
+
+    if not (settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET):
+        return JsonResponse(
+            {'success': False, 'error': 'Payments are not configured on this server.'},
+            status=503,
+        )
 
     try:
-        razorpay_client.utility.verify_payment_signature(params_dict)
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature,
+        })
     except razorpay.errors.SignatureVerificationError:
+        payment.status = 'failed'
+        payment.save(update_fields=['status'])
         return JsonResponse({'success': False, 'error': 'Signature verification failed'}, status=400)
 
-    plan = SubscriptionPlan.objects.get(id=plan_id)
+    # Confirm with Razorpay itself: order paid, correct amount, payment
+    # belongs to this order. Never trust the browser for any of this.
+    try:
+        order = razorpay_client.order.fetch(order_id)
+        if order.get('status') != 'paid' or order.get('amount') != payment.amount_paise:
+            payment.status = 'failed'
+            payment.save(update_fields=['status'])
+            return JsonResponse(
+                {'success': False, 'error': 'Order not paid for the expected amount.'},
+                status=400)
+        order_payments = razorpay_client.order.payments(order_id)
+        items = [p['id'] for p in order_payments.get('items', [])]
+        if payment_id not in items:
+            payment.status = 'failed'
+            payment.save(update_fields=['status'])
+            return JsonResponse(
+                {'success': False, 'error': 'Payment does not belong to this order.'},
+                status=400)
+    except razorpay.errors.RazorpayError:
+        return JsonResponse(
+            {'success': False, 'error': 'Could not confirm the payment with Razorpay.'},
+            status=502)
+
+    plan = payment.plan  # server-side truth
+    payment.payment_id = payment_id
+    payment.status = 'paid'
+    payment.captured_at = timezone.now()
+    payment.save()
+
     EmployerSubscription.objects.update_or_create(
         user=request.user,
         defaults={
@@ -1634,7 +1703,9 @@ def super_admin_login(request):
                 recipient_list=[user.email],
                 fail_silently=True,
             )
-            print(f"[DEV] Super admin OTP for {user.email}: {otp}")
+            # NB: never print the OTP here -- with SMTP configured this would
+            # leak the second factor into host logs. When SMTP is absent the
+            # console email backend already shows the code in dev output.
             return _sa_render(request, step="verify",
                               info="Enter the verification code sent to your email.")
 
