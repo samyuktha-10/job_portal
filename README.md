@@ -79,19 +79,40 @@ Then edit `.env` and set at least:
 SECRET_KEY=any-long-random-string
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_URL=            # leave empty to use SQLite for local dev
+DATABASE_URL=postgresql://postgres:YOUR_PG_PASSWORD@localhost:5432/job_portal
 ```
-> ⚠️ Leave `DATABASE_URL` empty for a zero-setup local database (SQLite).
-> PostgreSQL is only needed for production.
+> 🐘 **PostgreSQL is the project's primary database** (development and production).
+> SQLite remains available as a zero-setup fallback for quick tries only:
+> `DATABASE_URL=sqlite:///db.sqlite3`.
 
 ---
 
 ## 5) Set up the database & sample data
 
+**Install PostgreSQL (one time):**
+- **Windows:** `winget install PostgreSQL.PostgreSQL.17` (or the EDB installer).
+  Remember the `postgres` superuser password you choose — it goes into `.env`.
+- **Linux/macOS:** your package manager (`apt install postgresql`, `brew install postgresql@16`).
+
+**Create the database:**
+```powershell
+psql -U postgres -c "CREATE DATABASE job_portal;"
+```
+(pgAdmin → Databases → Create works too.)
+
+**Apply migrations & load sample data:**
 ```bash
 python manage.py migrate
 python manage.py loaddata datadump.json
 ```
+
+> Moving an existing SQLite database to PostgreSQL?
+> ```bash
+> # 1. with the OLD sqlite .env:
+> python manage.py dumpdata --natural-foreign --natural-primary -e contenttypes -e auth.permission -e sessions > backup.json
+> # 2. point .env at PostgreSQL, run: python manage.py migrate
+> # 3. python manage.py loaddata backup.json
+> ```
 
 Create a **super admin** account (for the admin control panel):
 ```bash

@@ -89,7 +89,10 @@ class ModelTests(TestCase):
         self.assertFalse(draft.is_visible_to(None))
 
     def test_banner_fallback(self):
-        post = make_post("Banner", banner="not-a-real-key")
+        # An unknown key (within the column's max_length -- Postgres enforces
+        # varchar limits that SQLite ignores) must fall back to the default
+        # gradient instead of breaking rendering.
+        post = make_post("Banner", banner="nope")
         self.assertIn("linear-gradient", post.banner_style)
 
 
