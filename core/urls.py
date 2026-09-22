@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from . import admin_panel_views
+from . import mock_interview_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -42,6 +43,13 @@ urlpatterns = [
     path('my-applications/', views.my_applications, name='my_applications'),
     path('my-applications/<int:application_id>/delete/', views.delete_application, name='delete_application'),
     path('ats-checker/', views.ats_checker, name='ats_checker'),
+
+    # AI mock interview (candidate answers by typing or mic; employer reviews)
+    path('mock-interview/<int:application_id>/start/', mock_interview_views.mock_interview_start, name='mock_interview_start'),
+    path('mock-interview/<int:application_id>/', mock_interview_views.mock_interview_run, name='mock_interview_run'),
+    path('mock-interview/<int:application_id>/result/', mock_interview_views.mock_interview_result, name='mock_interview_result'),
+    path('mock-interview/audio/<int:answer_id>/', mock_interview_views.mock_interview_audio, name='mock_interview_audio'),
+    path('employer/mock-interview/<int:application_id>/', mock_interview_views.mock_interview_review, name='mock_interview_review'),
     path('delete-account/', views.delete_account, name='delete_account'),
     path('notifications/', views.notifications_list, name='notifications_list'),
     path('notifications/unread-count/', views.unread_notification_count, name='unread_notification_count'),

@@ -69,4 +69,37 @@
         </div>
     </div>
 </div>
+
+<!-- AI MOCK INTERVIEW REVIEW -->
+<div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h3 class="text-lg font-bold text-gray-900">AI Mock Interview</h3>
+        {% if application.mock_interview and application.mock_interview.status == 'completed' %}
+            <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1.5 text-xs font-semibold">
+                Scored {{ application.mock_interview.overall_score }}/100
+            </span>
+        {% elif application.mock_interview %}
+            <span class="bg-gray-100 text-gray-600 rounded-full px-3 py-1.5 text-xs font-semibold">In Progress</span>
+        {% else %}
+            <span class="bg-gray-100 text-gray-500 rounded-full px-3 py-1.5 text-xs font-semibold">Not Taken Yet</span>
+        {% endif %}
+    </div>
+
+    {% if application.mock_interview %}
+        <p class="text-sm text-gray-600 mb-4">
+            {{ application.display_full_name }} took the AI mock interview for this role &mdash;
+            review their typed/spoken transcript, listen to the voice recordings and see the
+            AI scoring per question.
+        </p>
+        <a href="{% url 'mock_interview_review' application.id %}"
+           class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-5 py-2.5 rounded transition">
+            &#127908; Review Mock Interview &amp; Transcript
+        </a>
+    {% else %}
+        <p class="text-sm text-gray-500">
+            The AI mock interview unlocks for the candidate once you shortlist this application.
+            After they complete it, their transcript, voice recordings and AI scores appear here.
+        </p>
+    {% endif %}
+</div>
 {% endblock %}

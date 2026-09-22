@@ -44,6 +44,27 @@
         </div>
         {% endif %}
 
+        {% if app.status == 'shortlisted' or app.status == 'hired' %}
+        <div>
+            {% if app.mock_interview and app.mock_interview.status == 'completed' %}
+            <a href="{% url 'mock_interview_result' app.id %}"
+               style="display:inline-block; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
+                &#127908; AI Mock Interview Complete &mdash; Scored {{ app.mock_interview.overall_score }}/100 &middot; View My Report
+            </a>
+            {% elif app.mock_interview %}
+            <a href="{% url 'mock_interview_run' app.id %}"
+               style="display:inline-block; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
+                &#127908; AI Mock Interview In Progress &mdash; Continue Answering
+            </a>
+            {% else %}
+            <a href="{% url 'mock_interview_start' app.id %}"
+               style="display:inline-block; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.8rem; font-weight:600; text-decoration:none;">
+                &#127908; Take the AI Mock Interview &mdash; Practice &amp; Share Your Score With This Company
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Tracking pipeline -->
         <div style="display: flex; align-items: center; padding: 0.5rem 0;">
             <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">

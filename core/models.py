@@ -13,6 +13,15 @@ def validate_file_size(value):
         raise ValidationError(f'File size must be under {max_size_mb}MB.')
 
 
+def validate_audio_size(value):
+    max_size_mb = 10
+    if value.size > max_size_mb * 1024 * 1024:
+        raise ValidationError(f'Audio upload must be under {max_size_mb}MB.')
+
+
+AUDIO_EXTENSIONS = ['webm', 'ogg', 'oga', 'mp3', 'wav', 'm4a']
+
+
 # Profile model for both employers and job seekers -----------------------------------------------------------------------
 class Profile(models.Model):
     COMPANY_SIZE_CHOICES = [
@@ -244,6 +253,75 @@ class Interview(models.Model):
 
     def __str__(self):
         return f"Interview: {self.application.display_full_name} - {self.scheduled_at.strftime('%d/%m/%Y')}"
+
+
+class MockInterviewSession(models.Model):
+    """One AI mock interview per application.
+
+    Unlocked when the company shortlists the candidate; when completed, the
+    full transcript, voice recordings and AI scoring become visible to the
+    employer who owns the job.
+    """
+
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+    ]
+
+    application = models.OneToOneField(
+        JobApplication, on_delete=models.CASCADE, related_name='mock_interview')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='in_progress')
+    overall_score = models.PositiveIntegerField(null=True, blank=True)
+    summary = models.TextField(blank=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Mock interview {self.id} - {self.application} ({self.status})"
+
+
+class MockInterviewAnswer(models.Model):
+    """A single question + the candidate's typed or spoken answer + AI score."""
+
+    KIND_CHOICES = [
+        ('skill', 'Skill Deep-dive'),
+        ('technical', 'Technical'),
+        ('experience', 'Experience'),
+        ('behavioral', 'Behavioral'),
+    ]
+
+    session = models.ForeignKey(
+        MockInterviewSession, on_delete=models.CASCADE, related_name='answers')
+    order = models.PositiveIntegerField()
+    question = models.TextField()
+    kind = models.CharField(max_length=12, choices=KIND_CHOICES)
+    focus_keywords = models.JSONField(default=list, blank=True)
+
+    answer_text = models.TextField(blank=True, help_text="Typed answer or live speech-to-text transcript")
+    answer_audio = models.FileField(
+        upload_to='mock_interviews/', storage=protected_storage,
+        blank=True, null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=AUDIO_EXTENSIONS),
+            validate_audio_size,
+        ],
+        help_text="Voice recording (webm/ogg/mp3/wav/m4a, max 10MB). Private storage.",
+    )
+    audio_duration_sec = models.FloatField(null=True, blank=True)
+    used_mic = models.BooleanField(default=False)
+
+    score = models.PositiveIntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    matched_keywords = models.JSONField(default=list, blank=True)
+    missing_keywords = models.JSONField(default=list, blank=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('session', 'order')
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Q{self.order + 1} ({self.get_kind_display()}) - {self.score}"
 
 
 # JobSeekerProfile model ---------------------------------------------------------------------------------------------------------------

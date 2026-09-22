@@ -9,7 +9,8 @@ and `Deploynix_Job_Portal_Blueprint.pdf` for the complete project blueprint.
 
 - **Job Seekers** — email-OTP signup, profile with completeness %, WhatsApp opt-in,
   job search (vacancies / internships / walk-in), one-click apply, My Applications
-  timeline, saved jobs, ATS resume checker, notifications, account deletion.
+  timeline, saved jobs, ATS resume checker, AI mock interview (typed or by mic),
+  notifications, account deletion.
 - **Employers** — login by company email, dashboard, post/edit/delete jobs in 5 types,
   candidate management + resume search, interview scheduling, walk-in candidates,
   company profile, Razorpay subscription plans, resume unlock, reports.
@@ -22,6 +23,13 @@ and `Deploynix_Job_Portal_Blueprint.pdf` for the complete project blueprint.
 - **Background Verification (BGV)** — dedicated `verification` app with a 5-step
   workflow (identity, education, employment, address, criminal), verifier dashboard,
   DigiLocker stub, and an immutable audit log.
+- **AI Mock Interview** — once a company shortlists an application, the candidate can
+  take a 5-question AI mock interview tailored to the job (skill, technical,
+  experience, behavioral). Answers are **typed or spoken through the mic** (browser
+  recording + speech-to-text transcript). Every answer gets an explainable AI score
+  (relevance / completeness / communication); on completion the employer is notified
+  and can review the full transcript, play the private voice recordings and see the
+  per-question scores from the candidate detail page.
 
 ---
 

@@ -1,0 +1,162 @@
+{% extends 'core/dashboard_base.html' %}
+{% block title %}AI Mock Interview - Deploynix{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="text-2xl font-bold text-gray-900">🎤 AI Mock Interview</h2>
+        <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-4 py-1.5 text-xs font-semibold">
+            Question {{ answered|add:1 }} of {{ total }}
+        </span>
+    </div>
+    <p class="text-sm text-gray-500 mb-6">
+        For <strong class="text-gray-900">{{ app.job.job_title }}</strong> at
+        {{ app.job.company_name|default:"the hiring company" }} — your answers and voice
+        recordings are shared with this company after you finish.
+    </p>
+
+    <div class="w-full bg-gray-200 rounded-full h-2 mb-8">
+        <div class="bg-red-600 h-2 rounded-full transition-all"
+             style="width: {% widthratio answered total 100 %}%;"></div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded mb-4">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% if current %}
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+        <span class="bg-red-50 text-red-600 border border-red-200 rounded-full px-3 py-1.5 text-xs font-semibold">
+            {{ current.get_kind_display }}
+        </span>
+        <h3 class="text-lg font-bold text-gray-900 mt-4 leading-snug">{{ current.question }}</h3>
+
+        <form method="post" enctype="multipart/form-data" class="mt-6" id="answer-form">
+            {% csrf_token %}
+            <input type="hidden" name="index" value="{{ current.order }}">
+            <input type="hidden" name="used_mic" id="used-mic" value="">
+            <input type="hidden" name="audio_duration_sec" id="audio-duration" value="">
+
+            <label class="block text-sm font-semibold text-gray-800 mb-2">
+                Your answer — type it, or record it with the mic
+            </label>
+            <textarea name="answer_text" id="answer-text" rows="6"
+                      placeholder="Speak or type your answer here… (if you record, the browser's speech-to-text fills this box automatically when supported)"
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-red-500"></textarea>
+
+            <div class="flex flex-wrap items-center gap-3 mt-4">
+                <button type="button" id="rec-btn"
+                        class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition">
+                     Start recording
+                </button>
+                <span id="rec-timer" class="text-sm text-gray-500 font-medium">0:00</span>
+                <span id="rec-status" class="text-xs text-gray-400"></span>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Voice recording (optional — attached for the employer to hear)
+                </label>
+                <input type="file" name="answer_audio" id="answer-audio" accept=".webm,.ogg,.oga,.mp3,.wav,.m4a,audio/*"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-50">
+                <p class="text-xs text-gray-400 mt-1">webm / ogg / mp3 / wav / m4a, max 10 MB. Recordings are private — only you and this company can play them.</p>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2.5 rounded-lg transition text-sm">
+                    Submit answer →
+                </button>
+            </div>
+        </form>
+    </div>
+    <p class="text-xs text-gray-400">
+        Tip: structure answers as situation → action → result, and name the technologies you used.
+        The AI scores relevance, completeness and communication.
+    </p>
+    {% else %}
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+        <p class="text-gray-600 mb-4">All questions answered.</p>
+        <a href="{% url 'mock_interview_result' app.id %}" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2.5 rounded-lg inline-block text-sm">View my report</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+(function () {
+    var recBtn = document.getElementById('rec-btn');
+    if (!recBtn) return;
+    var timerEl = document.getElementById('rec-timer');
+    var statusEl = document.getElementById('rec-status');
+    var audioInput = document.getElementById('answer-audio');
+    var usedMic = document.getElementById('used-mic');
+    var durationEl = document.getElementById('audio-duration');
+    var textarea = document.getElementById('answer-text');
+
+    var recorder = null, chunks = [], startedAt = 0, tick = null, recognition = null;
+
+    function fmt(sec) {
+        var m = Math.floor(sec / 60), s = sec % 60;
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function startSpeechToText() {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { statusEl.textContent = 'Speech-to-text unsupported in this browser - type a transcript after recording.'; return; }
+        recognition = new SR();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.onresult = function (e) {
+            for (var i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) {
+                    textarea.value = (textarea.value + ' ' + e.results[i][0].transcript).trim();
+                }
+            }
+        };
+        try { recognition.start(); } catch (err) { /* already running */ }
+    }
+
+    recBtn.addEventListener('click', function () {
+        if (recorder && recorder.state === 'recording') {
+            recorder.stop();
+            if (recognition) { try { recognition.stop(); } catch (e) {} }
+            clearInterval(tick);
+            recBtn.textContent = '⏺ Start recording';
+            return;
+        }
+        if (!(navigator.mediaDevices && window.MediaRecorder)) {
+            statusEl.textContent = 'Recording unsupported in this browser - type your answer instead.';
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+            recorder.onstop = function () {
+                stream.getTracks().forEach(function (t) { t.stop(); });
+                var blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+                var dt = new DataTransfer();
+                dt.items.add(new File([blob], 'answer-' + Date.now() + '.webm', { type: blob.type }));
+                audioInput.files = dt.files;
+                usedMic.value = '1';
+                durationEl.value = String(Math.round((Date.now() - startedAt) / 1000));
+                statusEl.textContent = 'Recording attached ✓ (' + fmt(Math.round((Date.now() - startedAt) / 1000)) + ')';
+            };
+            startedAt = Date.now();
+            recorder.start();
+            startSpeechToText();
+            tick = setInterval(function () {
+                timerEl.textContent = fmt(Math.round((Date.now() - startedAt) / 1000));
+            }, 1000);
+            recBtn.textContent = '⏹ Stop recording';
+            statusEl.textContent = 'Recording…';
+        }).catch(function () {
+            statusEl.textContent = 'Microphone permission denied - type your answer instead.';
+        });
+    });
+})();
+</script>
+{% endblock %}
