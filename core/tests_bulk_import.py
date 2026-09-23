@@ -147,6 +147,16 @@ class BulkCandidateImportTests(TestCase):
         self.assertContains(response, '.xlsx')
         self.assertEqual(JobSeekerProfile.objects.count(), 1)  # only setUp's
 
+    def test_control_panel_counts_imported_profiles(self):
+        self.client.force_login(self.employer)
+        self._post(_xlsx([['Counted Person', 'counted@example.com',
+                           '', '', '', '', '', '', '']]))
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('control_panel'))
+        # setUp seeker + imported one
+        self.assertEqual(response.context['job_seekers_total'], 2)
+        self.assertEqual(response.context['job_seekers_new_month'], 2)
+
     def test_template_download_is_workbook(self):
         self.client.force_login(self.employer)
         response = self.client.get(reverse('bulk_import_template'))

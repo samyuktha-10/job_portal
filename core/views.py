@@ -1766,9 +1766,9 @@ def control_panel(request):
     ).count()
     expired_subscriptions = EmployerSubscription.objects.filter(expires_at__lte=now).count()
 
-    job_seekers_total = Profile.objects.filter(is_employer=False).count()
-    job_seekers_new_month = Profile.objects.filter(
-        is_employer=False, user__date_joined__gte=month_ago
+    job_seekers_total = JobSeekerProfile.objects.count()
+    job_seekers_new_month = JobSeekerProfile.objects.filter(
+        created_at__gte=month_ago
     ).count()
     applications_total = JobApplication.objects.count()
     applications_hired = JobApplication.objects.filter(status='hired').count()
