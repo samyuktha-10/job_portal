@@ -9,6 +9,8 @@
         Upload one <strong>.xlsx</strong> file with up to 5,000 candidates. Every valid row
         becomes a <strong>real candidate profile</strong> (login account + JobSeekerProfile)
         that appears in candidate search and job-seeker management immediately.
+        Workbooks with several sheets are supported: candidate sheets are detected
+        automatically and company sheets are skipped.
     </p>
 
     {% if messages %}
@@ -114,6 +116,8 @@
             <li>Rows whose email already exists are skipped as duplicates (never overwritten).</li>
             <li>Imported profiles start with WhatsApp opt-in OFF and unverified email.</li>
             <li>Old <strong>.xls</strong> files: open in Excel &rarr; Save As &rarr; <strong>.xlsx</strong> first.</li>
+            <li>Multi-sheet workbooks: every sheet is scanned and only genuine candidate
+                sheets are imported &mdash; company / summary sheets are ignored automatically.</li>
         </ul>
     </div>
 </div>

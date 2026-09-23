@@ -123,11 +123,52 @@ class BulkCandidateImportTests(TestCase):
         self.assertEqual(ravi.skills, 'Python, SQL')
         self.assertTrue(JobSeekerProfile.objects.filter(full_name='Meena K').exists())
 
+    def test_company_sheet_ignored_candidate_sheet_used(self):
+        self.client.force_login(self.employer)
+        workbook = Workbook()
+        companies = workbook.active
+        companies.title = 'Companies'
+        companies.append(['Company Name', 'Address', 'City', 'Email'])
+        companies.append(['Deploynix Ltd', '12 Anna Salai', 'Chennai', 'hr@deploynix.com'])
+        companies.append(['Acme Corp', '4 MG Road', 'Bengaluru', 'jobs@acme.com'])
+        candidates = workbook.create_sheet('Candidates')
+        candidates.append(['Full Name', 'Email', 'Phone', 'Skills'])
+        candidates.append(['Real Candidate', 'real@example.com', '9811111111', 'Python'])
+        buffer = io.BytesIO()
+        workbook.save(buffer)
+        upload = SimpleUploadedFile(
+            'two-sheets.xlsx', buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = self._post(upload)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(JobSeekerProfile.objects.filter(full_name='Real Candidate').exists())
+        self.assertFalse(JobSeekerProfile.objects.filter(full_name__icontains='Deploynix').exists())
+        self.assertFalse(JobSeekerProfile.objects.filter(full_name__icontains='Acme').exists())
+
+    def test_all_candidate_sheets_imported(self):
+        self.client.force_login(self.employer)
+        workbook = Workbook()
+        first = workbook.active
+        first.title = 'Batch A'
+        first.append(['Full Name', 'Email', 'Phone', 'Education'])
+        first.append(['Batch A Person', 'a@example.com', '9822222221', 'B.E.'])
+        second = workbook.create_sheet('Batch B')
+        second.append(['Full Name', 'Email', 'Phone', 'Education'])
+        second.append(['Batch B Person', 'b@example.com', '9822222222', 'MCA'])
+        buffer = io.BytesIO()
+        workbook.save(buffer)
+        upload = SimpleUploadedFile(
+            'batches.xlsx', buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self._post(upload)
+        self.assertTrue(JobSeekerProfile.objects.filter(full_name='Batch A Person').exists())
+        self.assertTrue(JobSeekerProfile.objects.filter(full_name='Batch B Person').exists())
+
     def test_unknown_headers_error_lists_columns(self):
         self.client.force_login(self.employer)
         upload = _xlsx([['X', 'Y'], ], headers=['Column A', 'Column B'])
         response = self._post(upload)
-        self.assertContains(response, 'Columns in your file')
+        self.assertContains(response, 'Columns in the first sheet')
         self.assertContains(response, 'Column A')
         self.assertEqual(JobSeekerProfile.objects.count(), 1)  # only setUp's
 

@@ -93,8 +93,38 @@ def _match_header(header):
     return positions
 
 
+def _detect_header(all_rows):
+    """Best header row (within first 10) + its field positions, or (None, {})."""
+    best_index, best_positions = None, {}
+    for i, row in enumerate(all_rows[:10]):
+        positions = _match_header(row)
+        if len(positions) > len(best_positions):
+            best_index, best_positions = i, positions
+    if best_index is None or 'full_name' not in best_positions:
+        return None, {}
+    return best_index, best_positions
+
+
+def _sheet_tier(positions):
+    """How candidate-like a sheet is: 3 = clearly candidates, 0 = not."""
+    if 'full_name' not in positions:
+        return 0
+    contact = 'email' in positions or 'phone' in positions
+    career = any(k in positions for k in ('skills', 'education', 'experience'))
+    if contact and career:
+        return 3
+    if contact:
+        return 2
+    return 1
+
+
 def _parse_workbook(upload):
-    """Return (rows, error). rows = list of (excel_row_no, dict-of-fields)."""
+    """Return (rows, error). rows = list of (label, dict-of-fields).
+
+    Every worksheet is scanned; only sheets that look like candidate lists
+    are imported (company/other sheets are ignored). When several candidate
+    sheets exist, all of them are imported.
+    """
     if not upload.name.lower().endswith('.xlsx'):
         return None, 'Please upload an Excel .xlsx file (open older .xls files in ' \
                      'Excel and Save As .xlsx first).'
@@ -103,38 +133,41 @@ def _parse_workbook(upload):
     except Exception:
         return None, 'Could not read that file as a valid .xlsx workbook.'
 
-    sheet = workbook.active
-    all_rows = list(sheet.iter_rows(values_only=True))
-    if not all_rows:
-        return None, 'The workbook is empty - add a header row first.'
-
-    # The header row may sit below a title/banner row: pick the row within the
-    # first 10 that recognises the most columns (must recognise a name column).
-    best_index, best_positions = 0, {}
-    for i, row in enumerate(all_rows[:10]):
-        positions = _match_header(row)
-        if len(positions) > len(best_positions):
-            best_index, best_positions = i, positions
-    if 'full_name' not in best_positions:
-        seen = [str(c).strip() for c in all_rows[0] if c not in (None, '')]
-        return None, ('No "Full Name" column found. Columns in your file: '
-                      + ', '.join(seen[:15])
-                      + '. Rename one column to "Full Name" (or paste this header '
-                        'row to your developer to add it as an alias).')
-
-    positions = best_positions
-    rows, count = [], 0
-    for number, row in enumerate(all_rows[best_index + 1:], start=best_index + 2):
-        if all(cell in (None, '') or str(cell).strip() == '' for cell in row):
+    sheets = []
+    for sheet in workbook.worksheets:
+        all_rows = list(sheet.iter_rows(values_only=True))
+        if not all_rows:
             continue
-        count += 1
-        if count > MAX_ROWS:
-            return None, f'Too many rows - the upload limit is {MAX_ROWS} candidates ' \
-                         'per file.'
-        rows.append((number, {field: _cell(row, idx)
-                              for field, idx in positions.items()}))
+        index, positions = _detect_header(all_rows)
+        if index is None:
+            continue
+        sheets.append((_sheet_tier(positions), sheet.title, all_rows, index, positions))
+
+    if not sheets:
+        first = []
+        if workbook.worksheets:
+            for row in workbook.worksheets[0].iter_rows(values_only=True, max_row=1):
+                first = [str(c).strip() for c in row if c not in (None, '')]
+        return None, ('No candidate header row found in any sheet. Columns in the '
+                      'first sheet: ' + ', '.join(first[:15]))
+
+    best_tier = max(tier for tier, *_ in sheets)
+    chosen = [item for item in sheets if item[0] == best_tier]
+
+    rows, count = [], 0
+    for tier, title, all_rows, index, positions in chosen:
+        for number, row in enumerate(all_rows[index + 1:], start=index + 2):
+            if all(cell in (None, '') or str(cell).strip() == '' for cell in row):
+                continue
+            count += 1
+            if count > MAX_ROWS:
+                return None, f'Too many rows - the upload limit is {MAX_ROWS} ' \
+                             'candidates per file.'
+            label = f'{title}!{number}' if len(chosen) > 1 else number
+            rows.append((label, {field: _cell(row, idx)
+                                 for field, idx in positions.items()}))
     if not rows:
-        return None, 'The workbook has a header but no data rows.'
+        return None, 'The workbook has headers but no data rows.'
     return rows, None
 
 
