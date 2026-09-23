@@ -60,6 +60,39 @@ def _cell(row, index):
     return '' if value is None else str(value).strip()
 
 
+SUBSTRING_RULES = [
+    ('full_name', lambda h: 'name' in h and not any(
+        x in h for x in ('company', 'college', 'user', 'file', 'recruiter'))),
+    ('email', lambda h: 'mail' in h),
+    ('phone', lambda h: any(k in h for k in ('phone', 'mobile', 'contact'))),
+    ('location', lambda h: any(k in h for k in ('location', 'city', 'place'))),
+    ('education', lambda h: any(k in h for k in ('education', 'qualification', 'degree'))),
+    ('skills', lambda h: 'skill' in h),
+    ('experience', lambda h: 'experience' in h or h == 'exp'),
+    ('preferred_job_type', lambda h: 'job_type' in h or 'looking' in h),
+    ('certificates', lambda h: 'certif' in h),
+]
+
+
+def _match_header(header):
+    """Map a header row to field positions: exact aliases first, then fuzzy."""
+    positions = {}
+    normalized = [_norm_header(cell) for cell in header]
+    for field, aliases in HEADER_ALIASES.items():
+        for alias in aliases:
+            if alias in normalized:
+                positions[field] = normalized.index(alias)
+                break
+    for field, rule in SUBSTRING_RULES:
+        if field in positions:
+            continue
+        for i, h in enumerate(normalized):
+            if h and rule(h):
+                positions[field] = i
+                break
+    return positions
+
+
 def _parse_workbook(upload):
     """Return (rows, error). rows = list of (excel_row_no, dict-of-fields)."""
     if not upload.name.lower().endswith('.xlsx'):
@@ -71,34 +104,35 @@ def _parse_workbook(upload):
         return None, 'Could not read that file as a valid .xlsx workbook.'
 
     sheet = workbook.active
-    iterator = sheet.iter_rows(values_only=True)
-    try:
-        header = next(iterator)
-    except StopIteration:
+    all_rows = list(sheet.iter_rows(values_only=True))
+    if not all_rows:
         return None, 'The workbook is empty - add a header row first.'
 
-    positions = {}
-    for field, aliases in HEADER_ALIASES.items():
-        for alias in aliases:
-            for i, cell in enumerate(header):
-                if _norm_header(cell) == alias:
-                    positions[field] = i
-                    break
-            if field in positions:
-                break
-    if 'full_name' not in positions:
-        return None, 'No "Full Name" column found. Download the template to see the ' \
-                     'expected header row.'
+    # The header row may sit below a title/banner row: pick the row within the
+    # first 10 that recognises the most columns (must recognise a name column).
+    best_index, best_positions = 0, {}
+    for i, row in enumerate(all_rows[:10]):
+        positions = _match_header(row)
+        if len(positions) > len(best_positions):
+            best_index, best_positions = i, positions
+    if 'full_name' not in best_positions:
+        seen = [str(c).strip() for c in all_rows[0] if c not in (None, '')]
+        return None, ('No "Full Name" column found. Columns in your file: '
+                      + ', '.join(seen[:15])
+                      + '. Rename one column to "Full Name" (or paste this header '
+                        'row to your developer to add it as an alias).')
 
+    positions = best_positions
     rows, count = [], 0
-    for number, row in enumerate(iterator, start=2):
+    for number, row in enumerate(all_rows[best_index + 1:], start=best_index + 2):
         if all(cell in (None, '') or str(cell).strip() == '' for cell in row):
             continue
         count += 1
         if count > MAX_ROWS:
             return None, f'Too many rows - the upload limit is {MAX_ROWS} candidates ' \
                          'per file.'
-        rows.append((number, {field: _cell(row, idx) for field, idx in positions.items()}))
+        rows.append((number, {field: _cell(row, idx)
+                              for field, idx in positions.items()}))
     if not rows:
         return None, 'The workbook has a header but no data rows.'
     return rows, None

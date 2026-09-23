@@ -98,6 +98,39 @@ class BulkCandidateImportTests(TestCase):
         self.assertIn('Missing Full Name', response.context['row_errors'][0][1])
         self.assertFalse(User.objects.filter(email='nobody@example.com').exists())
 
+    def test_header_below_title_row_and_fuzzy_names(self):
+        self.client.force_login(self.employer)
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.append(['Deploynix Placement Drive - Batch 2026'])
+        sheet.append([''])
+        sheet.append(['S.No', 'Name of the Candidate', 'Mail', 'Mobile No',
+                      'City', 'Qualification', 'Key Skills', 'Years'])
+        sheet.append([1, 'Ravi Teja', 'ravi@example.com', '9812345678', 'Hyderabad',
+                      'B.Tech', 'Python, SQL', '1-3'])
+        sheet.append([2, 'Meena K', '', '9812345679', 'Chennai', 'MCA', 'Java', 'fresher'])
+        buffer = io.BytesIO()
+        workbook.save(buffer)
+        upload = SimpleUploadedFile(
+            'drive.xlsx', buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = self._post(upload)
+        self.assertEqual(response.status_code, 200)
+        ravi = JobSeekerProfile.objects.get(full_name='Ravi Teja')
+        self.assertEqual(ravi.user.email, 'ravi@example.com')
+        self.assertEqual(ravi.phone, '9812345678')
+        self.assertEqual(ravi.location, 'Hyderabad')
+        self.assertEqual(ravi.skills, 'Python, SQL')
+        self.assertTrue(JobSeekerProfile.objects.filter(full_name='Meena K').exists())
+
+    def test_unknown_headers_error_lists_columns(self):
+        self.client.force_login(self.employer)
+        upload = _xlsx([['X', 'Y'], ], headers=['Column A', 'Column B'])
+        response = self._post(upload)
+        self.assertContains(response, 'Columns in your file')
+        self.assertContains(response, 'Column A')
+        self.assertEqual(JobSeekerProfile.objects.count(), 1)  # only setUp's
+
     def test_email_less_rows_deduped_by_phone_on_reupload(self):
         self.client.force_login(self.employer)
         rows = [['No Email Person', '', '9000000007', '', '', '', '', '', '']]
