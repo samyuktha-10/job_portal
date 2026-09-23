@@ -4,12 +4,12 @@ import io
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 from openpyxl import Workbook, load_workbook
 
 from .bulk_import_views import DEFAULT_PASSWORD
-from .models import JobSeekerProfile, Profile
+from .models import Job, JobApplication, JobSeekerProfile, Profile
 
 
 def _xlsx(rows, headers=None):
@@ -197,6 +197,53 @@ class BulkCandidateImportTests(TestCase):
         # setUp seeker + imported one
         self.assertEqual(response.context['job_seekers_total'], 2)
         self.assertEqual(response.context['job_seekers_new_month'], 2)
+
+    def test_imported_candidate_full_workflow(self):
+        # employer imports a candidate from Excel
+        self.client.force_login(self.employer)
+        self._post(_xlsx([['Flow Candidate', 'flow@example.com', '9877700009',
+                           'Chennai', 'B.E.', 'Python', '1-3', 'full-time', '']]))
+
+        # the imported candidate logs in through the real login view, by mobile
+        cand = Client()
+        cand.post(reverse('job_seeker_login'),
+                  {'username': '9877700009', 'password': DEFAULT_PASSWORD},
+                  follow=True)
+        self.assertIn('_auth_user_id', cand.session)
+
+        # applies to a job, gets shortlisted by the employer
+        job = Job.objects.create(
+            posted_by=self.employer, job_title='QA Engineer',
+            job_description='Python testing role.', company_name='Co',
+            location='Chennai', job_type='full-time', experience_required='1-3',
+            skills_required='Python', approval_status='approved')
+        cand.post(reverse('apply_job', args=[job.id]))
+        app = JobApplication.objects.get(
+            job=job, job_seeker_profile__full_name='Flow Candidate')
+        self.client.post(reverse('update_application_status', args=[app.id]),
+                         {'status': 'shortlisted'})
+
+        # takes the AI mock interview end to end
+        cand.get(reverse('mock_interview_start', args=[app.id]))
+        i = 0
+        while True:
+            current = app.mock_interview.answers.filter(
+                answered_at__isnull=True).first()
+            if current is None:
+                break
+            i += 1
+            cand.post(reverse('mock_interview_run', args=[app.id]),
+                      {'index': current.order,
+                       'answer_text': f'Python testing answer {i}: first I planned, '
+                                      'then acted; the result improved.'})
+        app.mock_interview.refresh_from_db()
+        self.assertEqual(app.mock_interview.status, 'completed')
+        self.assertIsNotNone(app.mock_interview.overall_score)
+
+        # employer reviews the imported candidate's transcript
+        response = self.client.get(reverse('mock_interview_review', args=[app.id]))
+        self.assertContains(response, 'Flow Candidate')
+        self.assertContains(response, '/100')
 
     def test_template_download_is_workbook(self):
         self.client.force_login(self.employer)
