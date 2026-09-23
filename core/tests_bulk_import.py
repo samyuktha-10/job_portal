@@ -98,6 +98,14 @@ class BulkCandidateImportTests(TestCase):
         self.assertIn('Missing Full Name', response.context['row_errors'][0][1])
         self.assertFalse(User.objects.filter(email='nobody@example.com').exists())
 
+    def test_email_less_rows_deduped_by_phone_on_reupload(self):
+        self.client.force_login(self.employer)
+        rows = [['No Email Person', '', '9000000007', '', '', '', '', '', '']]
+        self._post(_xlsx(rows))
+        self._post(_xlsx(rows))  # same file again
+        self.assertEqual(
+            JobSeekerProfile.objects.filter(full_name='No Email Person').count(), 1)
+
     def test_non_xlsx_rejected(self):
         self.client.force_login(self.employer)
         upload = SimpleUploadedFile('candidates.csv', b'a,b\n1,2\n', content_type='text/csv')

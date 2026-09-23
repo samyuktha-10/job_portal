@@ -109,7 +109,9 @@ def _build_users_and_profiles(rows):
     existing_emails = {u['email'] for u in User.objects.exclude(email='').values('email')}
     existing_emails = {e.lower() for e in existing_emails}
     existing_usernames = set(User.objects.values_list('username', flat=True))
-    seen_emails = set()
+    existing_phones = set(
+        JobSeekerProfile.objects.exclude(phone='').values_list('phone', flat=True))
+    seen_emails, seen_phones = set(), set()
 
     users, profiles_data, duplicates, errors = [], [], [], []
     synthesized = 0
@@ -131,6 +133,11 @@ def _build_users_and_profiles(rows):
             seen_emails.add(email)
 
         phone = re.sub(r'[^0-9+]', '', data.get('phone', ''))[:15]
+        if not email and phone and (phone in existing_phones or phone in seen_phones):
+            duplicates.append((number, f'{full_name} (phone {phone} already exists)'))
+            continue
+        if not email and phone:
+            seen_phones.add(phone)
         experience = data.get('experience', '')[:100]
         job_type = _slug(data.get('preferred_job_type', '')).replace('_', '-')
         if job_type not in JOB_TYPES:
