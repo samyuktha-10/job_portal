@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import admin_panel_views
 from . import mock_interview_views
+from . import bulk_import_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -21,6 +22,8 @@ urlpatterns = [
     path('job/<int:job_id>/apply/', views.apply_job, name='apply_job'),
     path('candidates/new/', views.new_applicants, name='new_applicants'),
     path('candidates/manage/', views.manage_candidates, name='manage_candidates'),
+    path('candidates/bulk-import/', bulk_import_views.employer_bulk_candidate_import, name='bulk_candidate_import'),
+    path('candidates/bulk-import/template/', bulk_import_views.employer_bulk_import_template, name='bulk_import_template'),
     path('candidates/search/', views.search_resume, name='search_resume'),
     path('candidates/shortlisted/', views.shortlisted, name='shortlisted'),
     path('application/<int:application_id>/status/', views.update_application_status, name='update_application_status'),
@@ -99,6 +102,8 @@ urlpatterns = [
     path('control-panel/company-verification/<int:profile_id>/trust/<str:action>/', admin_panel_views.admin_company_trust_set, name='admin_company_trust_set'),
     path('control-panel/company-verification/<int:profile_id>/document/', admin_panel_views.company_id_document_download, name='company_id_document_download'),
     path('control-panel/job-seekers/', views.admin_job_seekers_list, name='admin_job_seekers_list'),
+    path('control-panel/bulk-import/', bulk_import_views.admin_bulk_candidate_import, name='admin_bulk_candidate_import'),
+    path('control-panel/bulk-import/template/', bulk_import_views.admin_bulk_import_template, name='admin_bulk_import_template'),
     path('control-panel/users/<int:user_id>/toggle-active/', admin_panel_views.admin_user_toggle_active, name='admin_user_toggle_active'),
     path('control-panel/inquiries/', admin_panel_views.admin_inquiries_list, name='admin_inquiries_list'),
     path('control-panel/inquiries/<int:inquiry_id>/update-status/', admin_panel_views.admin_inquiry_update_status, name='admin_inquiry_update_status'),

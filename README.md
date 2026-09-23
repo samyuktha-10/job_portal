@@ -14,6 +14,11 @@ and `Deploynix_Job_Portal_Blueprint.pdf` for the complete project blueprint.
 - **Employers** — login by company email, dashboard, post/edit/delete jobs in 5 types,
   candidate management + resume search, interview scheduling, walk-in candidates,
   company profile, Razorpay subscription plans, resume unlock, reports.
+  **Bulk candidate upload (Excel):** employers (and super admins in Control Panel)
+  can upload one `.xlsx` with up to 5,000 rows; every valid row becomes a real
+  candidate profile (login account + JobSeekerProfile, default password
+  `Deploynix@123`), duplicate emails are skipped and a per-row import report is
+  shown. Flexible headers, downloadable template.
   **Company trust verification (KYC):** every company must submit its registration ID
   (CIN / GSTIN / LLPIN) and upload a corporate ID card; a super admin reviews it in
   Control Panel → Company Verification, and only verified companies can post jobs and
