@@ -1440,6 +1440,15 @@ def compute_ats_score_for_application(application):
 def delete_account(request):
     user = request.user
 
+    # Typed confirmation ("delete <company name>") sent by the employer
+    # company-profile modal. Enforced server-side when present.
+    phrase = request.POST.get('confirm_phrase')
+    if phrase is not None and hasattr(user, 'profile') and user.profile.is_employer:
+        expected = f"delete {user.profile.company_name or user.username}"
+        if phrase.strip().lower() != expected.strip().lower():
+            messages.error(request, 'Confirmation text did not match. Your account was not deleted.')
+            return redirect('company_profile')
+
     if hasattr(user, 'jobseeker_profile'):
         JobApplication.objects.filter(job_seeker_profile=user.jobseeker_profile).delete()
 

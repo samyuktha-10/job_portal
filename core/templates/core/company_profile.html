@@ -118,25 +118,82 @@
         <button type="submit" class="dashboard-action-btn" style="width:auto; padding:0.75rem 2rem;">Save Changes</button>
     </form>
 </div>
-<div style="margin-top: 3rem; border: 1px solid #fecaca; border-radius: 0.75rem; overflow: hidden;">
-    <div style="background: #fef2f2; padding: 1.5rem 1.75rem; display: flex; align-items: flex-start; gap: 1rem;">
-        <div style="width: 40px; height: 40px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">
-            ⚠️
+<div style="margin-top: 2rem;">
+    <button type="button" id="open-delete-modal"
+            style="background: white; color: #dc2626; padding: 0.6rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1.5px solid #dc2626; cursor: pointer; transition: all 0.15s ease;"
+            onmouseover="this.style.background='#dc2626'; this.style.color='white';"
+            onmouseout="this.style.background='white'; this.style.color='#dc2626';">
+        Delete Account
+    </button>
+</div>
+
+<!-- Account deletion confirmation modal -->
+<div id="delete-modal-overlay"
+     style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+    <div data-confirm-phrase="delete {{ profile.company_name|default:user.username }}"
+         style="background: white; border-radius: 0.75rem; max-width: 480px; width: 100%; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem;">
+                ⚠️
+            </div>
+            <h3 style="color: #991b1b; font-weight: bold; font-size: 1.15rem;">Permanently Delete Account</h3>
         </div>
-        <div style="flex: 1;">
-            <h3 style="color: #991b1b; font-weight: bold; font-size: 1.1rem; margin-bottom: 0.35rem;">Danger zone</h3>
-            <p style="color: #7f1d1d; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.25rem;">
-                Deleting your account permanently removes your profile, resume, and application history. You can create a new account anytime afterward, but this data cannot be recovered.
-            </p>
-            <form method="post" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you absolutely sure? This will permanently delete your account and all associated data. This cannot be undone.');">
-                {% csrf_token %}
-                <button type="submit" style="background: white; color: #dc2626; padding: 0.55rem 1.25rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.85rem; border: 1.5px solid #dc2626; cursor: pointer; transition: all 0.15s ease;"
-                        onmouseover="this.style.background='#dc2626'; this.style.color='white';"
-                        onmouseout="this.style.background='white'; this.style.color='#dc2626';">
-                    Delete my account permanently
+        <p style="color: #374151; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+            <strong>Warning:</strong> your account will be <strong>permanently deleted</strong> along with your
+            company profile, job postings, and all associated data. This action cannot be undone.
+        </p>
+        <p style="color: #374151; font-size: 0.9rem; margin-bottom: 0.5rem;">
+            To confirm, type
+            <code style="background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.85rem;">delete {{ profile.company_name|default:user.username }}</code>
+            below:
+        </p>
+        <form method="post" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <input type="text" name="confirm_phrase" id="delete-confirm-input" autocomplete="off"
+                   placeholder="delete {{ profile.company_name|default:user.username }}"
+                   style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" id="cancel-delete"
+                        style="background: white; color: #374151; padding: 0.55rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: 1.5px solid #d1d5db; cursor: pointer;">
+                    Cancel
                 </button>
-            </form>
-        </div>
+                <button type="submit" id="confirm-delete" disabled
+                        style="background: #dc2626; color: white; padding: 0.55rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: 1.5px solid #dc2626; cursor: not-allowed; opacity: 0.5;">
+                    Delete Account
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+(function () {
+    var overlay = document.getElementById('delete-modal-overlay');
+    var openBtn = document.getElementById('open-delete-modal');
+    var cancelBtn = document.getElementById('cancel-delete');
+    var input = document.getElementById('delete-confirm-input');
+    var confirmBtn = document.getElementById('confirm-delete');
+    var expected = overlay.querySelector('[data-confirm-phrase]').getAttribute('data-confirm-phrase');
+
+    function refresh() {
+        var ok = input.value.trim().toLowerCase() === expected.trim().toLowerCase();
+        confirmBtn.disabled = !ok;
+        confirmBtn.style.opacity = ok ? '1' : '0.5';
+        confirmBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    }
+    function openModal() {
+        overlay.style.display = 'flex';
+        input.value = '';
+        refresh();
+        input.focus();
+    }
+    function closeModal() { overlay.style.display = 'none'; }
+
+    openBtn.addEventListener('click', openModal);
+    cancelBtn.addEventListener('click', closeModal);
+    input.addEventListener('input', refresh);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
 {% endblock %}
