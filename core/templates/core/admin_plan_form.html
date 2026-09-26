@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>{% if editing %}Edit Plan{% else %}Add Plan{% endif %} - Deploynix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #f4f5f7; color: #1a1a1a; }
+  body { font-family: 'Playfair Display', serif; background: #f4f5f7; color: #1a1a1a; }
   .layout { display: flex; min-height: 100vh; }
   .sidebar { width: 240px; background: #0d0f14; color: #eaeaea; padding: 24px 0; }
-  .sidebar .brand { font-family: Georgia, serif; font-size: 20px; font-weight: bold; padding: 0 24px 24px; }
+  .sidebar .brand { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: bold; padding: 0 24px 24px; }
   .sidebar .brand span { color: #e0322f; }
   .sidebar .tag { font-size: 10px; letter-spacing: 1px; color: #8a8f9e; text-transform: uppercase; padding: 0 24px 16px; }
   .sidebar nav a { display: block; padding: 12px 24px; color: #c7c9d1; text-decoration: none; font-size: 14px; border-left: 3px solid transparent; }
   .sidebar nav a:hover, .sidebar nav a.active { background: #171b26; color: #fff; border-left-color: #d32f2f; }
   .main { flex: 1; padding: 28px 36px; }
-  h1 { font-family: Georgia, serif; font-size: 26px; margin-bottom: 4px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 4px; }
   .subtitle { color: #777; font-size: 13px; margin-bottom: 24px; }
   .form-card { background: #fff; border: 1px solid #e6e6e6; border-radius: 10px; padding: 24px; max-width: 560px; }
   .form-group { margin-bottom: 16px; }
