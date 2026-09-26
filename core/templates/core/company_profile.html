@@ -46,6 +46,15 @@
                 <textarea name="about" rows="4" placeholder="Tell job seekers what your company does, its mission, and culture..."
                     style="width:100%; padding:0.6rem 0.75rem; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; resize:vertical;">{{ profile.about }}</textarea>
             </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="button" id="open-delete-modal"
+                        style="background: white; color: #dc2626; padding: 0.6rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1.5px solid #dc2626; cursor: pointer; transition: all 0.15s ease;"
+                        onmouseover="this.style.background='#dc2626'; this.style.color='white';"
+                        onmouseout="this.style.background='white'; this.style.color='#dc2626';">
+                    Delete Account
+                </button>
+            </div>
         </div>
 
         <!-- Company details -->
@@ -117,14 +126,6 @@
 
         <button type="submit" class="dashboard-action-btn" style="width:auto; padding:0.75rem 2rem;">Save Changes</button>
     </form>
-</div>
-<div style="margin-top: 2rem;">
-    <button type="button" id="open-delete-modal"
-            style="background: white; color: #dc2626; padding: 0.6rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1.5px solid #dc2626; cursor: pointer; transition: all 0.15s ease;"
-            onmouseover="this.style.background='#dc2626'; this.style.color='white';"
-            onmouseout="this.style.background='white'; this.style.color='#dc2626';">
-        Delete Account
-    </button>
 </div>
 
 <!-- Account deletion confirmation modal -->
