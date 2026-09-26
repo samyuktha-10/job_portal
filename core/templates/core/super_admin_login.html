@@ -1,199 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Super Admin Login — Deploynix</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Georgia, 'Times New Roman', serif;
-    background: #f4f5f7;
-  }
-  .topbar {
-    background: #0d0f14;
-    padding: 18px 40px;
-    display: flex;
-    align-items: center;
-  }
-  .topbar .logo {
-    color: #fff;
-    font-size: 22px;
-    font-weight: bold;
-    font-family: Georgia, serif;
-  }
-  .topbar .logo span { color: #e0322f; }
-  .redbar {
-    background: #d32f2f;
-    height: 6px;
-  }
-  .wrapper {
-    min-height: 85vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .card {
-    width: 380px;
-    background: #ffffff;
-    border: 1px solid #e2e2e2;
-    border-radius: 8px;
-    padding: 36px 32px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-  }
-  .tag {
-    color: #d32f2f;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .title {
-    color: #1a1a1a;
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .subtitle {
-    color: #666;
-    font-size: 13px;
-    margin-bottom: 26px;
-    font-family: Arial, sans-serif;
-  }
-  label {
-    display: block;
-    color: #333;
-    font-size: 13px;
-    margin-bottom: 6px;
-    font-family: Arial, sans-serif;
-  }
-  input {
-    width: 100%;
-    background: #fafafa;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 11px 13px;
-    font-size: 14px;
-    margin-bottom: 18px;
-    outline: none;
-    font-family: Arial, sans-serif;
-  }
-  input:focus {
-    border-color: #d32f2f;
-    background: #fff;
-  }
-  button {
-    width: 100%;
-    background: #d32f2f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 12px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-  }
-  button:hover { background: #b32626; }
-  .links {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
-    font-size: 13px;
-    font-family: Arial, sans-serif;
-  }
-  .links a {
-    color: #d32f2f;
-    text-decoration: none;
-  }
-  .links a.muted { color: #888; }
-  .error {
-    background: #fdecea;
-    border: 1px solid #f5c2c0;
-    color: #b3261e;
-    font-size: 13px;
-    padding: 10px 12px;
-    border-radius: 5px;
-    margin-bottom: 18px;
-    font-family: Arial, sans-serif;
-  }
-  .info {
-    background: #eaf6ec;
-    border: 1px solid #bfe3c4;
-    color: #1e7e34;
-    font-size: 13px;
-    padding: 10px 12px;
-    border-radius: 5px;
-    margin-bottom: 18px;
-    font-family: Arial, sans-serif;
-  }
-</style>
-</head>
-<body>
+{% extends 'core/base.html' %}
 
-<div class="topbar">
-  <div class="logo">Deploy<span>nix</span></div>
-</div>
-<div class="redbar"></div>
+{% block title %}Super Admin Login - Deploynix{% endblock %}
 
-<div class="wrapper">
-  <div class="card">
-    <div class="tag">Deploynix Provider Portal</div>
+{% block content %}
+
+<div class="max-w-md mx-auto my-24 px-4">
+    <h1 class="text-3xl font-bold mb-2 text-center">Super Admin Login</h1>
+    <p class="text-gray-500 text-center mb-8">Separate secure access for platform administrators</p>
 
     {% if messages %}
-      {% for message in messages %}<div class="info">{{ message }}</div>{% endfor %}
+    <div id="messages-container">
+        {% for message in messages %}
+        <div class="message-box bg-red-50 text-red-600 border border-red-200 text-sm p-3 rounded mb-4">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Deduplicate messages on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            const seenMessages = new Set();
+            document.querySelectorAll('#messages-container .message-box').forEach(box => {
+                const text = box.innerText.trim();
+                if (seenMessages.has(text)) {
+                    box.remove();
+                } else {
+                    seenMessages.add(text);
+                }
+            });
+        });
+    </script>
     {% endif %}
+
     {% if demo %}
-      <div class="info">Local demo super admin: <strong>superadmin@deploynix.local</strong> / <strong>admin@123</strong> (created by <code>seed_demo_users</code>)</div>
+    <div class="bg-green-50 text-green-700 border border-green-200 text-sm p-3 rounded mb-4">
+        Local demo super admin: <strong>superadmin@deploynix.local</strong> / <strong>admin@123</strong>
+        (created by <code>seed_demo_users</code>)
+    </div>
     {% endif %}
 
     {% if step == "verify" %}
-      <div class="title">Verify your login</div>
-      <div class="subtitle">Separate secure access for platform administrators.</div>
+    <div class="bg-white border-2 border-gray-400 rounded-lg p-8 shadow-sm">
+        {% if info %}
+        <div class="bg-green-50 text-green-700 border border-green-200 text-sm p-3 rounded mb-4">{{ info }}</div>
+        {% endif %}
+        {% if error %}
+        <div class="bg-red-50 text-red-600 border border-red-200 text-sm p-3 rounded mb-4">{{ error }}</div>
+        {% endif %}
 
-      {% if info %}<div class="info">{{ info }}</div>{% endif %}
-      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        <form method="post" action="{% url 'super_admin_verify' %}">
+            {% csrf_token %}
 
-      <form method="post" action="{% url 'super_admin_verify' %}">
-        {% csrf_token %}
-        <label>Six-digit verification code</label>
-        <input type="text" name="otp" maxlength="6" autocomplete="one-time-code" required>
-        <button type="submit">Verify</button>
-      </form>
-      <div class="links">
-        <a href="{% url 'super_admin_login' %}">Back to login</a>
-        <a class="muted" href="{% url 'employer_login' %}">Customer login</a>
-      </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Six-digit verification code</label>
+                <input type="text" name="otp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required
+                    class="w-full border-2 border-gray-400 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            </div>
+
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-semibold">
+                Verify
+            </button>
+        </form>
+        <p class="text-center text-sm text-gray-500 mt-4">
+            <a href="{% url 'super_admin_login' %}" class="text-red-600 hover:underline">Back to login</a>
+        </p>
+    </div>
 
     {% else %}
-      <div class="title">Super Admin Sign In</div>
-      <div class="subtitle">Separate secure access for platform administrators.</div>
+    {% if error %}
+    <div class="bg-red-50 text-red-600 border border-red-200 text-sm p-3 rounded mb-4">{{ error }}</div>
+    {% endif %}
 
-      {% if error %}<div class="error">{{ error }}</div>{% endif %}
-
-      <form method="post" action="{% url 'super_admin_login' %}">
+    <form method="post" action="{% url 'super_admin_login' %}" class="bg-white border-2 border-gray-400 rounded-lg p-8 shadow-sm">
         {% csrf_token %}
-        <label>Platform admin email</label>
-        <input type="email" name="email" required>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Platform Admin Email</label>
+            <input type="email" name="email" required
+                class="w-full border-2 border-gray-400 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+        </div>
 
-        <label style="display:flex; gap:8px; align-items:center; font-size:13px; margin:12px 0 4px;">
-          <input type="checkbox" name="remember_me" value="1" checked> Remember me on this device
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input type="password" name="password" required
+                class="w-full border-2 border-gray-400 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+        </div>
+
+        <label class="flex items-center gap-2 text-sm text-gray-600 mb-6 cursor-pointer">
+            <input type="checkbox" name="remember_me" value="1" class="w-4 h-4" checked>
+            Remember me on this device
         </label>
 
-        <button type="submit">Sign In</button>
-      </form>
-      <div class="links">
-        <a href="#">Forgot password?</a>
-        <a class="muted" href="{% url 'employer_login' %}">Customer login</a>
-      </div>
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-semibold">
+            Log In
+        </button>
+        <p class="text-center text-sm text-gray-500 mt-2">
+            <a href="{% url 'password_reset' %}" class="text-red-600 hover:underline">Forgot password?</a>
+        </p>
+    </form>
+    <p class="text-center text-sm text-gray-500 mt-4">
+        Employer? <a href="{% url 'employer_login' %}" class="text-red-600 hover:underline">Employer Login</a>
+    </p>
+
+    <p class="text-center text-sm text-gray-500 mt-2">
+        Looking for work? <a href="{% url 'job_seeker_login' %}" class="text-red-600 hover:underline">Job Seeker Login</a>
+    </p>
     {% endif %}
-  </div>
 </div>
 
-{% include "core/_password_toggle.html" %}
-</body>
-</html>
+{% endblock %}
